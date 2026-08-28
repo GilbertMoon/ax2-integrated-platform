@@ -29,15 +29,15 @@
 - DB 백업 파일은 GitHub에 직접 업로드하지 않고 별도 안전한 저장소에 보관하는 방향으로 정리했다.
 
 ## 4. 산출물 / 근거
-- Issue: https://github.com/GilbertMoon/ax2-integrated-platform/issues/16
+- Issue: [#16 — DB Migration 준비 및 공통 VIEW 정리](https://github.com/GilbertMoon/ax2-integrated-platform/issues/16)
 - PR: 해당 없음
-- Commit: 금일 관련 변경사항은 GitHub 반영 과정에서 확인
+- Commit: [main 브랜치](https://github.com/GilbertMoon/ax2-integrated-platform/tree/main)
 - 관련 문서:
-  - `docs/deliverables/README.md`
-  - `docs/deliverables/P3_김종복/README.md`
-  - `docs/erd/TO_BE_ERD.png`
-  - `user_round_team_view`
-  - `ax_user_team_login_view`
+  - [Daily Deliverables Guide](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/deliverables/README.md)
+  - [P3 Daily Deliverables](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/deliverables/P3_%EA%B9%80%EC%A2%85%EB%B3%B5/README.md)
+  - [TO-BE ERD — PNG](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/erd/TO_BE_ERD.png)
+  - [TO-BE ERD — Mermaid](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/erd/TO_BE_ERD.mmd)
+  - [VIEW Guide — ax_user_team_login_view / user_round_team_view](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/erd/VIEW_GUIDE.md)
 
 ## 5. 검증 방법
 1. PostgreSQL `ax_evaluation` DB에서 `accounts_user`, `rounds_roundparticipant`, `teams_teammembership`, `teams_team` 테이블이 존재하는지 확인한다.

@@ -30,7 +30,10 @@
 
 ## 4. 산출물 / 근거
 - Issue: [#16 — DB Migration 준비 및 공통 VIEW 정리](https://github.com/GilbertMoon/ax2-integrated-platform/issues/16)
-- 관련 문서:
+- ERD 비교 및 설계 문서:
+  - [TO-BE ERD 초안 범위 정의](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/erd/TO_BE_ERD_DRAFT.md)
+  - [1·2·3·4조 ERD 비교표](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/erd/ERD_COMPARISON_4TEAMS.md)
+- 관련 ERD 산출물:
   - [TO-BE ERD — PNG](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/erd/TO_BE_ERD.png)
   - [TO-BE ERD — Mermaid](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/erd/TO_BE_ERD.mmd)
   - [VIEW Guide — ax_user_team_login_view / user_round_team_view](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/erd/VIEW_GUIDE.md)

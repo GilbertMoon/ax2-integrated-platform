@@ -1,0 +1,519 @@
+```mermaid
+erDiagram
+    %% ==========================================================
+    %% CORE
+    %% ==========================================================
+    accounts_user ||--o{ rounds_roundparticipant : participates
+    accounts_user ||--o{ rounds_evaluationround : creates
+    rounds_evaluationround ||--o{ rounds_roundparticipant : contains
+    rounds_evaluationround ||--o{ teams_team : contains
+    teams_team ||--o{ teams_teammembership : has
+    rounds_roundparticipant |o--o| teams_teammembership : belongs_to
+    accounts_user ||--o{ notices_notice : creates
+    accounts_user ||--o{ notifications_notification : receives
+    accounts_user ||--o{ audit_auditevent : acts
+    rounds_evaluationround ||--o{ results_calculationrun : calculates
+
+    accounts_user {
+        bigint id PK
+        varchar email UK
+        varchar password
+        varchar role
+        varchar approval_status
+    }
+    rounds_evaluationround {
+        bigint id PK
+        bigint created_by FK
+        varchar title
+        varchar status
+        decimal team_score_weight
+        decimal personal_score_weight
+    }
+    rounds_roundparticipant {
+        bigint id PK
+        bigint user_id FK
+        bigint round_id FK
+        varchar student_number_snapshot
+        varchar display_name_snapshot
+    }
+    teams_team {
+        bigint id PK
+        bigint round_id FK
+        int team_number
+        varchar name
+    }
+    teams_teammembership {
+        bigint id PK
+        bigint team_id FK
+        bigint participant_id FK
+    }
+
+    %% ==========================================================
+    %% 1조 - 학습 게이미피케이션
+    %% ==========================================================
+    accounts_user ||--|| CG_USERS : extends
+    CG_USERS ||--o{ ATTENDANCES : learning_attendance
+    CG_USERS ||--o{ TASK_ATTEMPTS : attempts
+    CG_USERS ||--o{ USER_PROFICIENCY : has
+    CG_USERS ||--o{ ROOMS : hosts
+    CG_USERS ||--o{ ROOM_PARTICIPANTS : joins
+    CG_USERS ||--o{ RANKING_PARTICIPANTS : joins
+    CG_USERS ||--o{ RANK_CHALLENGES : attempts
+    CG_USERS ||--o{ INVENTORIES : owns
+    CG_USERS ||--o{ USER_CATS : adopts
+    teams_team ||--o{ ROOM_PARTICIPANTS : team_participation
+    CONCEPTS ||--o{ TASKS : categorizes
+    CONCEPTS ||--o{ USER_PROFICIENCY : measures
+    TASKS ||--o{ TASK_ATTEMPTS : receives
+    ROOMS ||--o{ ROOM_PARTICIPANTS : contains
+    TASKS ||--o{ ROOM_TASKS : selected
+    ROOMS ||--o{ ROOM_TASKS : assigns
+    RANKING_GROUPS ||--o{ RANKING_PARTICIPANTS : contains
+    RANK_CHALLENGES ||--o{ RANK_CHALLENGE_TASKS : contains
+    TASKS ||--o{ RANK_CHALLENGE_TASKS : included
+    ITEMS ||--o{ INVENTORIES : stored
+    CATS ||--o{ USER_CATS : type
+    USER_CATS ||--o{ CAT_MEMORIES : remembers
+
+    CG_USERS {
+        uuid id PK
+        string username
+        int balance
+        int mileage
+        int house_level
+        datetime created_at
+    }
+    ATTENDANCES {
+        uuid id PK
+        uuid user_id FK
+        date check_in_date UK
+        int streak_count
+    }
+    CONCEPTS {
+        int id PK
+        string name
+        string description
+    }
+    TASKS {
+        uuid id PK
+        int concept_id FK
+        string type
+        string difficulty
+        text template_code
+        text test_cases
+        boolean is_active
+    }
+    USER_PROFICIENCY {
+        uuid id PK
+        uuid user_id FK
+        int concept_id FK
+        int proficiency_level
+        datetime updated_at
+    }
+    TASK_ATTEMPTS {
+        uuid id PK
+        uuid user_id FK
+        uuid task_id FK
+        text submitted_code
+        string status
+        boolean is_correct
+        datetime attempted_at
+    }
+    ROOMS {
+        uuid id PK
+        uuid host_user_id FK
+        string title
+        string status
+        int max_participants
+        datetime created_at
+    }
+    ROOM_PARTICIPANTS {
+        uuid id PK
+        uuid room_id FK
+        uuid user_id FK
+        bigint team_id FK
+        int current_score
+        boolean is_ready
+        datetime joined_at
+    }
+    ROOM_TASKS {
+        uuid id PK
+        uuid room_id FK
+        uuid task_id FK
+        int task_order
+    }
+    RANKING_GROUPS {
+        uuid id PK
+        string name
+        uuid owner_user_id FK
+    }
+    RANKING_PARTICIPANTS {
+        uuid id PK
+        uuid group_id FK
+        uuid user_id FK
+        int current_rank_score
+    }
+    RANK_CHALLENGES {
+        uuid id PK
+        uuid user_id FK
+        uuid group_id FK
+        string status
+        datetime started_at
+        datetime expires_at
+    }
+    RANK_CHALLENGE_TASKS {
+        uuid id PK
+        uuid challenge_id FK
+        uuid task_id FK
+        boolean is_passed
+        int task_order
+    }
+    ITEMS {
+        int id PK
+        string category
+        string name
+        int price
+        string image_url
+    }
+    INVENTORIES {
+        uuid id PK
+        uuid user_id FK
+        int item_id FK
+        int quantity
+    }
+    CATS {
+        int id PK
+        string name
+        string persona
+        string rarity
+    }
+    USER_CATS {
+        uuid id PK
+        uuid user_id FK
+        int cat_id FK
+        int level
+    }
+    CAT_MEMORIES {
+        uuid id PK
+        uuid user_cat_id FK
+        text context_summary
+        datetime created_at
+    }
+
+    %% ==========================================================
+    %% 2조 - 강의/과제/평가
+    %% ==========================================================
+    LECTURE ||--o{ LESSON : contains
+    LESSON ||--o{ LESSON_MATERIAL : materials
+    accounts_user ||--o{ ASSIGNMENT : creates
+    accounts_user ||--o{ SUBMISSION : submits
+    accounts_user ||--o{ TODO : owns
+    teams_team ||--o{ SUBMISSION : team_submission
+    ASSIGNMENT ||--o{ SUBMISSION : receives
+    SUBMISSION ||--o{ SUBMISSION_FILE : attaches
+    SUBMISSION ||--o| AI_EVALUATION : AI_evaluates
+    SUBMISSION ||--o| EVALUATION : tutor_evaluates
+
+    LECTURE {
+        int id PK
+        string title
+        datetime created_at
+    }
+    LESSON {
+        int id PK
+        int lecture_id FK
+        string title
+        date lesson_date
+        string blog_link
+        string video_url
+        datetime created_at
+    }
+    LESSON_MATERIAL {
+        int id PK
+        int lesson_id FK
+        string kind
+        string file_url
+        string link_url
+        string title
+    }
+    ASSIGNMENT {
+        int id PK
+        string title
+        string description
+        datetime due_at
+        boolean is_required
+        boolean allow_late
+        boolean is_team
+        bigint created_by FK
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
+    }
+    SUBMISSION {
+        int id PK
+        int assignment_id FK
+        bigint student_id FK
+        bigint team_id FK
+        string description
+        datetime submitted_at
+        boolean is_locked
+        int final_score
+    }
+    SUBMISSION_FILE {
+        int id PK
+        int submission_id FK
+        string kind
+        string file_url
+        string file_name
+        int file_size
+    }
+    AI_EVALUATION {
+        int id PK
+        int submission_id FK UK
+        int score
+        string comment
+        datetime updated_at
+    }
+    EVALUATION {
+        int id PK
+        int submission_id FK UK
+        int score
+        string feedback
+        datetime created_at
+        datetime updated_at
+    }
+    TODO {
+        int id PK
+        bigint student_id FK
+        string content
+        boolean is_done
+        datetime created_at
+    }
+
+    %% ==========================================================
+    %% 3조 - PRD / 아이디어 개발
+    %% ==========================================================
+    Templates ||--|{ Template_Sections : contains
+    Template_Sections ||--|{ Template_Questions : contains
+    Templates ||--o{ PRDs : copied_to
+    accounts_user ||--o{ PRDs : owns
+    rounds_roundparticipant ||--o{ PRDs : round_context
+    teams_team ||--o{ PRDs : team_context
+    accounts_user ||--o{ PRD_Permissions : receives
+    accounts_user ||--o{ PRD_Comments : writes
+    accounts_user ||--o{ Post_its : writes
+    accounts_user ||--o{ AI_Usage_Logs : calls
+    accounts_user ||--o{ AI_Chat_Histories : chats
+    accounts_user ||--o{ PRD_Member_Evaluations : evaluated
+    PRDs ||--|{ PRD_Sections : contains
+    PRD_Sections ||--|{ PRD_Questions : contains
+    PRDs ||--o{ PRD_Permissions : permissions
+    PRDs ||--o{ PRD_Comments : comments
+    PRD_Sections ||--o{ PRD_Comments : section_comments
+    PRDs ||--o| Brainstorm_Boards : has
+    Brainstorm_Boards ||--o{ Brainstorm_Categories : categories
+    Brainstorm_Boards ||--o{ Post_its : contains
+    Brainstorm_Categories ||--o{ Post_its : classifies
+    PRDs ||--o{ AI_Usage_Logs : usage
+    PRDs ||--o{ PRD_Member_Evaluations : member_scores
+    PRD_Sections ||--o{ PRD_Edit_Histories : history
+    PRDs ||--o{ AI_Chat_Histories : chats
+
+    Templates {
+        bigint template_id PK
+        string type_name
+    }
+    Template_Sections {
+        bigint template_section_id PK
+        bigint template_id FK
+        string title
+        string guidance
+        int order_num
+    }
+    Template_Questions {
+        bigint template_question_id PK
+        bigint template_section_id FK
+        string title
+        int order_num
+    }
+    PRDs {
+        bigint prd_id PK
+        bigint template_id FK
+        bigint user_id FK
+        bigint round_id FK
+        bigint team_id FK
+        string title
+        string status
+        date deadline
+        boolean is_deleted
+        datetime created_at
+        datetime updated_at
+    }
+    PRD_Permissions {
+        bigint permission_id PK
+        bigint prd_id FK
+        bigint target_user_id FK
+        string role
+        datetime created_at
+    }
+    PRD_Sections {
+        bigint section_id PK
+        bigint prd_id FK
+        string title
+        string guidance
+        boolean is_completed
+        boolean is_held
+        boolean is_deleted
+        int order_num
+    }
+    PRD_Questions {
+        bigint question_id PK
+        bigint section_id FK
+        string title
+        text answer
+        boolean is_held
+        boolean is_deleted
+        int order_num
+    }
+    PRD_Comments {
+        bigint comment_id PK
+        bigint prd_id FK
+        bigint section_id FK
+        bigint user_id FK
+        text content
+        datetime created_at
+    }
+    Brainstorm_Boards {
+        bigint board_id PK
+        bigint prd_id FK
+    }
+    Brainstorm_Categories {
+        bigint category_id PK
+        bigint board_id FK
+        string title
+    }
+    Post_its {
+        bigint post_it_id PK
+        bigint board_id FK
+        bigint category_id FK
+        bigint user_id FK
+        text content
+        string color
+        float pos_x
+        float pos_y
+        string status
+    }
+    AI_Usage_Logs {
+        bigint log_id PK
+        bigint user_id FK
+        bigint prd_id FK
+        string feature_type
+        int total_tokens
+        datetime created_at
+    }
+    AI_Chat_Histories {
+        bigint chat_id PK
+        bigint prd_id FK
+        bigint section_id FK
+        bigint user_id FK
+        json chat_data
+        datetime created_at
+        date expires_at
+    }
+    PRD_Member_Evaluations {
+        bigint evaluation_id PK
+        bigint prd_id FK
+        bigint user_id FK
+        int total_post_its
+        int accepted_post_its
+        int total_comments
+        float reflection_rate
+        int total_score
+        text ai_comment
+        datetime created_at
+    }
+    PRD_Edit_Histories {
+        bigint history_id PK
+        bigint section_id FK
+        string edit_type
+        text before_content
+        text after_content
+        datetime created_at
+    }
+
+    %% ==========================================================
+    %% 4조 신규 - 실제 근태 / 얼굴인식 Domain
+    %% 학습 출석 ATTENDANCES와 별도 Domain
+    %% ==========================================================
+    rounds_roundparticipant ||--o{ ATTENDANCE_RECORDS : actual_attendance
+    ATTENDANCE_RECORDS ||--o{ FACE_RECOGNITION_LOGS : recognition
+    STUDENT_FACE_PROFILES ||--o{ FACE_RECOGNITION_LOGS : matched_profile
+    rounds_roundparticipant ||--o{ STUDENT_FACE_PROFILES : registers
+    STUDENT_FACE_PROFILES ||--o{ FACE_IMAGES : stores
+
+    ATTENDANCE_RECORDS {
+        bigint id PK
+        bigint participant_id FK
+        date attendance_date
+        datetime check_in_at
+        datetime check_out_at
+        varchar status
+    }
+    STUDENT_FACE_PROFILES {
+        bigint id PK
+        bigint participant_id FK
+        varchar profile_status
+        datetime registered_at
+    }
+    FACE_IMAGES {
+        bigint id PK
+        bigint face_profile_id FK
+        varchar image_path
+        datetime captured_at
+    }
+    FACE_RECOGNITION_LOGS {
+        bigint id PK
+        bigint attendance_id FK
+        bigint face_profile_id FK
+        varchar predicted_student
+        decimal confidence
+        boolean recognition_success
+        boolean admin_verified
+        datetime recognized_at
+    }
+
+    %% ==========================================================
+    %% 최종 점수 집계
+    %% ==========================================================
+    results_calculationrun ||--o{ results_scoreinput : inputs
+    rounds_roundparticipant |o--o{ results_scoreinput : individual_target
+    teams_team |o--o{ results_scoreinput : team_target
+
+    results_calculationrun {
+        bigint id PK
+        bigint round_id FK
+        varchar status
+        boolean is_active
+    }
+    results_scoreinput {
+        bigint id PK
+        bigint calculation_run_id FK
+        bigint participant_id FK
+        bigint team_id FK
+        varchar source_type
+        bigint source_id
+        decimal raw_score
+        decimal weight
+        varchar idempotency_key UK
+        datetime pushed_at
+        datetime created_at
+    }
+
+    %% ==========================================================
+    %% 설계 원칙
+    %% 1조 ATTENDANCES = 학습 게이미피케이션 출석/streak
+    %% 4조 ATTENDANCE_RECORDS = 실제 근태/얼굴인식 출결
+    %% 2조 SUBMISSION, 3조 PRD_Member_Evaluations는
+    %%    results_scoreinput에 논리적 source로 PUSH (물리 FK 없음)
+    %% ==========================================================
+```

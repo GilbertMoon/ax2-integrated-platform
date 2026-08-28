@@ -30,8 +30,6 @@
 
 ## 4. 산출물 / 근거
 - Issue: [#16 — DB Migration 준비 및 공통 VIEW 정리](https://github.com/GilbertMoon/ax2-integrated-platform/issues/16)
-- PR: 해당 없음
-- Commit: [main 브랜치](https://github.com/GilbertMoon/ax2-integrated-platform/tree/main)
 - 관련 문서:
   - [Daily Deliverables Guide](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/deliverables/README.md)
   - [P3 Daily Deliverables](https://github.com/GilbertMoon/ax2-integrated-platform/blob/main/docs/deliverables/P3_%EA%B9%80%EC%A2%85%EB%B3%B5/README.md)

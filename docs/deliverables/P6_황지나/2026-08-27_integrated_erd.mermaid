@@ -3,4 +3,616 @@ erDiagram
 %% ==========================================================
 %% 0. CORE (AX 평가 시스템 - 전체 구조)
 %% 8개 앱: accounts, rounds, teams, reviews, results, notifications, audit, notices
+%% ==========================================================
+accounts_user ||--o{ account_emailaddress : "보유"
+accounts_user ||--o{ rounds_roundparticipant : "참여 (user)"
+accounts_user ||--o{ rounds_evaluationround : "생성 (created_by)"
+accounts_user ||--o{ notices_notice : "생성 (created_by)"
+accounts_user ||--o{ notifications_notification : "수신 (recipient)"
+accounts_user ||--o{ audit_auditevent : "행위자 (actor)"
 
+rounds_evaluationround ||--o{ rounds_roundparticipant : "포함 (round)"
+rounds_evaluationround ||--o{ teams_team : "포함 (round)"
+rounds_evaluationround ||--o{ results_calculationrun : "채점 실행"
+rounds_evaluationround ||--o{ audit_auditevent : "감사 로그"
+
+rounds_roundparticipant |o--o| teams_teammembership : "소속 (1:0..1)"
+teams_team ||--o{ teams_teammembership : "포함"
+
+rounds_roundparticipant ||--o{ reviews_reviewsubmission : "평가자 (evaluator)"
+rounds_roundparticipant ||--o{ reviews_reviewsubmission : "대상 참가자 (target_participant)"
+teams_team ||--o{ reviews_reviewsubmission : "대상 팀 (target_team)"
+reviews_reviewsubmission ||--o{ reviews_reviewanswer : "답변 포함"
+rounds_templatequestion ||--o{ reviews_reviewanswer : "문항 참조"
+
+results_calculationrun ||--o{ results_evaluationresult : "결과 산출"
+teams_team ||--o{ results_evaluationresult : "팀 결과"
+
+accounts_user {
+    bigint id PK
+    varchar email UK
+    varchar password
+    varchar role "student/tutor/admin"
+    varchar approval_status
+}
+
+account_emailaddress {
+    bigint id PK
+    bigint user_id FK
+    varchar email
+    boolean verified
+    boolean primary
+}
+
+rounds_evaluationround {
+    bigint id PK
+    bigint created_by FK "accounts_user"
+    varchar title
+    varchar status "DRAFT/IN_PROGRESS/COMPLETED"
+    decimal team_score_weight "%"
+    decimal personal_score_weight "%"
+}
+
+rounds_roundparticipant {
+    bigint id PK
+    bigint user_id FK
+    bigint round_id FK "rounds_evaluationround"
+    varchar student_number_snapshot
+    varchar display_name_snapshot
+}
+
+rounds_templatequestion {
+    bigint id PK
+    text content
+}
+
+teams_team {
+    bigint id PK
+    bigint round_id FK "rounds_evaluationround"
+    int team_number
+    varchar name
+}
+
+teams_teammembership {
+    bigint id PK
+    bigint team_id FK
+    bigint participant_id "FK_UQ, rounds_roundparticipant"
+}
+
+reviews_reviewsubmission {
+    bigint id PK
+    varchar review_type "TEAM/PEER"
+    bigint evaluator_id FK "rounds_roundparticipant"
+    bigint target_team_id FK "teams_team"
+    bigint target_participant_id FK "rounds_roundparticipant"
+}
+
+reviews_reviewanswer {
+    bigint id PK
+    bigint submission_id FK "reviews_reviewsubmission"
+    bigint question_id FK "rounds_templatequestion"
+    int rating_value "1~5"
+}
+
+results_calculationrun {
+    bigint id PK
+    bigint round_id FK "rounds_evaluationround"
+    varchar status
+    boolean is_active
+}
+
+results_evaluationresult {
+    bigint id PK
+    bigint calculation_run_id FK "results_calculationrun"
+    bigint team_id FK "teams_team"
+    varchar result_type "TEAM/INDIVIDUAL"
+    decimal final_score_raw
+}
+
+notices_notice {
+    bigint id PK
+    bigint created_by_id FK "accounts_user"
+    boolean is_published
+}
+
+notifications_notification {
+    bigint id PK
+    bigint recipient_id FK "accounts_user"
+    varchar category
+}
+
+audit_auditevent {
+    bigint id PK
+    bigint round_id FK "rounds_evaluationround"
+    bigint actor_id FK "accounts_user"
+    varchar action
+}
+
+
+%% ==========================================================
+%% 1. 1조 - 냥이정원 (학습 게이미피케이션)
+%% CG_USERS = accounts_user 1:1 확장 프로필
+%% ==========================================================
+accounts_user ||--|| CG_USERS : "1:1 프로필 확장"
+CG_USERS ||--o{ ATTENDANCES : "checks_in"
+CG_USERS ||--o{ TASK_ATTEMPTS : "attempts"
+CG_USERS ||--o{ USER_PROFICIENCY : "has"
+CG_USERS ||--o{ ROOMS : "hosts"
+CG_USERS ||--o{ ROOM_PARTICIPANTS : "joins"
+CG_USERS ||--o{ RANKING_PARTICIPANTS : "joins"
+CG_USERS ||--o{ RANK_CHALLENGES : "attempts"
+CG_USERS ||--o{ INVENTORIES : "owns"
+CG_USERS ||--o{ USER_CATS : "adopts"
+teams_team ||--o{ ROOM_PARTICIPANTS : "배틀 참여 팀"
+
+CONCEPTS ||--o{ TASKS : "categorizes"
+CONCEPTS ||--o{ USER_PROFICIENCY : "measured_by"
+TASKS ||--o{ TASK_ATTEMPTS : "recorded_in"
+TASKS ||--o{ ROOM_TASKS : "selected_for"
+TASKS ||--o{ RANK_CHALLENGE_TASKS : "includes"
+ROOMS ||--o{ ROOM_PARTICIPANTS : "has_participants"
+ROOMS ||--o{ ROOM_TASKS : "assigns"
+RANKING_GROUPS ||--o{ RANKING_PARTICIPANTS : "includes"
+RANK_CHALLENGES ||--o{ RANK_CHALLENGE_TASKS : "consists_of"
+ITEMS ||--o{ INVENTORIES : "stored_in"
+ITEMS ||--o{ PLACED_OBJECTS : "used_as"
+CATS ||--o{ USER_CATS : "is_type_of"
+USER_CATS ||--o{ CAT_MEMORIES : "remembers"
+
+CG_USERS {
+    uuid id PK "accounts_user.id 와 동일 (1:1)"
+    string username
+    int balance
+    int mileage
+    int house_level
+    int wallpaper_item_id FK
+    int floor_item_id FK
+    datetime created_at
+}
+
+ATTENDANCES {
+    uuid id PK
+    uuid user_id FK
+    date check_in_date "UQ(user_id, check_in_date)"
+    int streak_count
+}
+
+CONCEPTS {
+    int id PK
+    string name "예: 변수, 반복문, 리스트"
+    string description
+}
+
+TASKS {
+    uuid id PK
+    int concept_id FK
+    string type "quiz, function"
+    string difficulty "기초, 응용, 도전"
+    text template_code
+    text test_cases
+    boolean is_active "소프트 삭제"
+}
+
+USER_PROFICIENCY {
+    uuid id PK
+    uuid user_id FK
+    int concept_id FK
+    int proficiency_level
+    datetime updated_at
+}
+
+TASK_ATTEMPTS {
+    uuid id PK
+    uuid user_id FK
+    uuid task_id FK
+    text submitted_code
+    string status "PENDING, SUCCESS, FAILED, ERROR"
+    boolean is_correct
+    text feedback_message
+    boolean used_hint
+    datetime attempted_at
+}
+
+ROOMS {
+    uuid id PK
+    uuid host_user_id FK
+    string title
+    string status "WAITING, IN_PROGRESS, FINISHED"
+    int max_participants
+    datetime created_at
+}
+
+ROOM_PARTICIPANTS {
+    uuid id PK
+    uuid room_id FK
+    uuid user_id FK
+    bigint team_id FK "teams_team 참조, NULL=개인전"
+    int current_score
+    boolean is_ready
+    datetime joined_at
+}
+
+ROOM_TASKS {
+    uuid id PK
+    uuid room_id FK
+    uuid task_id FK
+    int task_order
+}
+
+RANKING_GROUPS {
+    uuid id PK
+    string name
+    uuid owner_user_id FK
+}
+
+RANKING_PARTICIPANTS {
+    uuid id PK
+    uuid group_id FK
+    uuid user_id FK
+    int current_rank_score
+}
+
+RANK_CHALLENGES {
+    uuid id PK
+    uuid user_id FK
+    uuid group_id FK
+    string status "IN_PROGRESS, SUCCESS, FAILED, TIMEOUT"
+    datetime started_at
+    datetime expires_at "절대 만료 기준"
+}
+
+RANK_CHALLENGE_TASKS {
+    uuid id PK
+    uuid challenge_id FK
+    uuid task_id FK
+    boolean is_passed
+    text saved_code "이어하기용 임시 저장"
+    int task_order
+}
+
+ITEMS {
+    int id PK
+    string category "가구, 바닥/벽지, 고양이용품"
+    string name
+    int price
+    string image_url
+}
+
+INVENTORIES {
+    uuid id PK
+    uuid user_id FK
+    int item_id FK "UQ(user_id, item_id)"
+    int quantity
+}
+
+PLACED_OBJECTS {
+    uuid id PK
+    uuid house_id FK
+    int item_id FK
+    jsonb position_data "x, y, rotation"
+}
+
+CATS {
+    int id PK
+    string name
+    string persona "고양이 성격"
+    string rarity
+}
+
+USER_CATS {
+    uuid id PK
+    uuid user_id FK
+    int cat_id FK
+    int level
+}
+
+CAT_MEMORIES {
+    uuid id PK
+    uuid user_cat_id FK
+    text context_summary "AI 대화 요약본"
+    datetime created_at
+}
+
+
+%% ==========================================================
+%% 2. 2조 - 강의/과제/평가 시스템
+%% accounts_user, teams_team 은 코어 참조 (외부 테이블, 참조 전용)
+%% ==========================================================
+LECTURE ||--o{ LESSON : "포함"
+LESSON ||--o{ LESSON_MATERIAL : "교안 보유"
+accounts_user ||--o{ ASSIGNMENT : "생성 (튜터)"
+accounts_user ||--o{ SUBMISSION : "제출 (개인 과제)"
+accounts_user ||--o{ TODO : "소유"
+teams_team ||--o{ SUBMISSION : "제출 (팀 과제, 팀장만)"
+ASSIGNMENT ||--o{ SUBMISSION : "포함"
+SUBMISSION ||--o{ SUBMISSION_FILE : "첨부"
+SUBMISSION ||--o| AI_EVALUATION : "AI 1차 평가"
+SUBMISSION ||--o| EVALUATION : "튜터 공식 평가"
+
+LECTURE {
+    int id PK
+    string title "BR-001: 시스템 내 항상 1행"
+    datetime created_at
+}
+
+LESSON {
+    int id PK
+    int lecture_id FK
+    string title
+    date lesson_date
+    string blog_link
+    string video_url "수업 종료 후 추가, nullable"
+    datetime created_at
+}
+
+LESSON_MATERIAL {
+    int id PK
+    int lesson_id FK
+    string kind "FILE or LINK"
+    string file_url
+    string link_url
+    string title
+}
+
+ASSIGNMENT {
+    int id PK
+    string title
+    string description
+    datetime due_at
+    boolean is_required
+    boolean allow_late
+    boolean is_team "true=팀 과제"
+    int created_by FK "accounts_user (튜터)"
+    datetime created_at
+    datetime updated_at
+    datetime deleted_at "소프트 삭제"
+}
+
+SUBMISSION {
+    int id PK
+    int assignment_id FK
+    int student_id FK "accounts_user, 개인 과제"
+    int team_id FK "teams_team, 팀 과제(팀장만)"
+    string description
+    datetime submitted_at
+    boolean is_locked "평가 저장 시 true"
+    int final_score "EVALUATION.score 캐시값"
+}
+
+SUBMISSION_FILE {
+    int id PK
+    int submission_id FK
+    string kind "PY/IPYNB/OTHER"
+    string file_url
+    string file_name
+    int file_size
+}
+
+AI_EVALUATION {
+    int id PK
+    int submission_id FK "UQ, 제출물당 1행"
+    int score "0~100"
+    string comment
+    datetime updated_at
+}
+
+EVALUATION {
+    int id PK
+    int submission_id FK "UQ, 제출물당 1행"
+    int score "0~100, SUBMISSION.final_score 동기화"
+    string feedback
+    datetime created_at
+    datetime updated_at
+}
+
+TODO {
+    int id PK
+    int student_id FK "accounts_user"
+    string content
+    boolean is_done
+    datetime created_at
+}
+
+
+%% ==========================================================
+%% 3. 3조 - PRD / 아이디어 개발 시스템
+%% ==========================================================
+Templates ||--|{ Template_Sections : "항목 포함"
+Template_Sections ||--|{ Template_Questions : "세부 질문 포함"
+Templates ||--o{ PRDs : "PRD 생성 시 복사됨"
+
+accounts_user ||--o{ PRDs : "작성 (소유자)"
+rounds_roundparticipant ||--o{ PRDs : "소속 회차 (개인용은 Null)"
+teams_team ||--o{ PRDs : "소속 팀 (개인용은 Null)"
+accounts_user ||--o{ PRD_Permissions : "권한을 받은 사람"
+accounts_user ||--o{ PRD_Comments : "의견 작성"
+accounts_user ||--o{ Post_its : "포스트잇 작성"
+accounts_user ||--o{ AI_Usage_Logs : "API 호출"
+accounts_user ||--o{ AI_Chat_Histories : "채팅 작성자"
+accounts_user ||--o{ PRD_Member_Evaluations : "평가 대상"
+
+PRDs ||--|{ PRD_Sections : "항목 구성"
+PRD_Sections ||--|{ PRD_Questions : "질문 구성"
+PRDs ||--o{ PRD_Permissions : "개별 권한 부여 내역"
+PRDs ||--o{ PRD_Comments : "PRD 전체 의견"
+PRD_Sections ||--o{ PRD_Comments : "특정 항목 의견"
+PRDs ||--o| Brainstorm_Boards : "1:1 종속"
+Brainstorm_Boards ||--o{ Brainstorm_Categories : "분할 칸 생성"
+Brainstorm_Boards ||--o{ Post_its : "포스트잇 생성"
+Brainstorm_Categories ||--o{ Post_its : "특정 칸으로 분류"
+PRDs ||--o{ AI_Usage_Logs : "호출된 PRD"
+PRDs ||--o{ PRD_Member_Evaluations : "학생 평가 내역"
+PRD_Sections ||--o{ PRD_Edit_Histories : "항목별 첨삭 이력"
+PRDs ||--o{ AI_Chat_Histories : "AI 채팅 내역"
+
+Templates {
+    bigint template_id PK
+    string type_name "신규, 개선, 기존기능"
+}
+
+Template_Sections {
+    bigint template_section_id PK
+    bigint template_id FK
+    string title
+    string guidance
+    int order_num
+}
+
+Template_Questions {
+    bigint template_question_id PK
+    bigint template_section_id FK
+    string title
+    int order_num
+}
+
+PRDs {
+    bigint prd_id PK
+    bigint template_id FK
+    bigint user_id FK "accounts_user 참조"
+    bigint round_id FK "rounds_roundparticipant 참조, Nullable"
+    bigint team_id FK "teams_team 참조, Nullable"
+    string title
+    string status "진행중, 드랍 등"
+    date deadline
+    boolean is_deleted
+    datetime created_at
+    datetime updated_at
+}
+
+PRD_Permissions {
+    bigint permission_id PK
+    bigint prd_id FK
+    bigint target_user_id FK "공유받는 유저"
+    string role "VIEWER / COMMENTER / EDITOR"
+    datetime created_at
+}
+
+PRD_Sections {
+    bigint section_id PK
+    bigint prd_id FK
+    string title
+    string guidance
+    boolean is_completed
+    boolean is_held
+    boolean is_deleted
+    int order_num
+}
+
+PRD_Questions {
+    bigint question_id PK
+    bigint section_id FK
+    string title
+    text answer
+    boolean is_held
+    boolean is_deleted
+    int order_num
+}
+
+PRD_Comments {
+    bigint comment_id PK
+    bigint prd_id FK
+    bigint section_id FK "Nullable"
+    bigint user_id FK
+    text content
+    datetime created_at
+}
+
+Brainstorm_Boards {
+    bigint board_id PK
+    bigint prd_id FK
+}
+
+Brainstorm_Categories {
+    bigint category_id PK
+    bigint board_id FK
+    string title "예: 해결할 문제"
+}
+
+Post_its {
+    bigint post_it_id PK
+    bigint board_id FK
+    bigint category_id FK "Nullable"
+    bigint user_id FK
+    text content
+    string color
+    float pos_x
+    float pos_y
+    string status "PENDING / ACCEPTED"
+}
+
+AI_Usage_Logs {
+    bigint log_id PK
+    bigint user_id FK
+    bigint prd_id FK "Nullable"
+    string feature_type "CHAT / COACHING"
+    int total_tokens
+    datetime created_at
+}
+
+AI_Prompts {
+    bigint prompt_id PK
+    string feature_type
+    text system_instruction
+    string version
+    boolean is_active
+}
+
+PRD_Member_Evaluations {
+    bigint evaluation_id PK
+    bigint prd_id FK
+    bigint user_id FK "평가 대상 학생"
+    int total_post_its
+    int accepted_post_its
+    int total_comments
+    float reflection_rate
+    int total_score
+    text ai_comment
+    datetime created_at
+}
+
+PRD_Edit_Histories {
+    bigint history_id PK
+    bigint section_id FK
+    string edit_type "AI_COACHING / USER_EDIT"
+    text before_content
+    text after_content
+    datetime created_at
+}
+
+AI_Chat_Histories {
+    bigint chat_id PK
+    bigint prd_id FK
+    bigint section_id FK "Nullable"
+    bigint user_id FK
+    json chat_data
+    datetime created_at
+    date expires_at
+}
+
+
+%% ==========================================================
+%% 4. 최종 점수 집계 (코어 CalculationRun이 2조·3조 점수를 입력값으로 흡수)
+%% SUBMISSION, PRD_Member_Evaluations 는 다른 조 소유 앱이라 물리적 FK를
+%% 걸 수 없으므로, source_type/source_id로 스냅샷을 남기는 방식 제안
+%% 수집 방식: 2조/3조가 점수 확정 시 코어로 PUSH (코어가 pull 하지 않음)
+%% ==========================================================
+results_calculationrun ||--o{ results_scoreinput : "입력값 수집"
+results_scoreinput }o--o| rounds_roundparticipant : "개인 대상"
+results_scoreinput }o--o| teams_team : "팀 대상"
+SUBMISSION ||..o{ results_scoreinput : "확정 시 push (2조, FK 아님)"
+PRD_Member_Evaluations ||..o{ results_scoreinput : "확정 시 push (3조, FK 아님)"
+reviews_reviewanswer ||..o{ results_scoreinput : "논리적 참조 (동료평가)"
+
+results_scoreinput {
+    bigint id PK
+    bigint calculation_run_id FK "results_calculationrun"
+    bigint participant_id FK "rounds_roundparticipant, Nullable"
+    bigint team_id FK "teams_team, Nullable"
+    varchar source_type "REVIEW / ASSIGNMENT / PRD"
+    bigint source_id "SUBMISSION.id 또는 PRD_Member_Evaluations.id (FK 아님, 스냅샷)"
+    decimal raw_score "원본 점수 (스냅샷, 원본 수정돼도 재동기화 안 함)"
+    decimal weight "이 회차에서 이 점수의 반영 가중치 %, 회차마다 다르게 설정 가능"
+    varchar idempotency_key UK "중복 push 방지 (source_type+source_id+run_id 조합 등)"
+    datetime pushed_at "2조/3조로부터 수신한 시각"
+    datetime created_at
+}

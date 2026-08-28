@@ -1,8 +1,14 @@
 ```mermaid
 erDiagram
     %% ==========================================================
-    %% CORE
+    %% CORE — 공통 사용자 / Round / Team
     %% ==========================================================
+    %% 결정사항:
+    %% accounts_user.id = 사용자/학생 공통 Master ID
+    %% rounds_roundparticipant.id = 특정 평가 Round의 참가 이력
+    %% 근태/얼굴인식 = accounts_user.id 기준
+    %% Round/Team 이력이 필요한 기능만 rounds_roundparticipant 참조
+
     accounts_user ||--o{ rounds_roundparticipant : participates
     accounts_user ||--o{ rounds_evaluationround : creates
     rounds_evaluationround ||--o{ rounds_roundparticipant : contains
@@ -15,7 +21,7 @@ erDiagram
     rounds_evaluationround ||--o{ results_calculationrun : calculates
 
     accounts_user {
-        bigint id PK
+        bigint id PK "공통 Master ID"
         varchar email UK
         varchar password
         varchar role
@@ -30,8 +36,8 @@ erDiagram
         decimal personal_score_weight
     }
     rounds_roundparticipant {
-        bigint id PK
-        bigint user_id FK
+        bigint id PK "Round 참가 이력 ID"
+        bigint user_id FK "accounts_user.id"
         bigint round_id FK
         varchar student_number_snapshot
         varchar display_name_snapshot
@@ -50,17 +56,19 @@ erDiagram
 
     %% ==========================================================
     %% 1조 - 학습 게이미피케이션
+    %% User는 accounts_user.id 기준
+    %% 학습 출석은 4조 실제 근태와 분리
     %% ==========================================================
     accounts_user ||--|| CG_USERS : extends
-    CG_USERS ||--o{ ATTENDANCES : learning_attendance
-    CG_USERS ||--o{ TASK_ATTEMPTS : attempts
-    CG_USERS ||--o{ USER_PROFICIENCY : has
-    CG_USERS ||--o{ ROOMS : hosts
-    CG_USERS ||--o{ ROOM_PARTICIPANTS : joins
-    CG_USERS ||--o{ RANKING_PARTICIPANTS : joins
-    CG_USERS ||--o{ RANK_CHALLENGES : attempts
-    CG_USERS ||--o{ INVENTORIES : owns
-    CG_USERS ||--o{ USER_CATS : adopts
+    accounts_user ||--o{ ATTENDANCES : learning_attendance
+    accounts_user ||--o{ TASK_ATTEMPTS : attempts
+    accounts_user ||--o{ USER_PROFICIENCY : has
+    accounts_user ||--o{ ROOMS : hosts
+    accounts_user ||--o{ ROOM_PARTICIPANTS : joins
+    accounts_user ||--o{ RANKING_PARTICIPANTS : joins
+    accounts_user ||--o{ RANK_CHALLENGES : attempts
+    accounts_user ||--o{ INVENTORIES : owns
+    accounts_user ||--o{ USER_CATS : adopts
     teams_team ||--o{ ROOM_PARTICIPANTS : team_participation
     CONCEPTS ||--o{ TASKS : categorizes
     CONCEPTS ||--o{ USER_PROFICIENCY : measures
@@ -77,6 +85,7 @@ erDiagram
 
     CG_USERS {
         uuid id PK
+        bigint user_id FK "accounts_user.id"
         string username
         int balance
         int mileage
@@ -85,7 +94,7 @@ erDiagram
     }
     ATTENDANCES {
         uuid id PK
-        uuid user_id FK
+        bigint user_id FK "accounts_user.id"
         date check_in_date UK
         int streak_count
     }
@@ -105,14 +114,14 @@ erDiagram
     }
     USER_PROFICIENCY {
         uuid id PK
-        uuid user_id FK
+        bigint user_id FK "accounts_user.id"
         int concept_id FK
         int proficiency_level
         datetime updated_at
     }
     TASK_ATTEMPTS {
         uuid id PK
-        uuid user_id FK
+        bigint user_id FK "accounts_user.id"
         uuid task_id FK
         text submitted_code
         string status
@@ -121,7 +130,7 @@ erDiagram
     }
     ROOMS {
         uuid id PK
-        uuid host_user_id FK
+        bigint host_user_id FK "accounts_user.id"
         string title
         string status
         int max_participants
@@ -130,7 +139,7 @@ erDiagram
     ROOM_PARTICIPANTS {
         uuid id PK
         uuid room_id FK
-        uuid user_id FK
+        bigint user_id FK "accounts_user.id"
         bigint team_id FK
         int current_score
         boolean is_ready
@@ -145,17 +154,17 @@ erDiagram
     RANKING_GROUPS {
         uuid id PK
         string name
-        uuid owner_user_id FK
+        bigint owner_user_id FK "accounts_user.id"
     }
     RANKING_PARTICIPANTS {
         uuid id PK
         uuid group_id FK
-        uuid user_id FK
+        bigint user_id FK "accounts_user.id"
         int current_rank_score
     }
     RANK_CHALLENGES {
         uuid id PK
-        uuid user_id FK
+        bigint user_id FK "accounts_user.id"
         uuid group_id FK
         string status
         datetime started_at
@@ -177,7 +186,7 @@ erDiagram
     }
     INVENTORIES {
         uuid id PK
-        uuid user_id FK
+        bigint user_id FK "accounts_user.id"
         int item_id FK
         int quantity
     }
@@ -189,7 +198,7 @@ erDiagram
     }
     USER_CATS {
         uuid id PK
-        uuid user_id FK
+        bigint user_id FK "accounts_user.id"
         int cat_id FK
         int level
     }
@@ -202,6 +211,7 @@ erDiagram
 
     %% ==========================================================
     %% 2조 - 강의/과제/평가
+    %% User 관련 FK는 accounts_user.id 기준
     %% ==========================================================
     LECTURE ||--o{ LESSON : contains
     LESSON ||--o{ LESSON_MATERIAL : materials
@@ -244,7 +254,7 @@ erDiagram
         boolean is_required
         boolean allow_late
         boolean is_team
-        bigint created_by FK
+        bigint created_by FK "accounts_user.id"
         datetime created_at
         datetime updated_at
         datetime deleted_at
@@ -252,7 +262,7 @@ erDiagram
     SUBMISSION {
         int id PK
         int assignment_id FK
-        bigint student_id FK
+        bigint student_id FK "accounts_user.id"
         bigint team_id FK
         string description
         datetime submitted_at
@@ -284,7 +294,7 @@ erDiagram
     }
     TODO {
         int id PK
-        bigint student_id FK
+        bigint student_id FK "accounts_user.id"
         string content
         boolean is_done
         datetime created_at
@@ -292,6 +302,7 @@ erDiagram
 
     %% ==========================================================
     %% 3조 - PRD / 아이디어 개발
+    %% Round/Team context가 필요한 PRD만 해당 FK 참조
     %% ==========================================================
     Templates ||--|{ Template_Sections : contains
     Template_Sections ||--|{ Template_Questions : contains
@@ -339,9 +350,9 @@ erDiagram
     PRDs {
         bigint prd_id PK
         bigint template_id FK
-        bigint user_id FK
-        bigint round_id FK
-        bigint team_id FK
+        bigint user_id FK "accounts_user.id"
+        bigint round_id FK "rounds_evaluationround.id"
+        bigint team_id FK "teams_team.id"
         string title
         string status
         date deadline
@@ -352,7 +363,7 @@ erDiagram
     PRD_Permissions {
         bigint permission_id PK
         bigint prd_id FK
-        bigint target_user_id FK
+        bigint target_user_id FK "accounts_user.id"
         string role
         datetime created_at
     }
@@ -379,7 +390,7 @@ erDiagram
         bigint comment_id PK
         bigint prd_id FK
         bigint section_id FK
-        bigint user_id FK
+        bigint user_id FK "accounts_user.id"
         text content
         datetime created_at
     }
@@ -396,7 +407,7 @@ erDiagram
         bigint post_it_id PK
         bigint board_id FK
         bigint category_id FK
-        bigint user_id FK
+        bigint user_id FK "accounts_user.id"
         text content
         string color
         float pos_x
@@ -405,7 +416,7 @@ erDiagram
     }
     AI_Usage_Logs {
         bigint log_id PK
-        bigint user_id FK
+        bigint user_id FK "accounts_user.id"
         bigint prd_id FK
         string feature_type
         int total_tokens
@@ -415,7 +426,7 @@ erDiagram
         bigint chat_id PK
         bigint prd_id FK
         bigint section_id FK
-        bigint user_id FK
+        bigint user_id FK "accounts_user.id"
         json chat_data
         datetime created_at
         date expires_at
@@ -423,7 +434,7 @@ erDiagram
     PRD_Member_Evaluations {
         bigint evaluation_id PK
         bigint prd_id FK
-        bigint user_id FK
+        bigint user_id FK "accounts_user.id"
         int total_post_its
         int accepted_post_its
         int total_comments
@@ -442,18 +453,22 @@ erDiagram
     }
 
     %% ==========================================================
-    %% 4조 신규 - 실제 근태 / 얼굴인식 Domain
-    %% 학습 출석 ATTENDANCES와 별도 Domain
+    %% 4조 - 실제 근태 / 얼굴인식
+    %% 반드시 accounts_user.id를 사용자 식별 기준으로 사용
+    %% Round/Team 이력이 필요한 경우에만 participant를 연결
     %% ==========================================================
-    rounds_roundparticipant ||--o{ ATTENDANCE_RECORDS : actual_attendance
+    accounts_user ||--o{ ATTENDANCE_RECORDS : actual_attendance
+    accounts_user ||--o{ STUDENT_FACE_PROFILES : face_profile
     ATTENDANCE_RECORDS ||--o{ FACE_RECOGNITION_LOGS : recognition
     STUDENT_FACE_PROFILES ||--o{ FACE_RECOGNITION_LOGS : matched_profile
-    rounds_roundparticipant ||--o{ STUDENT_FACE_PROFILES : registers
     STUDENT_FACE_PROFILES ||--o{ FACE_IMAGES : stores
+    rounds_roundparticipant |o--o{ ATTENDANCE_RECORDS : optional_round_history
+    rounds_roundparticipant |o--o{ STUDENT_FACE_PROFILES : optional_round_history
 
     ATTENDANCE_RECORDS {
         bigint id PK
-        bigint participant_id FK
+        bigint user_id FK "accounts_user.id"
+        bigint participant_id FK "optional: rounds_roundparticipant.id"
         date attendance_date
         datetime check_in_at
         datetime check_out_at
@@ -461,7 +476,8 @@ erDiagram
     }
     STUDENT_FACE_PROFILES {
         bigint id PK
-        bigint participant_id FK
+        bigint user_id FK "accounts_user.id"
+        bigint participant_id FK "optional: rounds_roundparticipant.id"
         varchar profile_status
         datetime registered_at
     }
@@ -475,10 +491,13 @@ erDiagram
         bigint id PK
         bigint attendance_id FK
         bigint face_profile_id FK
-        varchar predicted_student
+        bigint predicted_user_id FK "accounts_user.id"
         decimal confidence
         boolean recognition_success
         boolean admin_verified
+        bigint verified_user_id FK "accounts_user.id"
+        bigint verified_by FK "accounts_user.id"
+        datetime verified_at
         datetime recognized_at
     }
 
@@ -511,9 +530,13 @@ erDiagram
 
     %% ==========================================================
     %% 설계 원칙
-    %% 1조 ATTENDANCES = 학습 게이미피케이션 출석/streak
-    %% 4조 ATTENDANCE_RECORDS = 실제 근태/얼굴인식 출결
-    %% 2조 SUBMISSION, 3조 PRD_Member_Evaluations는
-    %%    results_scoreinput에 논리적 source로 PUSH (물리 FK 없음)
     %% ==========================================================
+    %% 1. accounts_user.id = 사용자/학생 공통 Master ID
+    %% 2. rounds_roundparticipant.id = 특정 평가 Round의 참가 이력
+    %% 3. 근태/얼굴인식 = accounts_user.id 기준
+    %% 4. Round/Team 이력이 필요한 기능만 rounds_roundparticipant 참조
+    %% 5. 1조 ATTENDANCES = 학습 출석/streak
+    %% 6. 4조 ATTENDANCE_RECORDS = 실제 근태/얼굴인식 출결
+    %% 7. User와 Student가 충돌/중복되는 경우 accounts_user를 공통 기준으로 사용
+    %% 8. 각 조의 고유 Domain은 유지하고 필요한 Core만 FK로 연결
 ```

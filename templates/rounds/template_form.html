@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}{% if template %}문항 템플릿 편집{% else %}새 문항 템플릿{% endif %} | AX Evaluation Console{% endblock %}
+{% block breadcrumb %}문항 템플릿 / {% if template %}{{ template.name }}{% else %}새 템플릿{% endif %}{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{% if template %}{{ template.name }}{% else %}새 문항 템플릿{% endif %}</h1>
+      <p class="page-desc">1~5점 문항이 최소 한 개 있어야 회차를 시작할 수 있습니다.</p>
+    </div>
+    <a href="{% url 'rounds:template-list' %}" class="btn btn-ax-secondary">목록으로</a>
+  </div>
+  {% if locked %}
+    <div class="alert alert-warning">
+      <i class="bi bi-lock-fill"></i>
+      시작된 회차가 이 템플릿을 사용하고 있어 읽기 전용입니다. 문항을 바꾸려면 복제해서 새 템플릿으로 쓰세요.
+    </div>
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="row g-4">
+      <div class="col-12 col-lg-4">
+        <section class="card-custom">
+          <div class="card-header-custom">
+            <div class="card-title-custom">기본 정보</div>
+          </div>
+          <div class="card-body-custom">
+            {% for field in form %}
+              <div class="mb-3">
+                <label class="form-label small fw-bold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+              </div>
+            {% endfor %}
+            {% for error in form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ error }}</div>{% endfor %}
+          </div>
+        </section>
+      </div>
+      <div class="col-12 col-lg-8">
+        <section class="card-custom">
+          <div class="card-header-custom">
+            <div class="card-title-custom">문항</div>
+            <span class="text-muted font-size-115">위에서 아래 순서로 표시됩니다</span>
+          </div>
+          <div class="table-responsive">
+            {{ formset.management_form }}
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th scope="col" class="text-end">순서</th>
+                  <th scope="col">문항</th>
+                  <th scope="col">응답 형식</th>
+                  <th scope="col">역량</th>
+                  <th scope="col" class="text-center">필수</th>
+                  <th scope="col" class="text-center">삭제</th>
+                </tr>
+              </thead>
+              <tbody id="questionRows">
+                {% for question_form in formset %}
+                  <tr>
+                    <td class="text-end text-muted question-order">{{ forloop.counter }}</td>
+                    <td>
+                      {{ question_form.id }}
+                      {{ question_form.prompt }}
+                      {% for error in question_form.prompt.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    </td>
+                    <td>{{ question_form.response_type }}</td>
+                    <td>{{ question_form.competency }}</td>
+                    <td class="text-center">{{ question_form.is_required }}</td>
+                    <td class="text-center">
+                      {% comment %}저장된 문항은 DELETE 체크박스를 숨겨 두고 버튼이 대신 켠다.{% endcomment %}
+                      <span class="d-none">{% if question_form.instance.pk %}{{ question_form.DELETE }}{% endif %}</span>
+                      {% if not locked %}
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger ax-remove-question"
+                                aria-label="문항 삭제"
+                                title="문항 삭제">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% for error in formset.non_form_errors %}
+            <div class="card-body-custom pt-0">
+              <div class="alert alert-danger py-2 small mb-0">{{ error }}</div>
+            </div>
+          {% endfor %}
+          <div class="card-body-custom d-flex justify-content-between align-items-center gap-2">
+            <p class="text-muted font-size-115 mb-0">빈 문항 줄은 저장할 때 무시됩니다.</p>
+            {% if not locked %}
+              <button type="button" class="btn btn-ax-secondary btn-sm" id="addQuestionRow">
+                <i class="bi bi-plus-lg me-1"></i>문항 줄 추가
+              </button>
+            {% endif %}
+          </div>
+        </section>
+        {% if not locked %}
+          <button type="submit" class="btn btn-ax-primary w-100 py-2">저장</button>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+  {% if not locked %}
+    {% comment %}빈 폼 한 벌을 숨겨 두고, 줄 추가는 이걸 복제해서 만든다.
+    Django 폼셋은 __prefix__ 자리에 새 인덱스를 넣으면 그대로 인식한다.{% endcomment %}
+    <template id="questionRowTemplate">
+      <tr>
+        <td class="text-end text-muted question-order"></td>
+        <td>{{ formset.empty_form.prompt }}</td>
+        <td>{{ formset.empty_form.response_type }}</td>
+        <td>{{ formset.empty_form.competency }}</td>
+        <td class="text-center">{{ formset.empty_form.is_required }}</td>
+        <td class="text-center">
+          <button type="button"
+                  class="btn btn-sm btn-outline-danger ax-remove-question"
+                  aria-label="문항 삭제"
+                  title="문항 삭제">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </template>
+  {% endif %}
+{% endblock %}
+{% block extra_js %}
+  <script>
+  (() => {
+    const addButton = document.getElementById('addQuestionRow');
+    const rowTemplate = document.getElementById('questionRowTemplate');
+    const rows = document.getElementById('questionRows');
+    const totalForms = document.querySelector("[name$='-TOTAL_FORMS']");
+    if (!rows) return;
+
+    const renumber = () => {
+      let order = 0;
+      rows.querySelectorAll('tr').forEach((row) => {
+        if (row.classList.contains('d-none')) return;
+        order += 1;
+        const cell = row.querySelector('.question-order');
+        if (cell) cell.textContent = String(order);
+      });
+    };
+
+    // 문항 줄 삭제. 저장된 문항은 DELETE 체크박스를 켜서 저장 때 지우고, 아직 저장되지 않은
+    // 줄은 내용을 비워 둔다 - 빈 줄은 저장에서 무시되므로 인덱스를 건드리지 않아도 된다.
+    const removeRow = (row) => {
+      const promptField = row.querySelector("[name$='-prompt']");
+      const deleteField = row.querySelector("[name$='-DELETE']");
+      const hasText = Boolean(promptField && promptField.value.trim());
+      if (hasText && !window.confirm('이 문항을 삭제할까요?')) return;
+      if (deleteField) {
+        deleteField.checked = true;
+      } else if (promptField) {
+        promptField.value = '';
+      }
+      row.classList.add('d-none');
+      renumber();
+    };
+
+    rows.addEventListener('click', (event) => {
+      const button = event.target.closest('.ax-remove-question');
+      if (button) removeRow(button.closest('tr'));
+    });
+
+    if (!addButton || !rowTemplate || !totalForms) return;
+
+    addButton.addEventListener('click', () => {
+      const index = Number(totalForms.value);
+      const row = rowTemplate.content.firstElementChild.cloneNode(true);
+      row.querySelectorAll('[name], [id]').forEach((field) => {
+        if (field.name) field.name = field.name.replace(/__prefix__/g, index);
+        if (field.id) field.id = field.id.replace(/__prefix__/g, index);
+      });
+      rows.appendChild(row);
+      totalForms.value = String(index + 1);
+      renumber();
+      row.querySelector("[name$='-prompt']")?.focus();
+    });
+  })();
+  </script>
+{% endblock %}

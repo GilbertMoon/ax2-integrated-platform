@@ -1,0 +1,299 @@
+from django.conf import settings
+from django.db import models
+from django.db.models import Q
+
+
+class ReviewSubmission(models.Model):
+    class ReviewType(models.TextChoices):
+        TEAM = "TEAM", "팀 평가"
+        PEER = "PEER", "개인 평가"
+
+    round = models.ForeignKey(
+        "rounds.EvaluationRound", on_delete=models.PROTECT, related_name="review_submissions"
+    )
+    review_type = models.CharField(max_length=8, choices=ReviewType.choices)
+    evaluator = models.ForeignKey(
+        "rounds.RoundParticipant",
+        on_delete=models.PROTECT,
+        related_name="written_reviews",
+    )
+    target_team = models.ForeignKey(
+        "teams.Team",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="received_reviews",
+    )
+    target_participant = models.ForeignKey(
+        "rounds.RoundParticipant",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="received_peer_reviews",
+    )
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    locked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=(
+            "건별 확정 시각. 유형 전체를 잠그는 ReviewFinalSubmission과 달리, "
+            "이 건 하나만 더 이상 고칠 수 없게 한다(현재는 개인 평가에서만 쓴다)."
+        ),
+    )
+
+    class Meta:
+        verbose_name = "평가 제출"
+        verbose_name_plural = "평가 제출 목록"
+        ordering = ("submitted_at",)
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        review_type="TEAM",
+                        target_team__isnull=False,
+                        target_participant__isnull=True,
+                    )
+                    | Q(
+                        review_type="PEER",
+                        target_team__isnull=True,
+                        target_participant__isnull=False,
+                    )
+                ),
+                name="reviews_submission_target_matches_type",
+            ),
+            models.CheckConstraint(
+                condition=Q(target_participant__isnull=True)
+                | ~Q(evaluator=models.F("target_participant")),
+                name="reviews_no_self_peer_review",
+            ),
+            models.UniqueConstraint(
+                fields=("round", "evaluator", "target_team"),
+                condition=Q(review_type="TEAM"),
+                name="reviews_team_target_unique",
+            ),
+            models.UniqueConstraint(
+                fields=("round", "evaluator", "target_participant"),
+                condition=Q(review_type="PEER"),
+                name="reviews_peer_target_unique",
+            ),
+        ]
+
+    def __str__(self):
+        target = self.target_team or self.target_participant
+        return f"{self.evaluator} → {target}"
+
+
+class ReviewAnswer(models.Model):
+    submission = models.ForeignKey(
+        ReviewSubmission, on_delete=models.CASCADE, related_name="answers"
+    )
+    question = models.ForeignKey(
+        "rounds.TemplateQuestion", on_delete=models.PROTECT, related_name="answers"
+    )
+    rating_value = models.PositiveSmallIntegerField(null=True, blank=True)
+    text_value = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "평가 응답"
+        verbose_name_plural = "평가 응답 목록"
+        ordering = ("question__display_order",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=("submission", "question"), name="reviews_answer_question_unique"
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(rating_value__isnull=False, text_value="")
+                    | (Q(rating_value__isnull=True) & ~Q(text_value=""))
+                ),
+                name="reviews_answer_exactly_one_value",
+            ),
+            models.CheckConstraint(
+                condition=Q(rating_value__isnull=True)
+                | Q(rating_value__gte=1, rating_value__lte=5),
+                name="reviews_answer_rating_range",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.submission_id}:{self.question_id}"
+
+
+class ReviewFinalSubmission(models.Model):
+    """평가 유형별 최종 제출 기록.
+
+    개별 제출은 최종 제출 전까지 다시 저장할 수 있고, 이 기록이 생기면 해당 유형의
+    평가가 잠긴다. 유형별로 한 번만 남는다.
+    """
+
+    round = models.ForeignKey(
+        "rounds.EvaluationRound",
+        on_delete=models.PROTECT,
+        related_name="review_final_submissions",
+    )
+    evaluator = models.ForeignKey(
+        "rounds.RoundParticipant",
+        on_delete=models.PROTECT,
+        related_name="review_final_submissions",
+    )
+    review_type = models.CharField(max_length=8, choices=ReviewSubmission.ReviewType.choices)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "최종 제출"
+        verbose_name_plural = "최종 제출 목록"
+        constraints = [
+            models.UniqueConstraint(
+                fields=("round", "evaluator", "review_type"),
+                name="reviews_final_submission_unique",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.evaluator_id}:{self.review_type}:final"
+
+
+class TutorReview(models.Model):
+    """튜터가 수강생 한 명에게 남기는 개인 평가.
+
+    학생끼리 하는 개인 평가(ReviewSubmission)와 저장을 분리한다 - 평가자가 회차 참가자가
+    아니라 튜터 계정이고, 최종점수 계산에는 아직 반영하지 않기 때문이다(results.services의
+    TUTOR_WEIGHT 참고 - 비율이 팀 협의로 확정되면 그때 계산에 연결한다).
+
+    같은 튜터가 같은 학생을 두 번 만들지 않도록 회차·튜터·대상 조합을 유니크로 묶는다.
+    """
+
+    round = models.ForeignKey(
+        "rounds.EvaluationRound", on_delete=models.PROTECT, related_name="tutor_reviews"
+    )
+    evaluator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="tutor_reviews"
+    )
+    target_participant = models.ForeignKey(
+        "rounds.RoundParticipant",
+        on_delete=models.PROTECT,
+        related_name="received_tutor_reviews",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "튜터 개인평가"
+        verbose_name_plural = "튜터 개인평가 목록"
+        ordering = ("target_participant__student_number_snapshot", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("round", "evaluator", "target_participant"),
+                name="reviews_tutor_review_target_unique",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.evaluator} → {self.target_participant} (튜터)"
+
+
+class TutorReviewAnswer(models.Model):
+    review = models.ForeignKey(TutorReview, on_delete=models.CASCADE, related_name="answers")
+    question = models.ForeignKey(
+        "rounds.TemplateQuestion", on_delete=models.PROTECT, related_name="tutor_answers"
+    )
+    rating_value = models.PositiveSmallIntegerField(null=True, blank=True)
+    text_value = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "튜터 개인평가 응답"
+        verbose_name_plural = "튜터 개인평가 응답 목록"
+        ordering = ("question__display_order",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=("review", "question"), name="reviews_tutor_answer_question_unique"
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(rating_value__isnull=False, text_value="")
+                    | (Q(rating_value__isnull=True) & ~Q(text_value=""))
+                ),
+                name="reviews_tutor_answer_exactly_one_value",
+            ),
+            models.CheckConstraint(
+                condition=Q(rating_value__isnull=True)
+                | Q(rating_value__gte=1, rating_value__lte=5),
+                name="reviews_tutor_answer_rating_range",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.review_id}:{self.question_id}"
+
+
+class TutorTeamReview(models.Model):
+    """튜터가 팀 하나에 남기는 팀 평가.
+
+    학생끼리 하는 팀 평가(ReviewSubmission)와 저장을 분리한다 - 평가자가 회차 참가자가
+    아니라 튜터 계정이기 때문이다. TutorReview(개인평가)와 짝을 이루는 팀 단위 버전이다.
+    """
+
+    round = models.ForeignKey(
+        "rounds.EvaluationRound", on_delete=models.PROTECT, related_name="tutor_team_reviews"
+    )
+    evaluator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="tutor_team_reviews"
+    )
+    target_team = models.ForeignKey(
+        "teams.Team",
+        on_delete=models.PROTECT,
+        related_name="received_tutor_reviews",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "튜터 팀평가"
+        verbose_name_plural = "튜터 팀평가 목록"
+        ordering = ("target_team__team_number", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("round", "evaluator", "target_team"),
+                name="reviews_tutor_team_review_target_unique",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.evaluator} → {self.target_team} (튜터 팀평가)"
+
+
+class TutorTeamReviewAnswer(models.Model):
+    review = models.ForeignKey(TutorTeamReview, on_delete=models.CASCADE, related_name="answers")
+    question = models.ForeignKey(
+        "rounds.TemplateQuestion", on_delete=models.PROTECT, related_name="tutor_team_answers"
+    )
+    rating_value = models.PositiveSmallIntegerField(null=True, blank=True)
+    text_value = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "튜터 팀평가 응답"
+        verbose_name_plural = "튜터 팀평가 응답 목록"
+        ordering = ("question__display_order",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=("review", "question"), name="reviews_tutor_team_answer_question_unique"
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(rating_value__isnull=False, text_value="")
+                    | (Q(rating_value__isnull=True) & ~Q(text_value=""))
+                ),
+                name="reviews_tutor_team_answer_exactly_one_value",
+            ),
+            models.CheckConstraint(
+                condition=Q(rating_value__isnull=True)
+                | Q(rating_value__gte=1, rating_value__lte=5),
+                name="reviews_tutor_team_answer_rating_range",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.review_id}:{self.question_id}"

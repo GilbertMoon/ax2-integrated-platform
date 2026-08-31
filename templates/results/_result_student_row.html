@@ -1,0 +1,50 @@
+{% load results_extras %}
+<tr data-status="{{ result.data_status }}">
+  <td class="text-end">{% include "results/_rank_cell.html" with rank=result.primary_rank %}</td>
+  <td class="fw-semibold">
+    {{ result.participant.display_name_snapshot }}
+    {% if result.participant.user.email != result.participant.display_name_snapshot %}
+      <div class="text-muted font-size-115">{{ result.participant.user.email }}</div>
+    {% endif %}
+  </td>
+  <td class="ax-col-optional">{{ result.participant.team_membership.team.name|default:"미배정" }}</td>
+  <td class="text-end ax-col-optional">
+    <div class="ax-math-cell">
+      {% with team=result.team_score_raw|as_five_point peer=result.peer_score_raw|as_five_point tutor=result.tutor_score_raw|as_five_point %}
+        <span class="ax-score-part">
+          {% if team is not None %}{{ team }}{% else %}-{% endif %}<span class="ax-weight">×{{ team_weight_percent }}%</span>
+        </span>
+        <span class="ax-math-sign">+</span>
+        <span class="ax-score-part">
+          {% if peer is not None %}{{ peer }}{% else %}-{% endif %}<span class="ax-weight">×{{ peer_weight_percent }}%</span>
+        </span>
+        {% if tutor_weight_percent %}
+          <span class="ax-math-sign">+</span>
+          <span class="ax-score-part">
+            {% if tutor is not None %}{{ tutor }}{% else %}-{% endif %}<span class="ax-weight">×{{ tutor_weight_percent }}%</span>
+          </span>
+        {% endif %}
+      {% endwith %}
+    </div>
+  </td>
+  <td class="text-end fw-semibold">
+    {% include "results/_score_bar_cell.html" with value=result.final_score_raw %}
+    {% if result.trend_direction == "up" %}
+      <span class="ax-trend-badge ax-trend-up" title="지난 회차 대비 상승">
+        <i class="bi bi-arrow-up-short"></i>{{ result.trend_delta }}
+      </span>
+    {% elif result.trend_direction == "down" %}
+      <span class="ax-trend-badge ax-trend-down" title="지난 회차 대비 하락">
+        <i class="bi bi-arrow-down-short"></i>{{ result.trend_delta }}
+      </span>
+    {% elif result.trend_direction == "flat" %}
+      <span class="ax-trend-badge ax-trend-flat" title="지난 회차와 동일">
+        <i class="bi bi-arrow-right-short"></i>변화없음
+      </span>
+    {% endif %}
+  </td>
+  <td class="text-center">
+    <span class="badge {{ result.data_status|status_badge_class }}">{{ result.data_status|status_label }}</span>
+    <span class="text-muted font-size-115">({{ result.valid_count }}/{{ result.expected_count }})</span>
+  </td>
+</tr>

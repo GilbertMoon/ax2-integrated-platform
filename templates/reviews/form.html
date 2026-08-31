@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ target.label }} 평가 | AX Evaluation Console{% endblock %}
+{% block breadcrumb %}
+  {% if review_type == 'TEAM' %}팀 평가{% else %}개인 평가{% endif %} / {{ target.label }}
+{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ target.label }} 평가</h1>
+      <p class="page-desc">
+        {% if finalized %}
+          최종 제출이 끝나 읽기 전용입니다.
+        {% elif locked %}
+          확정된 평가라 읽기 전용입니다.
+        {% else %}
+          최종 제출 전까지는 몇 번이든 고쳐 쓸 수 있습니다.
+        {% endif %}
+      </p>
+    </div>
+    <a href="{% url 'reviews:home' %}" class="btn btn-ax-secondary"><i class="bi bi-arrow-left me-1"></i>목록</a>
+  </div>
+  {% include "reviews/_form_fields.html" %}
+{% endblock %}

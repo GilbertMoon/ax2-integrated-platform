@@ -490,24 +490,28 @@ PRD_Permissions {
 PRD_Sections {
     bigint section_id PK
     bigint prd_id FK
-    bigint template_section_id FK
     string title
+    string guidance
+    boolean is_completed
+    boolean is_held
+    boolean is_deleted
     int order_num
 }
 
 PRD_Questions {
     bigint question_id PK
     bigint section_id FK
-    bigint template_question_id FK
-    string question_title
+    string title
     text answer
+    boolean is_held
+    boolean is_deleted
     int order_num
 }
 
 PRD_Comments {
     bigint comment_id PK
     bigint prd_id FK
-    bigint section_id FK
+    bigint section_id FK "Nullable"
     bigint user_id FK
     text content
     datetime created_at
@@ -516,64 +520,99 @@ PRD_Comments {
 Brainstorm_Boards {
     bigint board_id PK
     bigint prd_id FK
-    string title
-    datetime created_at
 }
 
 Brainstorm_Categories {
     bigint category_id PK
     bigint board_id FK
-    string name
-    int order_num
+    string title "예: 해결할 문제"
 }
 
 Post_its {
-    bigint postit_id PK
+    bigint post_it_id PK
     bigint board_id FK
-    bigint category_id FK
-    bigint author_id FK
+    bigint category_id FK "Nullable"
+    bigint user_id FK
     text content
-    json position_data
-    datetime created_at
+    string color
+    float pos_x
+    float pos_y
+    string status "PENDING / ACCEPTED"
 }
 
 AI_Usage_Logs {
     bigint log_id PK
-    bigint prd_id FK
     bigint user_id FK
-    string model
-    string feature
-    int prompt_tokens
-    int completion_tokens
+    bigint prd_id FK "Nullable"
+    string feature_type "CHAT / COACHING"
+    int total_tokens
     datetime created_at
+}
+
+AI_Prompts {
+    bigint prompt_id PK
+    string feature_type
+    text system_instruction
+    string version
+    boolean is_active
 }
 
 PRD_Member_Evaluations {
     bigint evaluation_id PK
     bigint prd_id FK
-    bigint evaluator_id FK
-    bigint target_user_id FK
-    int score
-    text feedback
+    bigint user_id FK "평가 대상 학생"
+    int total_post_its
+    int accepted_post_its
+    int total_comments
+    float reflection_rate
+    int total_score
+    text ai_comment
     datetime created_at
 }
 
 PRD_Edit_Histories {
     bigint history_id PK
     bigint section_id FK
-    bigint editor_id FK
-    text previous_value
-    text new_value
+    string edit_type "AI_COACHING / USER_EDIT"
+    text before_content
+    text after_content
     datetime created_at
 }
 
 AI_Chat_Histories {
     bigint chat_id PK
     bigint prd_id FK
+    bigint section_id FK "Nullable"
     bigint user_id FK
-    string role "USER/ASSISTANT"
-    text content
+    json chat_data
     datetime created_at
+    date expires_at
 }
 
-endOfFile: false
+
+%% ==========================================================
+%% 4. 최종 점수 집계 (코어 CalculationRun이 2조·3조 점수를 입력값으로 흡수)
+%% SUBMISSION, PRD_Member_Evaluations 는 다른 조 소유 앱이라 물리적 FK를
+%% 걸 수 없으므로, source_type/source_id로 스냅샷을 남기는 방식 제안
+%% 수집 방식: 2조/3조가 점수 확정 시 코어로 PUSH (코어가 pull 하지 않음)
+%% ==========================================================
+results_calculationrun ||--o{ results_scoreinput : "입력값 수집"
+results_scoreinput }o--o| rounds_roundparticipant : "개인 대상"
+results_scoreinput }o--o| teams_team : "팀 대상"
+SUBMISSION ||..o{ results_scoreinput : "확정 시 push (2조, FK 아님)"
+PRD_Member_Evaluations ||..o{ results_scoreinput : "확정 시 push (3조, FK 아님)"
+reviews_reviewanswer ||..o{ results_scoreinput : "논리적 참조 (동료평가)"
+
+results_scoreinput {
+    bigint id PK
+    bigint calculation_run_id FK "results_calculationrun"
+    bigint participant_id FK "rounds_roundparticipant, Nullable"
+    bigint team_id FK "teams_team, Nullable"
+    varchar source_type "REVIEW / ASSIGNMENT / PRD"
+    bigint source_id "SUBMISSION.id 또는 PRD_Member_Evaluations.id (FK 아님, 스냅샷)"
+    decimal raw_score "원본 점수 (스냅샷, 원본 수정돼도 재동기화 안 함)"
+    decimal weight "이 회차에서 이 점수의 반영 가중치 %, 회차마다 다르게 설정 가능"
+    varchar idempotency_key UK "중복 push 방지 (source_type+source_id+run_id 조합 등)"
+    datetime pushed_at "2조/3조로부터 수신한 시각"
+    datetime created_at
+}

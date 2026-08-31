@@ -1,4 +1,4 @@
-# ERD FINAL CHECKLIST
+# 신규 테이블 생성 결과 요약
 
 ## 1. 검증 대상
 

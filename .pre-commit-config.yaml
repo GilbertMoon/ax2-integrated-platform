@@ -1,0 +1,26 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: Ruff lint and import check
+        entry: ruff check
+        language: system
+        types: [python]
+
+      - id: ruff-format
+        name: Ruff format check
+        entry: ruff format --check
+        language: system
+        types: [python]
+
+      - id: djlint-format
+        name: djLint format check for Django templates
+        entry: djlint --profile=django --check
+        language: system
+        files: '\.html$'
+
+      - id: djlint-lint
+        name: djLint lint Django templates
+        entry: djlint --profile=django
+        language: system
+        files: '\.html$'

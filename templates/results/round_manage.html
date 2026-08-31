@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% load static results_extras %}
+{% block title %}결과·공개 | AX Evaluation Console{% endblock %}
+{% block breadcrumb %}결과·공개{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ round_obj.title }} 결과·공개</h1>
+      <p class="page-desc">채점 결과와 공개 범위를 관리합니다.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <label class="visually-hidden" for="round-switcher">회차 선택</label>
+      <select class="ax-round-select"
+              id="round-switcher"
+              onchange="location.href=this.value">
+        {% for option in round_options %}
+          <option value="{% url 'rounds:results' option.pk %}"
+                  {% if option.pk == round_obj.pk %}selected{% endif %}>{{ option.title }}</option>
+        {% endfor %}
+      </select>
+      <form method="post"
+            action="{% url 'rounds:calculate-results' round_obj.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-ax-primary"
+                type="submit"
+                {% if round_obj.status != 'COMPLETED' %}disabled title="완료된 회차만 채점할 수 있습니다."{% endif %}>
+          {% if run %}재채점{% else %}채점 실행{% endif %}
+        </button>
+      </form>
+      <a href="{% url 'rounds:publish-settings' round_obj.pk %}"
+         class="btn btn-ax-secondary">공개 설정</a>
+    </div>
+  </div>
+  {% if not run %}
+    <section class="card-custom">
+      <div class="card-body-custom ax-empty-state">
+        <i class="bi bi-calculator"></i>
+        <p class="fw-semibold mb-1">아직 채점 결과가 없습니다.</p>
+        <p class="text-muted mb-0">회차를 마감한 뒤 채점을 실행하면 팀·개인 순위가 여기에 표시됩니다.</p>
+      </div>
+    </section>
+  {% else %}
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card-custom ax-summary-card h-100 mb-0">
+          <span class="ax-summary-label">전체 평가 현황</span>
+          <span class="ax-summary-value">{{ summary.participant_count }}명 · {{ summary.team_count }}팀</span>
+          <span class="ax-summary-note">
+            {% if summary.na_count %}
+              {{ summary.na_count }}명 데이터 미비
+            {% else %}
+              전원 채점 완료
+            {% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-custom ax-summary-card ax-summary-card--highlight h-100 mb-0">
+          <span class="ax-summary-label"><i class="bi bi-trophy-fill"></i> 최고 종합 점수</span>
+          <span class="ax-summary-value">
+            {% if summary.top_student %}
+              {{ summary.top_student.final_score_raw|as_five_point }}/5
+            {% else %}
+              -
+            {% endif %}
+          </span>
+          <span class="ax-summary-note">
+            {% if summary.top_student %}
+              {{ summary.top_student.participant.display_name_snapshot }}
+            {% else %}
+              순위를 매길 데이터가 없습니다
+            {% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-custom ax-summary-card ax-summary-card--highlight h-100 mb-0">
+          <span class="ax-summary-label"><i class="bi bi-trophy-fill"></i> 최우수 팀</span>
+          <span class="ax-summary-value">{% if summary.top_team %}{{ summary.top_team.team.name }}{% else %}-{% endif %}</span>
+          <span class="ax-summary-note">
+            {% if summary.top_team %}
+              {{ summary.top_team.team_score_raw|as_five_point }}/5
+            {% else %}
+              순위를 매길 데이터가 없습니다
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+    {% if has_partial %}
+      <div class="alert alert-light border font-size-135">
+        <span class="badge badge-ax badge-ax-pending">일부 제출 포함</span>
+        일부만 제출된 팀·학생이 있습니다.
+      </div>
+    {% endif %}
+    <section class="card-custom" data-result-table>
+      <div class="card-header-custom">
+        <div class="card-title-custom">팀 순위</div>
+        <div class="ax-filter-group">
+          <button type="button" class="ax-filter-chip active" data-filter="ALL">전체</button>
+          <button type="button" class="ax-filter-chip" data-filter="PARTIAL">일부 제출</button>
+          <button type="button" class="ax-filter-chip" data-filter="NO_DATA">미제출</button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" class="text-end">순위</th>
+              <th scope="col">팀</th>
+              <th scope="col">구성원</th>
+              <th scope="col" class="text-end">팀 점수 (5점 만점)</th>
+              <th scope="col" class="text-center">제출 현황</th>
+              <th scope="col" class="text-end">응답률</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for result in team_head %}
+              {% include "results/_result_team_row.html" %}
+            {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">팀 결과가 없습니다.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          {% if team_rest %}
+            <tbody class="collapse" id="teamRestRows">
+              {% for result in team_rest %}
+                {% include "results/_result_team_row.html" %}
+              {% endfor %}
+            </tbody>
+          {% endif %}
+        </table>
+      </div>
+      {% if team_rest %}
+        <div class="ax-expand-wrapper">
+          <button type="button"
+                  class="btn btn-sm btn-link ax-toggle-rest"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#teamRestRows"
+                  data-more-text="나머지 {{ team_rest|length }}개 팀 더보기"
+                  aria-expanded="false"
+                  aria-controls="teamRestRows">
+            <i class="bi bi-chevron-down ax-toggle-icon"></i>
+            <span class="ax-toggle-label">나머지 {{ team_rest|length }}개 팀 더보기</span>
+          </button>
+        </div>
+      {% endif %}
+    </section>
+    <section class="card-custom" data-result-table>
+      <div class="card-header-custom">
+        <div class="card-title-custom">개인 결과</div>
+        <div class="ax-filter-group">
+          <button type="button" class="ax-filter-chip active" data-filter="ALL">전체</button>
+          <button type="button" class="ax-filter-chip" data-filter="PARTIAL">일부 제출</button>
+          <button type="button" class="ax-filter-chip" data-filter="NO_DATA">미제출</button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" class="text-end">순위</th>
+              <th scope="col">수강생</th>
+              {% comment %}좁은 화면에서는 보러 온 값(순위·이름·최종점수)만 남기고 접는다.{% endcomment %}
+              <th scope="col" class="ax-col-optional">팀</th>
+              <th scope="col" class="text-end ax-col-optional">
+                점수 계산
+                <i class="bi bi-info-circle ax-info-icon"
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="top"
+                   title="팀 {{ team_weight_percent }}% + 개인 {{ peer_weight_percent }}%{% if tutor_weight_percent %} + 튜터 {{ tutor_weight_percent }}%{% endif %}"></i>
+              </th>
+              <th scope="col" class="text-end">최종점수 (5점 만점)</th>
+              <th scope="col" class="text-center">개인 평가 제출 현황</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for result in individual_head %}
+              {% include "results/_result_student_row.html" %}
+            {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">개인 결과가 없습니다.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          {% if individual_rest %}
+            <tbody class="collapse" id="studentRestRows">
+              {% for result in individual_rest %}
+                {% include "results/_result_student_row.html" %}
+              {% endfor %}
+            </tbody>
+          {% endif %}
+        </table>
+      </div>
+      {% if individual_rest %}
+        <div class="ax-expand-wrapper">
+          <button type="button"
+                  class="btn btn-sm btn-link ax-toggle-rest"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#studentRestRows"
+                  data-more-text="나머지 {{ individual_rest|length }}명 더보기"
+                  aria-expanded="false"
+                  aria-controls="studentRestRows">
+            <i class="bi bi-chevron-down ax-toggle-icon"></i>
+            <span class="ax-toggle-label">나머지 {{ individual_rest|length }}명 더보기</span>
+          </button>
+        </div>
+      {% endif %}
+      <div class="card-body-custom pt-0">
+        <p class="text-muted font-size-115 mb-0">"평가 없음"은 0점이 아니라 미제출 상태이며, 순위 계산에서 빠집니다.</p>
+      </div>
+    </section>
+  {% endif %}
+{% endblock %}
+{% block extra_js %}
+  <script src="{% static 'js/results-manage.js' %}"></script>
+{% endblock %}

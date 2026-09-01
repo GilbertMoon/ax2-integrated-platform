@@ -3,7 +3,10 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-    dependencies = [("notifications", "0003_alter_notification_category")]
+    dependencies = [
+        ("notifications", "0003_alter_notification_category"),
+        ("accounts", "0012_user_muted_email_categories"),
+    ]
 
     operations = [
         migrations.CreateModel(

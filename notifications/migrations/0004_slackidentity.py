@@ -14,11 +14,19 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "id",
-                    models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID"),
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
                 ),
                 ("slack_user_id", models.CharField(max_length=32, unique=True)),
                 ("slack_email", models.EmailField(blank=True, default="", max_length=254)),
-                ("slack_display_name", models.CharField(blank=True, default="", max_length=255)),
+                (
+                    "slack_display_name",
+                    models.CharField(blank=True, default="", max_length=255),
+                ),
                 ("is_active", models.BooleanField(default=True)),
                 ("synced_at", models.DateTimeField(auto_now=True)),
                 (

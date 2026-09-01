@@ -3,11 +3,12 @@ import os
 import requests
 from django.db import transaction
 from django.utils import timezone
+from dotenv import load_dotenv
 
 from accounts.models import User
 from notifications.models import SlackIdentity
 
-load_dotenv = None
+load_dotenv()
 SLACK_API_URL = "https://slack.com/api"
 
 
@@ -154,7 +155,7 @@ def sync_slack_users():
 
             if user:
                 SlackIdentity.objects.filter(user=user).exclude(slack_user_id=slack_user_id).delete()
-                identity, _ = SlackIdentity.objects.update_or_create(
+                SlackIdentity.objects.update_or_create(
                     slack_user_id=slack_user_id,
                     defaults={
                         "user": user,

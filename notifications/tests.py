@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.urls import reverse
 
@@ -245,3 +247,37 @@ class AnnounceTests(TestCase):
         student.refresh_from_db()
         self.assertFalse(student.wants_email(Notification.Category.SUBMISSION_REMINDER))
         self.assertTrue(student.wants_email(Notification.Category.NOTICE))
+
+
+class SlackDirectMessageTests(TestCase):
+    @patch.dict("os.environ", {"SLACK_BOT_TOKEN": "xoxb-test-token"}, clear=False)
+    @patch("notifications.slack.requests.post")
+    def test_send_slack_dm_opens_user_dm_and_posts_message(self, mock_post):
+        from notifications.slack import send_slack_dm
+
+        open_response = mock_post.return_value
+        open_response.raise_for_status.return_value = None
+        open_response.json.side_effect = [
+            {"ok": True, "channel": {"id": "D123"}},
+            {"ok": True, "ts": "123.456"},
+        ]
+
+        self.assertTrue(
+            send_slack_dm(
+                slack_user_id="U123",
+                title="테스트 알림",
+                message="테스트 메시지",
+            )
+        )
+
+        self.assertEqual(mock_post.call_count, 2)
+        self.assertIn("conversations.open", mock_post.call_args_list[0].args[0])
+        self.assertEqual(mock_post.call_args_list[0].kwargs["json"], {"users": "U123"})
+        self.assertIn("chat.postMessage", mock_post.call_args_list[1].args[0])
+        self.assertEqual(mock_post.call_args_list[1].kwargs["json"]["channel"], "D123")
+
+    @patch.dict("os.environ", {}, clear=True)
+    def test_send_slack_dm_returns_false_without_bot_token(self):
+        from notifications.slack import send_slack_dm
+
+        self.assertFalse(send_slack_dm(slack_user_id="U123", title="테스트"))

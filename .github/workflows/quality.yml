@@ -2,7 +2,7 @@ name: Quality checks
 
 on:
   push:
-    branches: [main]
+    branches: [main, tmp/djlint-format]
   pull_request:
 
 permissions:
@@ -52,6 +52,15 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Reformat Django templates for inspection
+        run: djlint . --reformat
+
+      - name: Upload formatted templates
+        uses: actions/upload-artifact@v4
+        with:
+          name: djlint-formatted-templates
+          path: templates
 
       - name: Run Ruff lint checks
         run: ruff check .

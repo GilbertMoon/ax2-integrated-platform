@@ -279,7 +279,54 @@ WHERE user_id = ?;
 
 ---
 
-## 8. 요약
+## 8. 2026-09-01 P3 검증 결과
+
+### Django / Migration 선행 점검
+
+| 항목 | 결과 | 판정 |
+|---|---|---|
+| `python manage.py check` | `System check identified no issues (0 silenced).` | ✅ |
+| `python manage.py showmigrations` | 현재 출력된 Migration 모두 `[X]` | ✅ |
+| `python manage.py makemigrations` | `No changes detected` | ✅ |
+
+### VIEW 실제 DB 검증 상태
+
+본 문서 갱신 시점에 확인된 자료에는 PostgreSQL에서 두 VIEW를 실제 `SELECT`로 조회한 결과가 포함되어 있지 않다. 따라서 **VIEW SQL/구조는 문서상 정의가 확인되지만, 실제 DB 존재 및 조회 성공 여부는 아직 검증 완료로 판정하지 않는다.**
+
+| VIEW | SQL 정의 | 실제 DB 존재 | 실제 조회 | 판정 |
+|---|---|---|---|---|
+| `public.ax_user_team_login_view` | ✅ 문서에 정의됨 | ⏸️ 미확인 | ⏸️ 미확인 | ⚠️ 검증 필요 |
+| `public.user_round_team_view` | ✅ 문서에 정의됨 | ⏸️ 미확인 | ⏸️ 미확인 | ⚠️ 검증 필요 |
+
+### 실제 DB 검증 SQL
+
+```sql
+SELECT schemaname, viewname
+FROM pg_views
+WHERE schemaname = 'public'
+  AND viewname IN ('ax_user_team_login_view', 'user_round_team_view')
+ORDER BY viewname;
+```
+
+각 VIEW의 실제 조회 검증:
+
+```sql
+SELECT *
+FROM public.ax_user_team_login_view
+LIMIT 10;
+```
+
+```sql
+SELECT *
+FROM public.user_round_team_view
+LIMIT 10;
+```
+
+> 위 SQL 실행 결과를 확보한 뒤 이 문서의 VIEW 실제 DB 존재/조회 판정을 갱신한다.
+
+---
+
+## 9. 요약
 
 | VIEW | 목적 | 대상 |
 |---|---|---|

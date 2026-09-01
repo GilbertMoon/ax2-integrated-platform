@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}근태 | AX Evaluation Console{% endblock %}
+{% block breadcrumb %}근태{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">근태</h1>
+      <p class="page-desc">날짜를 골라 수강생 출결을 확인하고 기록합니다.</p>
+    </div>
+  </div>
+
+  <section class="card-custom mb-3">
+    <form method="get" class="d-flex align-items-end gap-2 flex-wrap">
+      <div>
+        <label for="date" class="form-label small fw-bold mb-1">날짜</label>
+        <input type="date"
+               id="date"
+               name="date"
+               value="{{ day|date:'Y-m-d' }}"
+               class="form-control">
+      </div>
+      <button type="submit" class="btn btn-ax-secondary">조회</button>
+      <div class="ms-auto d-flex gap-3 small align-items-center">
+        <span class="text-muted">출석 <strong class="text-success">{{ summary.present }}</strong></span>
+        <span class="text-muted">지각 <strong class="text-warning">{{ summary.late }}</strong></span>
+        <span class="text-muted">결석 <strong class="text-danger">{{ summary.absent }}</strong></span>
+        <span class="text-muted">미기록 <strong>{{ summary.blank }}</strong></span>
+      </div>
+    </form>
+  </section>
+
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">
+    <section class="card-custom">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">수강생</th>
+              <th scope="col" style="width: 16rem;">상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                <td>
+                  <strong>{{ row.display_name }}</strong>
+                  {% if row.by_face %}
+                    <span class="badge text-bg-info ms-1" title="얼굴인식으로 자동 기록됨">얼굴인식</span>
+                  {% endif %}
+                  <div class="small text-muted">{{ row.email }}</div>
+                </td>
+                <td>
+                  <select name="status_{{ row.user_id }}"
+                          class="form-select form-select-sm">
+                    <option value="" {% if not row.status %}selected{% endif %}>미기록</option>
+                    {% for value, label in statuses %}
+                      <option value="{{ value }}"
+                              {% if row.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="2">
+                  <div class="ax-empty-state">
+                    <i class="bi bi-people"></i>
+                    <p class="fw-semibold mb-2">승인된 수강생이 없습니다</p>
+                    <p class="text-muted mb-0">수강생 승인 후 이용할 수 있습니다.</p>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if rows %}
+        <div class="p-3 border-top text-end">
+          <button type="submit" class="btn btn-ax-primary">저장</button>
+        </div>
+      {% endif %}
+    </section>
+  </form>
+{% endblock %}

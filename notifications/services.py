@@ -119,3 +119,11 @@ def link_slack_user(*, user, slack_user_id):
 def send_user_slack_dm(*, user, title, message="", link=""):
     """Send a DM to a project User through their linked Slack identity."""
     return send_slack_dm(user=user, title=title, message=message, link=link)
+
+
+def send_slack_to_users(users, *, title, message="", link=""):
+    """Send the same Slack DM to each project User with a linked Slack identity."""
+    results = []
+    for user in users:
+        results.append((user, send_user_slack_dm(user=user, title=title, message=message, link=link)))
+    return results

@@ -56,6 +56,9 @@ jobs:
       - name: Generate pending migrations
         run: python manage.py makemigrations notifications
 
+      - name: Format generated migration
+        run: ruff format notifications/migrations
+
       - name: Commit generated migration
         run: |
           git config user.name "github-actions[bot]"

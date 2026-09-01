@@ -86,7 +86,9 @@ def sync_slack_users():
             user = project_users.get(slack_user["email"])
 
             if user:
-                SlackIdentity.objects.filter(user=user).exclude(slack_user_id=slack_user_id).update(user=None)
+                SlackIdentity.objects.filter(user=user).exclude(slack_user_id=slack_user_id).update(
+                    user=None
+                )
                 SlackIdentity.objects.update_or_create(
                     slack_user_id=slack_user_id,
                     defaults={
@@ -130,5 +132,7 @@ def send_slack_to_users(users, *, title, message="", link=""):
     """Send the same Slack DM to each project User with a linked Slack identity."""
     results = []
     for user in users:
-        results.append((user, send_user_slack_dm(user=user, title=title, message=message, link=link)))
+        results.append(
+            (user, send_user_slack_dm(user=user, title=title, message=message, link=link))
+        )
     return results

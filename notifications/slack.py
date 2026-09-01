@@ -65,7 +65,9 @@ def send_slack_dm(*, user=None, slack_user_id=None, title, message="", link=""):
     """Send a DM using a project User, with Slack ID as a legacy fallback."""
     if user is not None:
         slack_identity = getattr(user, "slack_identity", None)
-        slack_user_id = slack_identity.slack_user_id if slack_identity and slack_identity.is_active else None
+        slack_user_id = (
+            slack_identity.slack_user_id if slack_identity and slack_identity.is_active else None
+        )
 
     headers = _slack_headers()
     if not headers or not slack_user_id:
@@ -89,14 +91,6 @@ def send_slack_dm(*, user=None, slack_user_id=None, title, message="", link=""):
         return message_data is not None
     except (requests.RequestException, ValueError, KeyError, TypeError):
         return False
-
-
-def send_slack_dm_ax(ax_user_id, title, message="", link=""):
-    """Send a Slack DM using the project's User ID."""
-    user = User.objects.filter(pk=ax_user_id, is_active=True).first()
-    if not user:
-        return False
-    return send_slack_dm(user=user, title=title, message=message, link=link)
 
 
 def fetch_slack_users():
@@ -179,7 +173,12 @@ def sync_slack_users():
 
         SlackIdentity.objects.exclude(slack_user_id__in=slack_ids).update(is_active=False)
 
-    return {"total": len(slack_users), "linked": linked, "unmatched": unmatched, "synced_at": timezone.now()}
+    return {
+        "total": len(slack_users),
+        "linked": linked,
+        "unmatched": unmatched,
+        "synced_at": timezone.now(),
+    }
 
 
 def link_slack_user(*, user, slack_user_id):

@@ -133,7 +133,7 @@ elif DEBUG:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",  
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 else:
@@ -190,7 +190,7 @@ if KAKAO_OAUTH_ENABLED:
         "APPS": [
             {
                 "client_id": KAKAO_OAUTH_CLIENT_ID,
-                "secret": GOOGLE_OAUTH_CLIENT_SECRET,
+                "secret": KAKAO_OAUTH_CLIENT_SECRET,
                 "key": "",
             }
         ]

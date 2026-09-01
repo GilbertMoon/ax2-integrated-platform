@@ -37,13 +37,15 @@ class Notification(models.Model):
 
 
 class SlackIdentity(models.Model):
-    """Connects one project User to one Slack workspace member."""
+    """Stores a synced Slack member and optionally links it to a project User."""
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="slack_identity",
         verbose_name="프로젝트 사용자",
+        null=True,
+        blank=True,
     )
     slack_user_id = models.CharField("Slack Member ID", max_length=32, unique=True)
     slack_email = models.EmailField("Slack 이메일", blank=True, default="")
@@ -54,7 +56,7 @@ class SlackIdentity(models.Model):
     class Meta:
         verbose_name = "Slack 사용자 연동"
         verbose_name_plural = "Slack 사용자 연동 목록"
-        ordering = ("user__email",)
+        ordering = ("slack_display_name", "slack_user_id")
 
     def __str__(self):
-        return f"{self.user} → {self.slack_display_name or self.slack_user_id}"
+        return f"{self.slack_display_name or self.slack_user_id} → {self.user or '미연동'}"

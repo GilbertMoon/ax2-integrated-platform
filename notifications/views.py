@@ -1,7 +1,8 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
@@ -14,6 +15,7 @@ from notifications.services import (
     mark_all_read,
     mark_read,
     recent_notifications,
+    send_slack_to_users,
     sync_slack_users,
     unread_count,
 )
@@ -110,3 +112,71 @@ def slack_link_view(request):
     except ValueError as exc:
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
     return JsonResponse({"ok": True, "slack_user_id": identity.slack_user_id})
+
+
+@login_required
+def slack_send(request):
+    _require_operations(request)
+    project_users = list(
+        User.objects.filter(is_active=True, slack_identity__is_active=True)
+        .select_related("slack_identity")
+        .order_by("email")
+    )
+    teams = []
+    if request.method == "POST":
+        target_type = request.POST.get("target_type", "individual")
+        title = (request.POST.get("title") or "").strip()
+        message = (request.POST.get("message") or "").strip()
+        link = (request.POST.get("link") or "").strip()
+
+        if not title:
+            messages.error(request, "메시지 제목을 입력해주세요.")
+        elif target_type == "individual":
+            user = User.objects.filter(
+                pk=request.POST.get("user_id"), is_active=True, slack_identity__is_active=True
+            ).first()
+            if not user:
+                messages.error(request, "연결된 Slack 사용자를 선택해주세요.")
+            else:
+                results = send_slack_to_users([user], title=title, message=message, link=link)
+                if results[0][1]:
+                    messages.success(request, f"{user.first_name or user.email}님에게 Slack DM을 보냈습니다.")
+                else:
+                    messages.error(request, "Slack DM 전송에 실패했습니다.")
+        elif target_type == "team":
+            from teams.models import Team
+
+            team = Team.objects.filter(pk=request.POST.get("team_id")).first()
+            if not team:
+                messages.error(request, "팀을 선택해주세요.")
+            else:
+                users = User.objects.filter(
+                    is_active=True,
+                    slack_identity__is_active=True,
+                    round_participations__team_membership__team=team,
+                ).select_related("slack_identity").distinct()
+                results = send_slack_to_users(users, title=title, message=message, link=link)
+                success_count = sum(ok for _, ok in results)
+                if success_count:
+                    messages.success(request, f"{success_count}명에게 Slack DM을 보냈습니다.")
+                else:
+                    messages.error(request, "연결된 Slack 사용자가 없어 전송하지 못했습니다.")
+        elif target_type == "all":
+            results = send_slack_to_users(project_users, title=title, message=message, link=link)
+            success_count = sum(ok for _, ok in results)
+            if success_count:
+                messages.success(request, f"{success_count}명에게 Slack DM을 보냈습니다.")
+            else:
+                messages.error(request, "연결된 Slack 사용자가 없어 전송하지 못했습니다.")
+        else:
+            messages.error(request, "올바른 발송 대상을 선택해주세요.")
+        return redirect("notifications:slack-send")
+
+    from teams.models import Team
+
+    teams = list(Team.objects.select_related("round").order_by("-round__created_at", "team_number"))
+    return render(
+        request,
+        "notifications/slack_send.html",
+        {"project_users": project_users, "teams": teams},
+    )

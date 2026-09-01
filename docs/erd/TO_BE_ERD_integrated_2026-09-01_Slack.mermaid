@@ -1,8 +1,356 @@
 erDiagram
 
 %% ==========================================================
-%% 통합 ERD + Slack 공통 연동 반영본
-%% 2026-09-01 P6 Slack 연동 기능 추가
+%% 통합 TO-BE ERD v1
+%% 교수님 피드백 1~5 및 추가 확인사항 반영
+%% ==========================================================
+
+accounts_user ||--o{ rounds_roundparticipant : "참여"
+accounts_user ||--o{ rounds_evaluationround : "생성"
+rounds_evaluationround ||--o{ rounds_roundparticipant : "포함"
+rounds_evaluationround ||--o{ teams_team : "포함 - 회차 종속 Team"
+rounds_roundparticipant |o--o| teams_teammembership : "소속"
+teams_team ||--o{ teams_teammembership : "포함"
+rounds_evaluationround ||--o{ results_calculationrun : "채점 실행"
+results_calculationrun ||--o{ results_evaluationresult : "결과 산출"
+teams_team ||--o{ results_evaluationresult : "팀 결과"
+rounds_roundparticipant ||--o{ results_evaluationresult : "개인 결과"
+
+accounts_user {
+    bigint id PK
+    varchar email UK
+    varchar password
+    varchar role
+    varchar approval_status
+}
+rounds_evaluationround {
+    bigint id PK
+    bigint created_by FK
+    varchar title
+    varchar status
+    decimal team_score_weight
+    decimal personal_score_weight
+}
+rounds_roundparticipant {
+    bigint id PK
+    bigint user_id FK
+    bigint round_id FK
+    varchar student_number_snapshot
+    varchar display_name_snapshot
+}
+teams_team {
+    bigint id PK
+    bigint round_id FK
+    int team_number
+    varchar name
+}
+teams_teammembership {
+    bigint id PK
+    bigint team_id FK
+    bigint participant_id FK
+}
+results_calculationrun {
+    bigint id PK
+    bigint round_id FK
+    varchar status
+    boolean is_active
+}
+results_evaluationresult {
+    bigint id PK
+    bigint calculation_run_id FK
+    bigint team_id FK "TEAM일 때 필수"
+    bigint participant_id FK "INDIVIDUAL일 때 필수"
+    varchar result_type "TEAM/INDIVIDUAL"
+    decimal final_score_raw
+    string target_integrity_rule "TEAM이면 team_id만, INDIVIDUAL이면 participant_id만"
+}
+
+%% ==========================================================
+%% 1조 게임 / 학습
+%% ==========================================================
+
+accounts_user ||--|| CG_USERS : "1:1 프로필 확장"
+CG_USERS ||--o{ ATTENDANCES : "학습 참여"
+CG_USERS ||--o{ TASK_ATTEMPTS : "풀이"
+CG_USERS ||--o{ USER_PROFICIENCY : "숙련도"
+CG_USERS ||--o{ ROOMS : "방 생성"
+CG_USERS ||--o{ ROOM_PARTICIPANTS : "방 참여"
+teams_team ||--o{ ROOM_PARTICIPANTS : "팀 배틀"
+CONCEPTS ||--o{ TASKS : "분류"
+CONCEPTS ||--o{ USER_PROFICIENCY : "측정"
+TASKS ||--o{ TASK_ATTEMPTS : "풀이 기록"
+ROOMS ||--o{ ROOM_PARTICIPANTS : "참가자"
+ITEMS ||--o{ INVENTORIES : "아이템"
+ITEMS ||--o{ PLACED_OBJECTS : "배치"
+ITEMS ||--o{ CG_USERS : "벽지/바닥"
+CG_USERS ||--o{ HOUSE : "소유"
+HOUSE ||--o{ PLACED_OBJECTS : "배치물"
+
+CG_USERS {
+    bigint id PK,FK "accounts_user.id"
+    int balance
+    int mileage
+    int house_level
+    int wallpaper_item_id FK
+    int floor_item_id FK
+    datetime created_at
+}
+ATTENDANCES {
+    uuid id PK
+    bigint user_id FK
+    date check_in_date
+    int streak_count
+}
+CONCEPTS {
+    int id PK
+    string name
+    string description
+}
+TASKS {
+    uuid id PK
+    int concept_id FK
+    string type
+    string difficulty
+    text template_code
+    text test_cases
+    boolean is_active
+}
+USER_PROFICIENCY {
+    uuid id PK
+    bigint user_id FK
+    int concept_id FK
+    int proficiency_level
+    datetime updated_at
+}
+TASK_ATTEMPTS {
+    uuid id PK
+    bigint user_id FK
+    uuid task_id FK
+    text submitted_code
+    string status
+    boolean is_correct
+    text feedback_message
+    boolean used_hint
+    datetime attempted_at
+}
+ROOMS {
+    uuid id PK
+    bigint host_user_id FK
+    string title
+    string status
+    int max_participants
+    datetime created_at
+}
+ROOM_PARTICIPANTS {
+    uuid id PK
+    uuid room_id FK
+    bigint user_id FK
+    bigint team_id FK
+    int current_score
+    boolean is_ready
+    datetime joined_at
+}
+ITEMS {
+    int id PK
+    string category
+    string name
+    int price
+    string image_url
+}
+INVENTORIES {
+    uuid id PK
+    bigint user_id FK
+    int item_id FK
+    int quantity
+}
+HOUSE {
+    bigint id PK
+    bigint user_id FK
+    string name
+    datetime created_at
+    datetime updated_at
+}
+PLACED_OBJECTS {
+    uuid id PK
+    bigint house_id FK
+    int item_id FK
+    jsonb position_data
+}
+
+%% ==========================================================
+%% 2조 과제 / 제출 / 평가
+%% ==========================================================
+
+accounts_user ||--o{ ASSIGNMENT : "생성"
+accounts_user ||--o{ SUBMISSION : "개인 제출"
+teams_team ||--o{ SUBMISSION : "팀 제출"
+ASSIGNMENT ||--o{ SUBMISSION : "제출물"
+SUBMISSION ||--o{ SUBMISSION_FILE : "첨부"
+SUBMISSION ||--o| AI_EVALUATION : "AI 1차 평가"
+SUBMISSION ||--o| EVALUATION : "튜터 공식 평가"
+
+ASSIGNMENT {
+    int id PK
+    string title
+    string description
+    datetime due_at
+    boolean is_required
+    boolean allow_late
+    boolean is_team
+    bigint created_by FK
+    datetime created_at
+    datetime updated_at
+    datetime deleted_at
+}
+SUBMISSION {
+    int id PK
+    int assignment_id FK
+    bigint student_id FK "개인 제출 시 필수"
+    bigint team_id FK "팀 제출 시 필수"
+    string target_rule "student_id XOR team_id"
+    string description
+    datetime submitted_at
+    boolean is_locked
+    int final_score "EVALUATION.score 캐시"
+}
+SUBMISSION_FILE {
+    int id PK
+    int submission_id FK
+    string kind
+    string file_url
+    string file_name
+    int file_size
+}
+AI_EVALUATION {
+    int id PK
+    int submission_id FK
+    int score
+    string comment
+    datetime updated_at
+}
+EVALUATION {
+    int id PK
+    int submission_id FK
+    bigint evaluated_by FK
+    int score "공식 Source of Truth"
+    string feedback
+    datetime created_at
+    datetime updated_at
+}
+
+%% ==========================================================
+%% 3조 PRD
+%% ==========================================================
+
+accounts_user ||--o{ PRDs : "작성자"
+rounds_evaluationround ||--o{ PRDs : "회차"
+teams_team ||--o{ PRDs : "팀"
+PRDs {
+    bigint prd_id PK
+    bigint template_id FK
+    bigint user_id FK
+    bigint round_id FK "rounds_evaluationround.id"
+    bigint team_id FK
+    string title
+    string status
+    date deadline
+    boolean is_deleted
+    datetime created_at
+    datetime updated_at
+}
+
+%% ==========================================================
+%% 4조 실제 근태 / 얼굴인식
+%% 1조 ATTENDANCES와 4조 ATTENDANCE_RECORD는 목적상 분리
+%% ==========================================================
+
+accounts_user ||--o| FACE_PROFILE : "얼굴 프로필"
+FACE_PROFILE ||--o{ FACE_IMAGE : "등록 이미지"
+accounts_user ||--o{ ATTENDANCE_RECORD : "실제 근태"
+ATTENDANCE_RECORD ||--o{ FACE_RECOGNITION_LOG : "인식 로그"
+FACE_PROFILE ||--o{ FACE_RECOGNITION_LOG : "인식 대상"
+
+FACE_PROFILE {
+    bigint id PK
+    bigint user_id FK
+    string status
+    datetime created_at
+    datetime updated_at
+}
+FACE_IMAGE {
+    bigint id PK
+    bigint face_profile_id FK
+    string image_url
+    string image_hash
+    boolean is_primary
+    datetime created_at
+}
+ATTENDANCE_RECORD {
+    bigint id PK
+    bigint user_id FK
+    date attendance_date
+    datetime check_in_at
+    datetime check_out_at
+    string status
+    string source
+    datetime created_at
+}
+FACE_RECOGNITION_LOG {
+    bigint id PK
+    bigint user_id FK
+    bigint face_profile_id FK
+    bigint attendance_record_id FK
+    datetime recognized_at
+    decimal confidence
+    string result
+}
+
+%% ==========================================================
+%% 4번 피드백 핵심: results_scoreinput
+%% ==========================================================
+
+results_calculationrun ||--o{ results_scoreinput : "입력"
+results_scoreinput }o--o| rounds_roundparticipant : "개인 대상"
+results_scoreinput }o--o| teams_team : "팀 대상"
+SUBMISSION ||..o{ results_scoreinput : "점수 push"
+
+results_scoreinput {
+    bigint id PK
+    bigint calculation_run_id FK
+    bigint participant_id FK "개인 점수 입력 시"
+    bigint team_id FK "팀 점수 입력 시"
+    varchar source_type
+    bigint source_id
+    decimal raw_score
+    decimal weight
+    varchar idempotency_key UK
+    datetime pushed_at
+    datetime created_at
+    string target_integrity_rule "participant_id XOR team_id"
+}
+
+%% ==========================================================
+%% 무결성 규칙 - 실제 DB CHECK 제약으로 구현
+%% ==========================================================
+%% results_evaluationresult:
+%%   result_type='TEAM'       => team_id IS NOT NULL AND participant_id IS NULL
+%%   result_type='INDIVIDUAL' => participant_id IS NOT NULL AND team_id IS NULL
+%% results_scoreinput:
+%%   participant_id IS NOT NULL XOR team_id IS NOT NULL
+%% SUBMISSION:
+%%   student_id IS NOT NULL XOR team_id IS NOT NULL
+%% Team:
+%%   teams_team.round_id IS NOT NULL -> rounds_evaluationround.id
+%% PRD:
+%%   PRDs.round_id -> rounds_evaluationround.id
+%% CG_USERS:
+%%   CG_USERS.id = accounts_user.id (bigint PK/FK), 계정 정보 중복 저장하지 않음
+%% ==========================================================
+%% Slack 공통 연동 / DM
+%% - Slack 워크스페이스 멤버 동기화
+%% - 프로젝트 User와 이메일 기준 자동 연결
+%% - 미연동 Slack 사용자 수동 연결
+%% - 프로젝트 User ID 기반 공통 DM 발송
 %% ==========================================================
 
 accounts_user ||--o| notifications_slackidentity : "Slack 연동"

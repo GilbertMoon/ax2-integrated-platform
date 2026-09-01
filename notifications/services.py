@@ -3,7 +3,8 @@ from django.utils import timezone
 
 from accounts.models import User
 from notifications.models import Notification, SlackIdentity
-from notifications.slack import fetch_slack_users, link_slack_user as link_slack_identity, send_slack_dm
+from notifications.slack import fetch_slack_users, send_slack_dm
+from notifications.slack import link_slack_user as link_slack_identity
 
 # 메일 템플릿이 있는 알림 종류. 마이페이지의 수신 설정도 이 목록으로 그린다.
 EMAIL_CAPABLE_CATEGORIES = (

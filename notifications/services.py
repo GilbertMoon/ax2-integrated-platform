@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.utils import timezone
 
+from accounts.models import User
 from notifications.models import Notification, SlackIdentity
 from notifications.slack import fetch_slack_users, link_slack_user as link_slack_identity, send_slack_dm
 
@@ -67,8 +68,6 @@ def delete_all_notifications(user):
 def sync_slack_users():
     """Import all Slack members and auto-link project users by email."""
     slack_users = fetch_slack_users()
-    from accounts.models import User
-
     project_users = {
         user.email.strip().lower(): user
         for user in User.objects.filter(is_active=True).exclude(email="")

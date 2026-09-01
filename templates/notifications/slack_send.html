@@ -1,87 +1,109 @@
 {% extends "base.html" %}
-
 {% block title %}Slack 메시지 발송{% endblock %}
 {% block breadcrumb %}Slack 메시지 발송{% endblock %}
-
 {% block content %}
-<div class="container-fluid py-4">
-  <div class="mb-4">
-    <h4 class="fw-bold mb-1">Slack 메시지 발송</h4>
-    <p class="text-muted small mb-0">Slack 워크스페이스 사용자와 팀을 기준으로 DM을 발송합니다. Slack Member ID는 직접 입력하지 않습니다.</p>
-  </div>
-
-  <div class="card border-0 shadow-sm rounded-4" style="max-width: 900px;">
-    <div class="card-body p-4 p-lg-5">
-      <form method="post">
-        {% csrf_token %}
-
-        <div class="mb-4">
-          <label class="form-label fw-semibold">발송 대상</label>
-          <div class="d-flex flex-wrap gap-3">
-            <label class="form-check"><input class="form-check-input" type="radio" name="target_type" value="individual" checked><span class="form-check-label">개인</span></label>
-            <label class="form-check"><input class="form-check-input" type="radio" name="target_type" value="team"><span class="form-check-label">팀</span></label>
-            <label class="form-check"><input class="form-check-input" type="radio" name="target_type" value="all"><span class="form-check-label">전체</span></label>
+  <div class="container-fluid py-4">
+    <div class="mb-4">
+      <h4 class="fw-bold mb-1">Slack 메시지 발송</h4>
+      <p class="text-muted small mb-0">Slack 워크스페이스 사용자와 팀을 기준으로 DM을 발송합니다. Slack Member ID는 직접 입력하지 않습니다.</p>
+    </div>
+    <div class="card border-0 shadow-sm rounded-4" style="max-width: 900px;">
+      <div class="card-body p-4 p-lg-5">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-4">
+            <label class="form-label fw-semibold">발송 대상</label>
+            <div class="d-flex flex-wrap gap-3">
+              <label class="form-check">
+                <input class="form-check-input"
+                       type="radio"
+                       name="target_type"
+                       value="individual"
+                       checked><span class="form-check-label">개인</span>
+              </label>
+              <label class="form-check">
+                <input class="form-check-input" type="radio" name="target_type" value="team"><span class="form-check-label">팀</span>
+              </label>
+              <label class="form-check">
+                <input class="form-check-input" type="radio" name="target_type" value="all"><span class="form-check-label">전체</span>
+              </label>
+            </div>
           </div>
-        </div>
-
-        <div id="individualTarget" class="mb-4 target-panel">
-          <label for="slackIdentityId" class="form-label fw-semibold">Slack 사용자</label>
-          <select id="slackIdentityId" name="slack_identity_id" class="form-select" required>
-            <option value="">Slack 사용자 선택</option>
-            {% for slack_user in slack_users %}
-              <option value="{{ slack_user.pk }}">
-                {% if slack_user.user %}
-                  {{ slack_user.user.first_name|default:slack_user.user.email }} · {{ slack_user.user.email }}
-                {% else %}
-                  {{ slack_user.slack_display_name|default:slack_user.slack_user_id }}{% if slack_user.slack_email %} · {{ slack_user.slack_email }}{% endif %}
-                {% endif %}
-                {% if slack_user.user %} · 프로젝트 연결됨{% else %} · 미연동{% endif %}
-              </option>
-            {% empty %}
-              <option value="">동기화된 Slack 사용자가 없습니다.</option>
-            {% endfor %}
-          </select>
-          <div class="form-text">프로젝트에 연결된 사용자는 사이트에 등록된 이름으로 표시됩니다.</div>
-        </div>
-
-        <div id="teamTarget" class="mb-4 target-panel d-none">
-          <label for="teamId" class="form-label fw-semibold">팀</label>
-          <select id="teamId" name="team_id" class="form-select">
-            <option value="">팀 선택</option>
-            {% for team in teams %}
-              <option value="{{ team.pk }}">{{ team.round.title }} · {{ team.name }}</option>
-            {% empty %}
-              <option value="">등록된 팀이 없습니다.</option>
-            {% endfor %}
-          </select>
-          <div class="form-text">선택한 팀의 구성원 중 Slack 연동이 완료된 프로젝트 사용자에게만 DM을 보냅니다.</div>
-        </div>
-
-        <div id="allTarget" class="mb-4 target-panel d-none">
-          <div class="alert alert-warning mb-0 small">동기화된 활성 Slack 워크스페이스 사용자 전체에게 DM을 보냅니다.</div>
-        </div>
-
-        <div class="mb-3">
-          <label for="title" class="form-label fw-semibold">제목</label>
-          <input id="title" name="title" type="text" class="form-control" maxlength="200" required placeholder="알림 제목">
-        </div>
-        <div class="mb-3">
-          <label for="message" class="form-label fw-semibold">메시지</label>
-          <textarea id="message" name="message" class="form-control" rows="5" maxlength="300" placeholder="알림 내용을 입력하세요."></textarea>
-        </div>
-        <div class="mb-4">
-          <label for="link" class="form-label fw-semibold">상세 링크 <span class="text-muted fw-normal">(선택)</span></label>
-          <input id="link" name="link" type="url" class="form-control" maxlength="300" placeholder="https://example.com/...">
-        </div>
-        <div class="d-flex justify-content-end"><button type="submit" class="btn btn-ax-primary px-4"><i class="bi bi-send-fill me-1"></i> Slack으로 보내기</button></div>
-      </form>
+          <div id="individualTarget" class="mb-4 target-panel">
+            <label for="slackIdentityId" class="form-label fw-semibold">Slack 사용자</label>
+            <select id="slackIdentityId"
+                    name="slack_identity_id"
+                    class="form-select"
+                    required>
+              <option value="">Slack 사용자 선택</option>
+              {% for slack_user in slack_users %}
+                <option value="{{ slack_user.pk }}">
+                  {% if slack_user.user %}
+                    {{ slack_user.user.first_name|default:slack_user.user.email }} · {{ slack_user.user.email }}
+                  {% else %}
+                    {{ slack_user.slack_display_name|default:slack_user.slack_user_id }}{% if slack_user.slack_email %} · {{ slack_user.slack_email }}{% endif %}
+                  {% endif %}
+                  {% if slack_user.user %} · 프로젝트 연결됨{% else %} · 미연동{% endif %}
+                </option>
+              {% empty %}
+                <option value="">동기화된 Slack 사용자가 없습니다.</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">프로젝트에 연결된 사용자는 사이트에 등록된 이름으로 표시됩니다.</div>
+          </div>
+          <div id="teamTarget" class="mb-4 target-panel d-none">
+            <label for="teamId" class="form-label fw-semibold">팀</label>
+            <select id="teamId" name="team_id" class="form-select">
+              <option value="">팀 선택</option>
+              {% for team in teams %}
+                <option value="{{ team.pk }}">{{ team.round.title }} · {{ team.name }}</option>
+              {% empty %}
+                <option value="">등록된 팀이 없습니다.</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">선택한 팀의 구성원 중 Slack 연동이 완료된 프로젝트 사용자에게만 DM을 보냅니다.</div>
+          </div>
+          <div id="allTarget" class="mb-4 target-panel d-none">
+            <div class="alert alert-warning mb-0 small">동기화된 활성 Slack 워크스페이스 사용자 전체에게 DM을 보냅니다.</div>
+          </div>
+          <div class="mb-3">
+            <label for="title" class="form-label fw-semibold">제목</label>
+            <input id="title"
+                   name="title"
+                   type="text"
+                   class="form-control"
+                   maxlength="200"
+                   required
+                   placeholder="알림 제목">
+          </div>
+          <div class="mb-3">
+            <label for="message" class="form-label fw-semibold">메시지</label>
+            <textarea id="message"
+                      name="message"
+                      class="form-control"
+                      rows="5"
+                      maxlength="300"
+                      placeholder="알림 내용을 입력하세요."></textarea>
+          </div>
+          <div class="mb-4">
+            <label for="link" class="form-label fw-semibold">상세 링크 <span class="text-muted fw-normal">(선택)</span></label>
+            <input id="link"
+                   name="link"
+                   type="url"
+                   class="form-control"
+                   maxlength="300"
+                   placeholder="https://example.com/...">
+          </div>
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-ax-primary px-4"><i class="bi bi-send-fill me-1"></i> Slack으로 보내기</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-</div>
 {% endblock %}
-
 {% block extra_js %}
-<script>
+  <script>
 (() => {
   const panels = {individual: document.getElementById('individualTarget'), team: document.getElementById('teamTarget'), all: document.getElementById('allTarget')};
   const slackSelect = document.getElementById('slackIdentityId');
@@ -93,5 +115,5 @@
   };
   document.querySelectorAll('input[name="target_type"]').forEach((radio) => radio.addEventListener('change', () => updateTarget(radio.value)));
 })();
-</script>
+  </script>
 {% endblock %}

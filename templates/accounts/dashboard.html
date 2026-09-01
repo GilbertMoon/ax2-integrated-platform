@@ -44,9 +44,7 @@
                   <span class="text-muted">{{ portal.round.evaluation_end_at|date:"n/j H:i" }} 마감</span>
                 {% else %}
                   <span class="badge badge-ax badge-ax-completed me-1">{{ portal.round.status }}</span>
-                  {% if portal.round.is_urgent %}
-                    <span class="badge badge-ax badge-ax-danger me-1">마감임박</span>
-                  {% endif %}
+                  {% if portal.round.is_urgent %}<span class="badge badge-ax badge-ax-danger me-1">마감임박</span>{% endif %}
                   <span class="text-muted">마감 D-{{ portal.round.d_day }}</span>
                 {% endif %}
               </div>
@@ -137,7 +135,9 @@
               {% for member in portal.team.members %}
                 <div class="col-6">
                   <div class="d-flex align-items-center gap-2">
-                    <div class="member-avatar {% cycle '' 'avatar-sky' 'avatar-amber' %}">{{ member.display_name_snapshot|slice:":1" }}</div>
+                    <div class="member-avatar {% cycle '' 'avatar-sky' 'avatar-amber' %}">
+                      {{ member.display_name_snapshot|slice:":1" }}
+                    </div>
                     <div>
                       <div class="fw-bold small">
                         {{ member.display_name_snapshot }}

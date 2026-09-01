@@ -113,7 +113,13 @@
                      class="btn btn-edit {% if target.completed %}btn-ax-secondary{% else %}btn-ax-primary{% endif %}"
                      data-title="{{ target.label }} 평가"
                      data-side="right">
-                    {% if team_final_state.finalized %}응답 보기{% elif target.completed %}수정하기{% else %}평가하기{% endif %}
+                    {% if team_final_state.finalized %}
+                      응답 보기
+                    {% elif target.completed %}
+                      수정하기
+                    {% else %}
+                      평가하기
+                    {% endif %}
                   </a>
                   {% if not team_final_state.finalized %}
                     <button type="button"
@@ -174,7 +180,13 @@
                      class="btn btn-edit {% if target.completed %}btn-ax-secondary{% else %}btn-ax-primary{% endif %}"
                      data-title="{{ target.label }} 평가"
                      data-side="left">
-                    {% if peer_final_state.finalized or target.locked %}응답 보기{% elif target.completed %}수정하기{% else %}평가하기{% endif %}
+                    {% if peer_final_state.finalized or target.locked %}
+                      응답 보기
+                    {% elif target.completed %}
+                      수정하기
+                    {% else %}
+                      평가하기
+                    {% endif %}
                   </a>
                   {% if not peer_final_state.finalized and not target.locked %}
                     <form method="post"

@@ -13,7 +13,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AX Evaluation Console">
-    <title>{% block title %}AX Evaluation Console{% endblock %}</title>
+    <title>
+      {% block title %}AX Evaluation Console{% endblock %}
+    </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
           rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css"
@@ -49,7 +51,9 @@
             <div class="topbar-breadcrumb d-flex align-items-center gap-2 small text-muted">
               <span class="topbar-breadcrumb-root"><i class="bi bi-house"></i> AX Console</span>
               <i class="font-size-11 bi bi-chevron-right topbar-breadcrumb-sep"></i>
-              <span class="current text-body fw-semibold">{% block breadcrumb %}포털{% endblock %}</span>
+              <span class="current text-body fw-semibold">
+                {% block breadcrumb %}포털{% endblock %}
+              </span>
             </div>
             {% include "includes/topbar_actions.html" %}
           </header>
@@ -83,7 +87,9 @@
       <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div class="modal-content rounded-4 border-0 shadow">
           <div class="modal-header border-bottom px-4 py-3">
-            <h6 class="modal-title fw-bold"><i class="bi bi-chat-dots-fill text-primary me-2"></i>통합 피드백 센터</h6>
+            <h6 class="modal-title fw-bold">
+              <i class="bi bi-chat-dots-fill text-primary me-2"></i>통합 피드백 센터
+            </h6>
             <button type="button"
                     class="btn-close"
                     data-bs-dismiss="modal"
@@ -282,6 +288,7 @@
     {% if user.is_authenticated %}
       <script src="{% static 'js/notifications.js' %}"></script>
     {% endif %}
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+    {% endblock %}
   </body>
 </html>

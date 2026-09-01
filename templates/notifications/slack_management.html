@@ -48,17 +48,21 @@
                   </td>
                   <td>
                     <div class="d-flex gap-2">
-                      <select class="form-select form-select-sm slack-link-select" data-user-id="{{ user.pk }}">
+                      <select class="form-select form-select-sm slack-link-select"
+                              data-user-id="{{ user.pk }}">
                         <option value="">Slack 사용자 선택</option>
                         {% for slack_user in slack_users %}
                           {% if not slack_user.user or slack_user.user_id == user.pk %}
-                            <option value="{{ slack_user.slack_user_id }}" {% if user.slack_identity and user.slack_identity.pk == slack_user.pk %}selected{% endif %}>
-                              {{ slack_user.slack_display_name|default:slack_user.slack_user_id }}{% if slack_user.slack_email %} · {{ slack_user.slack_email }}{% endif %}
+                            <option value="{{ slack_user.slack_user_id }}"
+                                    {% if user.slack_identity and user.slack_identity.pk == slack_user.pk %}selected{% endif %}>
+                              {{ slack_user.slack_display_name|default:slack_user.slack_user_id }}
+                              {% if slack_user.slack_email %}· {{ slack_user.slack_email }}{% endif %}
                             </option>
                           {% endif %}
                         {% endfor %}
                       </select>
-                      <button class="btn btn-sm btn-outline-primary slack-link-button" data-user-id="{{ user.pk }}">연결</button>
+                      <button class="btn btn-sm btn-outline-primary slack-link-button"
+                              data-user-id="{{ user.pk }}">연결</button>
                     </div>
                   </td>
                 </tr>

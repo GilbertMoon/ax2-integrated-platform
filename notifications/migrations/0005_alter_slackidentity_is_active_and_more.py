@@ -6,41 +6,51 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('notifications', '0004_slackidentity'),
+        ("notifications", "0004_slackidentity"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='slackidentity',
-            name='is_active',
-            field=models.BooleanField(default=True, verbose_name='Slack 활성 사용자'),
+            model_name="slackidentity",
+            name="is_active",
+            field=models.BooleanField(default=True, verbose_name="Slack 활성 사용자"),
         ),
         migrations.AlterField(
-            model_name='slackidentity',
-            name='slack_display_name',
-            field=models.CharField(blank=True, default='', max_length=255, verbose_name='Slack 표시 이름'),
+            model_name="slackidentity",
+            name="slack_display_name",
+            field=models.CharField(
+                blank=True, default="", max_length=255, verbose_name="Slack 표시 이름"
+            ),
         ),
         migrations.AlterField(
-            model_name='slackidentity',
-            name='slack_email',
-            field=models.EmailField(blank=True, default='', max_length=254, verbose_name='Slack 이메일'),
+            model_name="slackidentity",
+            name="slack_email",
+            field=models.EmailField(
+                blank=True, default="", max_length=254, verbose_name="Slack 이메일"
+            ),
         ),
         migrations.AlterField(
-            model_name='slackidentity',
-            name='slack_user_id',
-            field=models.CharField(max_length=32, unique=True, verbose_name='Slack Member ID'),
+            model_name="slackidentity",
+            name="slack_user_id",
+            field=models.CharField(max_length=32, unique=True, verbose_name="Slack Member ID"),
         ),
         migrations.AlterField(
-            model_name='slackidentity',
-            name='synced_at',
-            field=models.DateTimeField(auto_now=True, verbose_name='동기화 일시'),
+            model_name="slackidentity",
+            name="synced_at",
+            field=models.DateTimeField(auto_now=True, verbose_name="동기화 일시"),
         ),
         migrations.AlterField(
-            model_name='slackidentity',
-            name='user',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='slack_identity', to=settings.AUTH_USER_MODEL, verbose_name='프로젝트 사용자'),
+            model_name="slackidentity",
+            name="user",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="slack_identity",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="프로젝트 사용자",
+            ),
         ),
     ]

@@ -32,131 +32,143 @@
                 <tr>
                   <td class="fw-semibold">{{ user.first_name|default:user.email }}</td>
                   <td class="small text-muted">{{ user.email }}</td>
-                  <td>{% if user.slack_identity %}{{ user.slack_identity.slack_display_name|default:user.slack_identity.slack_user_id }}{% else %}-{% endif %}</td>
                   <td>
-                    {% if user.slack_identity %}<span class="badge text-bg-success">연결됨</span>
-{% else %}<span class="badge text-bg-warning">미연동</span>{% endif %}
-  </td>
-  <td>
-    <div class="d-flex gap-2">
-      <select class="form-select form-select-sm slack-link-select"
-              data-user-id="{{ user.pk }}">
-        <option value="">Slack 사용자 선택</option>
-        {% for slack_user in slack_users %}
-          {% if not slack_user.user or slack_user.user_id == user.pk %}
-            <option value="{{ slack_user.slack_user_id }}"
-                    {% if user.slack_identity and user.slack_identity.pk == slack_user.pk %}selected{% endif %}>
-              {{ slack_user.slack_display_name|default:slack_user.slack_user_id }}{% if slack_user.slack_email %} · {{ slack_user.slack_email }}{% endif %}
-            </option>
-          {% endif %}
-        {% endfor %}
-      </select>
-      <button class="btn btn-sm btn-outline-primary slack-link-button"
-              data-user-id="{{ user.pk }}">연결</button>
-    </div>
-  </td>
-  </tr>
-{% empty %}
-  <tr>
-    <td colspan="5" class="text-center text-muted py-4">등록된 사용자가 없습니다.</td>
-  </tr>
-{% endfor %}
-</tbody>
-</table>
-</div>
-<p class="text-muted small mb-0">이메일이 동일한 사용자는 동기화 시 자동 연결되며, 일치하지 않는 사용자는 아래에서 Slack 사용자를 확인한 뒤 수동 연결할 수 있습니다.</p>
-</div>
-</div>
-<div class="card border-0 shadow-sm rounded-4">
-  <div class="card-body p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div>
-        <h6 class="fw-bold mb-1">Slack 워크스페이스 사용자</h6>
-        <p class="text-muted small mb-0">동기화된 Slack 멤버 전체 목록입니다. 프로젝트에 등록되지 않은 Slack 사용자도 여기에서 확인할 수 있습니다.</p>
+                    {% if user.slack_identity %}
+                      {{ user.slack_identity.slack_display_name|default:user.slack_identity.slack_user_id }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if user.slack_identity %}
+                      <span class="badge text-bg-success">연결됨</span>
+                    {% else %}
+                      <span class="badge text-bg-warning">미연동</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="d-flex gap-2">
+                      <select class="form-select form-select-sm slack-link-select" data-user-id="{{ user.pk }}">
+                        <option value="">Slack 사용자 선택</option>
+                        {% for slack_user in slack_users %}
+                          {% if not slack_user.user or slack_user.user_id == user.pk %}
+                            <option value="{{ slack_user.slack_user_id }}" {% if user.slack_identity and user.slack_identity.pk == slack_user.pk %}selected{% endif %}>
+                              {{ slack_user.slack_display_name|default:slack_user.slack_user_id }}{% if slack_user.slack_email %} · {{ slack_user.slack_email }}{% endif %}
+                            </option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                      <button class="btn btn-sm btn-outline-primary slack-link-button" data-user-id="{{ user.pk }}">연결</button>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">등록된 사용자가 없습니다.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="text-muted small mb-0">이메일이 동일한 사용자는 동기화 시 자동 연결되며, 일치하지 않는 사용자는 아래에서 Slack 사용자를 확인한 뒤 수동 연결할 수 있습니다.</p>
       </div>
-      <span class="badge text-bg-secondary">{{ slack_users|length }}명</span>
     </div>
-    <div class="table-responsive">
-      <table class="table align-middle">
-        <thead>
-          <tr>
-            <th>Slack 사용자</th>
-            <th>Slack 이메일</th>
-            <th>연결된 프로젝트 사용자</th>
-            <th>상태</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for slack_user in slack_users %}
-            <tr>
-              <td class="fw-semibold">{{ slack_user.slack_display_name|default:slack_user.slack_user_id }}</td>
-              <td class="small text-muted">{{ slack_user.slack_email|default:"-" }}</td>
-              <td>{% if slack_user.user %}{{ slack_user.user.first_name|default:slack_user.user.email }}{% else %}-{% endif %}</td>
-              <td>
-                {% if slack_user.user %}
-                  <span class="badge text-bg-success">연결됨</span>
-                {% else %}
-                  <span class="badge text-bg-warning">미연동</span>
-                {% endif %}
-              </td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="4" class="text-center text-muted py-4">동기화된 Slack 사용자가 없습니다. 위의 동기화 버튼을 눌러주세요.</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h6 class="fw-bold mb-1">Slack 워크스페이스 사용자</h6>
+            <p class="text-muted small mb-0">동기화된 Slack 멤버 전체 목록입니다. 프로젝트에 등록되지 않은 Slack 사용자도 여기에서 확인할 수 있습니다.</p>
+          </div>
+          <span class="badge text-bg-secondary">{{ slack_users|length }}명</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Slack 사용자</th>
+                <th>Slack 이메일</th>
+                <th>연결된 프로젝트 사용자</th>
+                <th>상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for slack_user in slack_users %}
+                <tr>
+                  <td class="fw-semibold">{{ slack_user.slack_display_name|default:slack_user.slack_user_id }}</td>
+                  <td class="small text-muted">{{ slack_user.slack_email|default:"-" }}</td>
+                  <td>
+                    {% if slack_user.user %}
+                      {{ slack_user.user.first_name|default:slack_user.user.email }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if slack_user.user %}
+                      <span class="badge text-bg-success">연결됨</span>
+                    {% else %}
+                      <span class="badge text-bg-warning">미연동</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center text-muted py-4">동기화된 Slack 사용자가 없습니다. 위의 동기화 버튼을 눌러주세요.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
-</div>
-</div>
 {% endblock %}
 {% block extra_js %}
   <script>
-(() => {
-  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-  const result = document.getElementById('syncResult');
-  const showResult = (message, ok = true) => {
-    result.textContent = message;
-    result.className = `alert ${ok ? 'alert-success' : 'alert-danger'} mb-4`;
-  };
+    (() => {
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+      const result = document.getElementById('syncResult');
+      const showResult = (message, ok = true) => {
+        result.textContent = message;
+        result.className = `alert ${ok ? 'alert-success' : 'alert-danger'} mb-4`;
+      };
 
-  document.getElementById('slackSyncButton')?.addEventListener('click', async (event) => {
-    const button = event.currentTarget;
-    button.disabled = true;
-    try {
-      const response = await fetch('{% url "notifications:slack-sync" %}', {
-        method: 'POST',
-        headers: {'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest'},
+      document.getElementById('slackSyncButton')?.addEventListener('click', async (event) => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        try {
+          const response = await fetch('{% url "notifications:slack-sync" %}', {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest'},
+          });
+          const data = await response.json();
+          if (!response.ok || !data.ok) throw new Error(data.error || 'Slack 동기화에 실패했습니다.');
+          showResult(`동기화 완료: Slack ${data.total}명 / 자동 연결 ${data.linked}명 / 미연동 ${data.unmatched}명`);
+          setTimeout(() => window.location.reload(), 700);
+        } catch (error) {
+          showResult(error.message, false);
+        } finally {
+          button.disabled = false;
+        }
       });
-      const data = await response.json();
-      if (!response.ok || !data.ok) throw new Error(data.error || 'Slack 동기화에 실패했습니다.');
-      showResult(`동기화 완료: Slack ${data.total}명 / 자동 연결 ${data.linked}명 / 미연동 ${data.unmatched}명`);
-      setTimeout(() => window.location.reload(), 700);
-    } catch (error) {
-      showResult(error.message, false);
-    } finally {
-      button.disabled = false;
-    }
-  });
 
-  document.querySelectorAll('.slack-link-button').forEach((button) => {
-    button.addEventListener('click', async () => {
-      const userId = button.dataset.userId;
-      const select = document.querySelector(`.slack-link-select[data-user-id="${userId}"]`);
-      if (!select?.value) return showResult('연결할 Slack 사용자를 선택해주세요.', false);
-      const response = await fetch('{% url "notifications:slack-link" %}', {
-        method: 'POST',
-        headers: {'X-CSRFToken': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded'},
-        body: new URLSearchParams({user_id: userId, slack_user_id: select.value}),
+      document.querySelectorAll('.slack-link-button').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const userId = button.dataset.userId;
+          const select = document.querySelector(`.slack-link-select[data-user-id="${userId}"]`);
+          if (!select?.value) return showResult('연결할 Slack 사용자를 선택해주세요.', false);
+          const response = await fetch('{% url "notifications:slack-link" %}', {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({user_id: userId, slack_user_id: select.value}),
+          });
+          const data = await response.json();
+          if (!response.ok || !data.ok) return showResult(data.error || '연결에 실패했습니다.', false);
+          showResult('Slack 사용자 연결이 완료되었습니다.');
+          setTimeout(() => window.location.reload(), 500);
+        });
       });
-      const data = await response.json();
-      if (!response.ok || !data.ok) return showResult(data.error || '연결에 실패했습니다.', false);
-      showResult('Slack 사용자 연결이 완료되었습니다.');
-      setTimeout(() => window.location.reload(), 500);
-    });
-  });
-})();
+    })();
   </script>
 {% endblock %}

@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
 from accounts.permissions import is_operations_user
+from notifications.models import SlackIdentity
 from notifications.services import (
     delete_all_notifications,
     delete_notification,
@@ -32,12 +34,7 @@ def _serialize(notification):
 @login_required
 def summary(request):
     items = list(recent_notifications(request.user))
-    return JsonResponse(
-        {
-            "unread_count": unread_count(request.user),
-            "items": [_serialize(item) for item in items],
-        }
-    )
+    return JsonResponse({"unread_count": unread_count(request.user), "items": [_serialize(item) for item in items]})
 
 
 @login_required
@@ -70,20 +67,22 @@ def delete_all_view(request):
 
 def _require_operations(request):
     if not is_operations_user(request.user):
-        from django.core.exceptions import PermissionDenied
-
         raise PermissionDenied
 
 
 @login_required
+
 def slack_management(request):
     _require_operations(request)
-    users = User.objects.filter(is_active=True).select_related("slack_identity").order_by("email")
-    slack_identities = {identity.user_id: identity for identity in users if hasattr(identity, "slack_identity")}
-    users_with_identity = []
-    for user in users:
-        users_with_identity.append((user, slack_identities.get(user.pk)))
-    return render(request, "notifications/slack_management.html", {"users": users_with_identity})
+    project_users = list(
+        User.objects.filter(is_active=True).select_related("slack_identity").order_by("email")
+    )
+    slack_users = list(SlackIdentity.objects.filter(is_active=True).select_related("user"))
+    return render(
+        request,
+        "notifications/slack_management.html",
+        {"project_users": project_users, "slack_users": slack_users},
+    )
 
 
 @login_required
@@ -94,25 +93,21 @@ def slack_sync_view(request):
         result = sync_slack_users()
     except RuntimeError as exc:
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
-    return JsonResponse({
-        "ok": True,
-        "total": result["total"],
-        "linked": result["linked"],
-        "unmatched": result["unmatched"],
-    })
+    return JsonResponse({"ok": True, **result})
 
 
 @login_required
 @require_POST
 def slack_link_view(request):
     _require_operations(request)
-    user_id = request.POST.get("user_id")
-    slack_user_id = (request.POST.get("slack_user_id") or "").strip()
-    user = User.objects.filter(pk=user_id, is_active=True).first()
+    user = User.objects.filter(pk=request.POST.get("user_id"), is_active=True).first()
     if not user:
         return JsonResponse({"ok": False, "error": "프로젝트 사용자를 찾을 수 없습니다."}, status=400)
     try:
-        identity = link_slack_user(user=user, slack_user_id=slack_user_id)
+        identity = link_slack_user(
+            user=user,
+            slack_user_id=(request.POST.get("slack_user_id") or "").strip(),
+        )
     except ValueError as exc:
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
     return JsonResponse({"ok": True, "slack_user_id": identity.slack_user_id})

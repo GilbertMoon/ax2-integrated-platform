@@ -91,6 +91,18 @@ def send_slack_dm(*, user=None, slack_user_id=None, title, message="", link=""):
         return False
 
 
+def send_slack_dm_ax(*, ax_user_id, title, message="", link=""):
+    """Send a Slack DM using the project's User ID.
+
+    The caller only needs the AX2 User primary key. The linked Slack Member ID
+    is resolved internally through SlackIdentity.
+    """
+    user = User.objects.filter(pk=ax_user_id, is_active=True).first()
+    if not user:
+        return False
+    return send_slack_dm(user=user, title=title, message=message, link=link)
+
+
 def fetch_slack_users():
     """Fetch all non-bot Slack workspace members, following cursor pagination."""
     headers = _slack_headers()

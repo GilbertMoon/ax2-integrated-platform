@@ -2,11 +2,11 @@ name: Quality checks
 
 on:
   push:
-    branches: [main]
+    branches: [main, tmp/migration-fix]
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   quality:
@@ -52,6 +52,21 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Generate pending migrations
+        run: python manage.py makemigrations notifications
+
+      - name: Commit generated migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add notifications/migrations
+          if git diff --cached --quiet; then
+            echo "No migration changes"
+          else
+            git commit -m "fix: add notifications migration"
+            git push
+          fi
 
       - name: Run Ruff lint checks
         run: ruff check .

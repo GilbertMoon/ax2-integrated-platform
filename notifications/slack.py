@@ -62,10 +62,10 @@ def send_slack_message(*, title, message="", link=""):
 
 
 def send_slack_dm(*, user=None, slack_user_id=None, title, message="", link=""):
-    """Send a DM using a project User, with Slack ID as a backward-compatible fallback."""
+    """Send a DM using a project User, with Slack ID as a legacy fallback."""
     if user is not None:
         slack_identity = getattr(user, "slack_identity", None)
-        slack_user_id = slack_identity.slack_user_id if slack_identity else None
+        slack_user_id = slack_identity.slack_user_id if slack_identity and slack_identity.is_active else None
 
     headers = _slack_headers()
     if not headers or not slack_user_id:
@@ -77,7 +77,6 @@ def send_slack_dm(*, user=None, slack_user_id=None, title, message="", link=""):
         )
         if not open_data:
             return False
-
         channel_id = open_data["channel"]["id"]
         message_data = _slack_post(
             "chat.postMessage",
@@ -135,43 +134,40 @@ def fetch_slack_users():
 
 
 def sync_slack_users():
-    """Sync Slack members and automatically link project users by email."""
+    """Sync all Slack members and auto-link project users by email."""
     slack_users = fetch_slack_users()
     project_users = {
         user.email.strip().lower(): user
         for user in User.objects.filter(is_active=True).exclude(email="")
     }
-    slack_ids = {item["slack_user_id"] for item in slack_users if item["slack_user_id"]}
     linked = 0
     unmatched = 0
+    slack_ids = set()
 
     with transaction.atomic():
         for item in slack_users:
             slack_user_id = item["slack_user_id"]
             if not slack_user_id:
                 continue
+            slack_ids.add(slack_user_id)
             user = project_users.get(item["email"])
-            identity = SlackIdentity.objects.filter(slack_user_id=slack_user_id).first()
+            identity, _ = SlackIdentity.objects.get_or_create(
+                slack_user_id=slack_user_id,
+                defaults={"is_active": item["is_active"]},
+            )
+
+            identity.slack_email = item["email"]
+            identity.slack_display_name = item["display_name"]
+            identity.is_active = item["is_active"]
 
             if user:
-                SlackIdentity.objects.filter(user=user).exclude(slack_user_id=slack_user_id).delete()
-                SlackIdentity.objects.update_or_create(
-                    slack_user_id=slack_user_id,
-                    defaults={
-                        "user": user,
-                        "slack_email": item["email"],
-                        "slack_display_name": item["display_name"],
-                        "is_active": item["is_active"],
-                    },
-                )
+                SlackIdentity.objects.filter(user=user).exclude(pk=identity.pk).update(user=None)
+                identity.user = user
                 linked += 1
-            elif identity:
-                identity.slack_email = item["email"]
-                identity.slack_display_name = item["display_name"]
-                identity.is_active = item["is_active"]
-                identity.save(update_fields=["slack_email", "slack_display_name", "is_active", "synced_at"])
-            else:
+            elif identity.user_id is None:
                 unmatched += 1
+
+            identity.save()
 
         SlackIdentity.objects.exclude(slack_user_id__in=slack_ids).update(is_active=False)
 
@@ -179,17 +175,18 @@ def sync_slack_users():
 
 
 def link_slack_user(*, user, slack_user_id):
-    """Manually connect a project user to a Slack member."""
+    """Manually connect one project User to one synced Slack member."""
     if not user or not slack_user_id:
         raise ValueError("사용자와 Slack Member ID가 필요합니다.")
 
-    existing = SlackIdentity.objects.filter(slack_user_id=slack_user_id).first()
-    if existing and existing.user_id != user.pk:
+    identity = SlackIdentity.objects.filter(slack_user_id=slack_user_id, is_active=True).first()
+    if not identity:
+        raise ValueError("먼저 Slack 사용자 동기화를 실행해주세요.")
+    if identity.user_id and identity.user_id != user.pk:
         raise ValueError("해당 Slack 사용자는 이미 다른 프로젝트 사용자와 연결되어 있습니다.")
 
     with transaction.atomic():
-        SlackIdentity.objects.filter(user=user).exclude(slack_user_id=slack_user_id).delete()
-        return SlackIdentity.objects.update_or_create(
-            slack_user_id=slack_user_id,
-            defaults={"user": user, "is_active": True},
-        )[0]
+        SlackIdentity.objects.filter(user=user).exclude(pk=identity.pk).update(user=None)
+        identity.user = user
+        identity.save(update_fields=["user", "synced_at"])
+        return identity

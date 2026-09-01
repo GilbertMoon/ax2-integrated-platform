@@ -13,4 +13,5 @@ urlpatterns = [
     path("slack/", views.slack_management, name="slack-management"),
     path("slack/sync/", views.slack_sync_view, name="slack-sync"),
     path("slack/link/", views.slack_link_view, name="slack-link"),
+    path("slack/send/", views.slack_send, name="slack-send"),
 ]

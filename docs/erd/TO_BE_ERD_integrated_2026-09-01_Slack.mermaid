@@ -1,0 +1,27 @@
+erDiagram
+
+%% ==========================================================
+%% 통합 ERD + Slack 공통 연동 반영본
+%% 2026-09-01 P6 Slack 연동 기능 추가
+%% ==========================================================
+
+accounts_user ||--o| notifications_slackidentity : "Slack 연동"
+
+notifications_slackidentity {
+    bigint id PK
+    bigint user_id FK "프로젝트 User, 미연동이면 NULL"
+    varchar slack_user_id UK "Slack Member ID"
+    varchar slack_email
+    varchar slack_display_name
+    boolean is_active
+    datetime synced_at
+}
+
+%% Slack 연동 흐름
+%% 1. Slack users.list로 워크스페이스 멤버 동기화
+%% 2. slack_email = accounts_user.email 이면 자동 연결
+%% 3. 이메일 불일치/없음 -> user_id NULL 상태의 미연동 SlackIdentity 저장
+%% 4. 관리자가 Slack 사용자 연동 화면에서 프로젝트 User와 수동 연결
+%% 5. 다른 팀은 send_slack_dm_ax(ax_user_id, title, message, link) 호출
+%% 6. ax_user_id -> accounts_user -> notifications_slackidentity -> slack_user_id
+%% 7. conversations.open -> chat.postMessage로 Slack DM 발송

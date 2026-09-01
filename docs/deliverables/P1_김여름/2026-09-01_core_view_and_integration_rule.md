@@ -156,7 +156,48 @@
 - 개인 브랜치: `feature/p1-summer`
 - 대상 DB: PostgreSQL `ax_evaluation`
 
-## 10. 본인 검증
+## 10. Google OAuth Cross Check
+
+### 검증 환경
+- Branch: `develop`
+- Local Server: `http://127.0.0.1:8000/`
+- Django `manage.py check`: PASS
+- Google OAuth 환경변수: 로컬 `.env` 적용
+- `.env` Git Ignore / 비추적 상태 확인 완료
+
+### 검증 결과
+- Google OAuth 신규 가입 성공
+- Tutor 승인 대기 목록 정상 노출
+- 가입 방식 `GOOGLE` 확인
+- Django ORM을 통한 User DB 저장 확인
+
+### DB 확인 결과
+- `role`: `student`
+- `approval_status`: `pending`
+- `is_active`: `True`
+- `is_social_account`: `True`
+- `is_onboarded`: `False`
+- `last_login`: `None`
+
+### 검증 흐름
+Google OAuth 신규 가입  
+→ User 생성  
+→ `role=student` 저장  
+→ `approval_status=pending` 저장  
+→ Tutor 승인 대기 목록 노출  
+→ UI / DB 상태 일치 확인
+
+### 현재 판정
+**PASS — Google OAuth 신규 가입 및 승인 대기 상태까지 정상**
+
+### 후속 검증
+- [ ] Tutor 승인 처리
+- [ ] 승인 후 DB 상태 변경 확인
+- [ ] 승인 후 Google 재로그인 / 권한 확인
+- [ ] Kakao OAuth 동일 시나리오 검증
+
+- [ ] 
+## 11. 본인 검증
 - 개인 브랜치 생성: **PASS**
 - 두 VIEW 실제 DB 존재 확인: **PASS**
 - 두 VIEW 직접 조회: **PASS**
@@ -166,13 +207,13 @@
 - 브랜치 / PR / develop 운영 규칙 문서화: **PASS**
 - Daily Deliverable 반영: **PASS**
 
-## 11. 후속 PHASE 3 검증 항목
+## 12. 후속 PHASE 3 검증 항목
 - 1조 소스 통합 후 실제 VIEW 적용 검증
 - 2조 소스 통합 후 실제 VIEW 적용 검증
 - 3조 소스 통합 후 실제 VIEW 적용 검증
 - `develop` 통합 후 Regression / Cross Check
 
-## 12. 현재 판단
+## 13. 현재 판단
 - VIEW 자체의 DB 반영/조회 검증은 완료했다.
 - VIEW의 용도와 사용 대상 팀은 최종 확정했다.
 - P2/P3는 문서 기준으로 Critical 충돌이 확인되지 않았다.

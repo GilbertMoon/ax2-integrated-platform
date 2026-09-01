@@ -24,7 +24,11 @@
         <button class="btn btn-ax-primary"
                 type="submit"
                 {% if round_obj.status != 'COMPLETED' %}disabled title="완료된 회차만 채점할 수 있습니다."{% endif %}>
-          {% if run %}재채점{% else %}채점 실행{% endif %}
+          {% if run %}
+            재채점
+          {% else %}
+            채점 실행
+          {% endif %}
         </button>
       </form>
       <a href="{% url 'rounds:publish-settings' round_obj.pk %}"
@@ -76,7 +80,13 @@
       <div class="col-md-4">
         <div class="card-custom ax-summary-card ax-summary-card--highlight h-100 mb-0">
           <span class="ax-summary-label"><i class="bi bi-trophy-fill"></i> 최우수 팀</span>
-          <span class="ax-summary-value">{% if summary.top_team %}{{ summary.top_team.team.name }}{% else %}-{% endif %}</span>
+          <span class="ax-summary-value">
+            {% if summary.top_team %}
+              {{ summary.top_team.team.name }}
+            {% else %}
+              -
+            {% endif %}
+          </span>
           <span class="ax-summary-note">
             {% if summary.top_team %}
               {{ summary.top_team.team_score_raw|as_five_point }}/5

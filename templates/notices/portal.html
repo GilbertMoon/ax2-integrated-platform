@@ -37,7 +37,11 @@
               </td>
               <td>
                 <span class="badge badge-ax {% if notice.is_published %}badge-ax-completed{% else %}badge-ax-expired{% endif %}">
-                  {% if notice.is_published %}공개{% else %}비공개{% endif %}
+                  {% if notice.is_published %}
+                    공개
+                  {% else %}
+                    비공개
+                  {% endif %}
                 </span>
               </td>
               <td class="small text-muted">{{ notice.created_at|date:"Y-m-d H:i" }}</td>
@@ -56,7 +60,11 @@
                         action="{% url 'notices:notice-toggle-publish' notice.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-outline-secondary">
-                      {% if notice.is_published %}비공개로 전환{% else %}공개하기{% endif %}
+                      {% if notice.is_published %}
+                        비공개로 전환
+                      {% else %}
+                        공개하기
+                      {% endif %}
                     </button>
                   </form>
                   <form method="post"

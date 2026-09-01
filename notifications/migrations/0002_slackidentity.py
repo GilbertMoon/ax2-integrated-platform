@@ -1,0 +1,29 @@
+from django.db import migrations, models
+import django.db.models.deletion
+
+
+def noop(apps, schema_editor):
+    pass
+
+
+class Migration(migrations.Migration):
+    dependencies = [("notifications", "0001_initial")]
+
+    operations = [
+        migrations.CreateModel(
+            name="SlackIdentity",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("slack_user_id", models.CharField(max_length=32, unique=True)),
+                ("slack_email", models.EmailField(blank=True, default="", max_length=254)),
+                ("slack_display_name", models.CharField(blank=True, default="", max_length=255)),
+                ("is_active", models.BooleanField(default=True)),
+                ("synced_at", models.DateTimeField(auto_now=True)),
+                ("user", models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name="slack_identity", to="accounts.user")),
+            ],
+            options={
+                "verbose_name": "Slack 사용자 연동",
+                "verbose_name_plural": "Slack 사용자 연동 목록",
+            },
+        ),
+    ]

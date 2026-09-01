@@ -11,17 +11,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("accounts/google/login/", oauth.google_login, name="google_login"),
-    path(
-        "accounts/google/login/callback/",
-        oauth.google_callback,
-        name="google_callback",
-    ),
+    path("accounts/google/login/callback/", oauth.google_callback, name="google_callback"),
     path("accounts/kakao/login/", oauth.kakao_login, name="kakao_login"),
-    path(
-        "accounts/kakao/login/callback/",
-        oauth.kakao_callback,
-        name="kakao_callback",
-    ),
+    path("accounts/kakao/login/callback/", oauth.kakao_callback, name="kakao_callback"),
     path("teams/", include("teams.urls")),
     path("student/team/", team_views.student_team_page, name="student-team-page"),
     path("reviews/", include("reviews.urls")),
@@ -34,6 +26,4 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    # 개발 서버에서만 업로드된 프로필 사진을 직접 내려준다.
-    # 운영에서는 Caddy/whitenoise 등 앞단이 MEDIA_ROOT를 서빙해야 한다.
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

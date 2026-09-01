@@ -29,12 +29,19 @@
           <select id="slackIdentityId" name="slack_identity_id" class="form-select" required>
             <option value="">Slack 사용자 선택</option>
             {% for slack_user in slack_users %}
-              <option value="{{ slack_user.pk }}">{{ slack_user.slack_display_name|default:slack_user.slack_user_id }}{% if slack_user.slack_email %} · {{ slack_user.slack_email }}{% endif %}{% if slack_user.user %} · 프로젝트 연결됨{% else %} · 미연동{% endif %}</option>
+              <option value="{{ slack_user.pk }}">
+                {% if slack_user.user %}
+                  {{ slack_user.user.first_name|default:slack_user.user.email }} · {{ slack_user.user.email }}
+                {% else %}
+                  {{ slack_user.slack_display_name|default:slack_user.slack_user_id }}{% if slack_user.slack_email %} · {{ slack_user.slack_email }}{% endif %}
+                {% endif %}
+                {% if slack_user.user %} · 프로젝트 연결됨{% else %} · 미연동{% endif %}
+              </option>
             {% empty %}
               <option value="">동기화된 Slack 사용자가 없습니다.</option>
             {% endfor %}
           </select>
-          <div class="form-text">프로젝트에 등록되지 않은 Slack 사용자도 개인 발송 대상으로 선택할 수 있습니다.</div>
+          <div class="form-text">프로젝트에 연결된 사용자는 사이트에 등록된 이름으로 표시됩니다.</div>
         </div>
 
         <div id="teamTarget" class="mb-4 target-panel d-none">

@@ -71,7 +71,6 @@ def _require_operations(request):
 
 
 @login_required
-
 def slack_management(request):
     _require_operations(request)
     project_users = list(

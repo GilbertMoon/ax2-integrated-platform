@@ -18,7 +18,9 @@
       <button type="button"
               class="btn btn-ax-secondary"
               data-bs-toggle="modal"
-              data-bs-target="#profileModal"><i class="bi bi-person-gear me-1"></i>프로필 수정</button>
+              data-bs-target="#profileModal">
+        <i class="bi bi-person-gear me-1"></i>프로필 수정
+      </button>
       {% if user.has_usable_password %}
         <a href="{% url 'accounts:password_change' %}"
            class="btn btn-ax-primary"><i class="bi bi-shield-lock me-1"></i>비밀번호 변경</a>
@@ -185,7 +187,9 @@
               {% endif %}
             </div>
             <div class="ax-hero-winner">
-              <div class="ax-hero-winner-label">1등 팀<i class="bi bi-trophy-fill text-warning"></i></div>
+              <div class="ax-hero-winner-label">
+                1등 팀<i class="bi bi-trophy-fill text-warning"></i>
+              </div>
               {% if portal.team_winner %}
                 <div class="ax-hero-winner-name">{{ portal.team_winner.name }}</div>
                 <div class="ax-hero-winner-score">{{ portal.team_winner.score|as_five_point }} / 5</div>
@@ -198,7 +202,9 @@
           <div class="ax-chart-area">
             <div class="ax-chart-caption">
               <span>
-                {% if portal.selected.evaluation_start_at %}{{ portal.selected.evaluation_start_at|date:"Y-m-d" }} – {{ portal.selected.evaluation_end_at|date:"Y-m-d" }}{% endif %}
+                {% if portal.selected.evaluation_start_at %}
+                  {{ portal.selected.evaluation_start_at|date:"Y-m-d" }} – {{ portal.selected.evaluation_end_at|date:"Y-m-d" }}
+                {% endif %}
               </span>
               <span class="ax-chart-legend"><span class="ax-chart-legend-dot"></span>최종 점수</span>
             </div>
@@ -228,7 +234,7 @@
                   </span>
                 {% endif %}
                 <span class="ax-metric-value">
-                  {{ portal.selected.team_score|as_five_point|default:"N/A" }}<span class="ax-hero-unit"> / 5</span>
+                  {{ portal.selected.team_score|as_five_point|default:"N/A" }}<span class="ax-hero-unit">/ 5</span>
                 </span>
               </div>
             </div>
@@ -250,7 +256,7 @@
                   </span>
                 {% endif %}
                 <span class="ax-metric-value">
-                  {{ portal.selected.peer_score|as_five_point|default:"N/A" }}<span class="ax-hero-unit"> / 5</span>
+                  {{ portal.selected.peer_score|as_five_point|default:"N/A" }}<span class="ax-hero-unit">/ 5</span>
                 </span>
               </div>
             </div>
@@ -262,7 +268,7 @@
                 </div>
                 <div class="ax-metric-right">
                   <span class="ax-metric-value">
-                    {{ portal.selected.tutor_score|as_five_point|default:"N/A" }}<span class="ax-hero-unit"> / 5</span>
+                    {{ portal.selected.tutor_score|as_five_point|default:"N/A" }}<span class="ax-hero-unit">/ 5</span>
                   </span>
                 </div>
               </div>

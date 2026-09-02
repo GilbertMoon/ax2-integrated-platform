@@ -4,9 +4,7 @@
     <div class="ax-publish-item-text">
       <strong>{{ item.label }}</strong>
       <span>{{ item.hint }}</span>
-      {% if item.published_at %}
-        <span class="ax-publish-time">{{ item.published_at|date:"Y-m-d H:i" }} 공개</span>
-      {% endif %}
+      {% if item.published_at %}<span class="ax-publish-time">{{ item.published_at|date:"Y-m-d H:i" }} 공개</span>{% endif %}
     </div>
     {% comment %}공개를 켜는 순간 참가자 전원에게 알림과 메일이 나간다. 되돌려도 이미 나간 메일은
     거둘 수 없으므로 켤 때만 대상 인원과 함께 한 번 확인받는다. 확인을 onchange에서 하는 이유는

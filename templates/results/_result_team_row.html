@@ -4,7 +4,8 @@
   <td class="fw-semibold">{{ result.team.name }}</td>
   <td class="text-muted">
     {% for membership in result.team.memberships.all %}
-      {{ membership.participant.display_name_snapshot }}{% if not forloop.last %},{% endif %}
+      {{ membership.participant.display_name_snapshot }}
+      {% if not forloop.last %},{% endif %}
     {% empty %}
       <span class="ax-na-value">구성원 없음</span>
     {% endfor %}

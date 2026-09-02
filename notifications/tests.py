@@ -4,15 +4,17 @@ from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
-from notifications.models import Notification
+from notifications.models import Notification, SlackIdentity
 from notifications.services import (
     EMAIL_CAPABLE_CATEGORIES,
     announce,
     delete_all_notifications,
     delete_notification,
+    link_slack_user,
     mark_all_read,
     mark_read,
     notify_users,
+    sync_slack_users,
     unread_count,
 )
 
@@ -281,3 +283,37 @@ class SlackDirectMessageTests(TestCase):
         from notifications.slack import send_slack_dm
 
         self.assertFalse(send_slack_dm(slack_user_id="U123", title="테스트"))
+
+
+class SlackSyncTests(TestCase):
+    @patch("notifications.services.fetch_slack_users")
+    def test_sync_preserves_manual_link_when_email_does_not_match(self, mock_fetch):
+        user = User.objects.create_user(
+            email="project-user@example.com",
+            password="strong-test-password",
+            first_name="프로젝트 사용자",
+            role=User.Role.STUDENT,
+            approval_status=User.ApprovalStatus.APPROVED,
+        )
+        identity = SlackIdentity.objects.create(
+            slack_user_id="U_MANUAL",
+            slack_email="old-slack@example.com",
+            slack_display_name="수동 연결 사용자",
+            is_active=True,
+        )
+        link_slack_user(user=user, slack_user_id=identity.slack_user_id)
+
+        mock_fetch.return_value = [
+            {
+                "slack_user_id": "U_MANUAL",
+                "email": "different-slack@example.com",
+                "display_name": "수동 연결 사용자",
+                "is_active": True,
+            }
+        ]
+
+        sync_slack_users()
+
+        identity.refresh_from_db()
+        self.assertEqual(identity.user_id, user.pk)
+        self.assertEqual(identity.slack_email, "different-slack@example.com")

@@ -1,10 +1,12 @@
+from django.db import transaction
 from django.utils import timezone
 
-from notifications.models import Notification
+from accounts.models import User
+from notifications.models import Notification, SlackIdentity
+from notifications.slack import fetch_slack_users, send_slack_dm
+from notifications.slack import link_slack_user as link_slack_identity
 
 # 메일 템플릿이 있는 알림 종류. 마이페이지의 수신 설정도 이 목록으로 그린다.
-# (본인 확인·비밀번호 재설정 메일은 알림 사건이 아니라 계정 보호용이라 여기 없고,
-#  수신 설정과 무관하게 항상 발송된다.)
 EMAIL_CAPABLE_CATEGORIES = (
     Notification.Category.NOTICE,
     Notification.Category.ROUND_STARTED,
@@ -14,15 +16,6 @@ EMAIL_CAPABLE_CATEGORIES = (
 
 
 def announce(users, *, category, title, message="", link="", email_sender=None):
-    """하나의 사건을 종 알림과 메일 양쪽으로 내보낸다.
-
-    두 채널을 각 호출부에서 따로 챙기면 "메일은 갔는데 알림은 없는" 사건이 생긴다
-    (결과 공개가 그랬다). 사건마다 이 함수를 한 번만 부르는 것을 규칙으로 삼는다.
-
-    ``email_sender``는 메일을 받을 사용자 목록을 받아 실제 발송을 맡는 함수다. 메일
-    템플릿이 없는 종류(팀 배정 등)는 넘기지 않으면 종 알림만 나간다. 메일은 사용자가
-    그 종류를 꺼두지 않은 경우에만 나가고, 종 알림은 설정과 무관하게 항상 남는다.
-    """
     recipients = list(users)
     notify_users(recipients, category=category, title=title, message=message, link=link)
     if email_sender is None:
@@ -34,10 +27,6 @@ def announce(users, *, category, title, message="", link="", email_sender=None):
 
 
 def notify_users(users, *, category, title, message="", link=""):
-    """여러 사용자에게 같은 알림을 한 번씩 만든다.
-
-    호출하는 쪽에서 이미 같은 대상 목록을 넘긴다고 가정하고 중복 제거는 하지 않는다.
-    """
     user_ids = {user.pk for user in users}
     Notification.objects.bulk_create(
         Notification(
@@ -60,7 +49,7 @@ def recent_notifications(user, limit=30):
 
 
 def mark_read(*, user, notification_id):
-    Notification.objects.filter(pk=notification_id, recipient=user, read_at__isnull=True).update(
+    Notification.objects.filter(recipient=user, pk=notification_id, read_at__isnull=True).update(
         read_at=timezone.now()
     )
 
@@ -70,8 +59,80 @@ def mark_all_read(user):
 
 
 def delete_notification(*, user, notification_id):
-    Notification.objects.filter(pk=notification_id, recipient=user).delete()
+    Notification.objects.filter(recipient=user, pk=notification_id).delete()
 
 
 def delete_all_notifications(user):
     Notification.objects.filter(recipient=user).delete()
+
+
+def sync_slack_users():
+    """Import all Slack members and auto-link project users by email."""
+    slack_users = fetch_slack_users()
+    project_users = {
+        user.email.strip().lower(): user
+        for user in User.objects.filter(is_active=True).exclude(email="")
+    }
+    linked = 0
+    unmatched = 0
+    slack_ids = set()
+
+    with transaction.atomic():
+        for slack_user in slack_users:
+            slack_user_id = slack_user["slack_user_id"]
+            if not slack_user_id:
+                continue
+            slack_ids.add(slack_user_id)
+            user = project_users.get(slack_user["email"])
+
+            if user:
+                SlackIdentity.objects.filter(user=user).exclude(slack_user_id=slack_user_id).update(
+                    user=None
+                )
+                identity, _ = SlackIdentity.objects.get_or_create(
+                    slack_user_id=slack_user_id,
+                    defaults={"is_active": slack_user["is_active"]},
+                )
+                identity.user = user
+                identity.slack_email = slack_user["email"]
+                identity.slack_display_name = slack_user["display_name"]
+                identity.is_active = slack_user["is_active"]
+                identity.save()
+                linked += 1
+            else:
+                # 프로젝트에 아직 가입하지 않은 Slack 사용자도 저장한다.
+                # 이미 수동 연결된 사용자의 연결 정보는 동기화에서 유지한다.
+                identity, _ = SlackIdentity.objects.get_or_create(
+                    slack_user_id=slack_user_id,
+                    defaults={"is_active": slack_user["is_active"]},
+                )
+                identity.slack_email = slack_user["email"]
+                identity.slack_display_name = slack_user["display_name"]
+                identity.is_active = slack_user["is_active"]
+                identity.save()
+                if identity.user_id is None:
+                    unmatched += 1
+
+        SlackIdentity.objects.exclude(slack_user_id__in=slack_ids).update(is_active=False)
+
+    return {"total": len(slack_users), "linked": linked, "unmatched": unmatched}
+
+
+def link_slack_user(*, user, slack_user_id):
+    """Manually link one project User to one Slack member."""
+    return link_slack_identity(user=user, slack_user_id=slack_user_id)
+
+
+def send_user_slack_dm(*, user, title, message="", link=""):
+    """Send a DM to a project User through their linked Slack identity."""
+    return send_slack_dm(user=user, title=title, message=message, link=link)
+
+
+def send_slack_to_users(users, *, title, message="", link=""):
+    """Send the same Slack DM to each project User with a linked Slack identity."""
+    results = []
+    for user in users:
+        results.append(
+            (user, send_user_slack_dm(user=user, title=title, message=message, link=link))
+        )
+    return results

@@ -14,7 +14,11 @@
     <div class="card-header-custom">
       <div class="card-title-custom" id="submission-answers-title">
         <i class="bi bi-file-text text-primary"></i>
-        {% if submission.review_type == 'TEAM' %}팀 평가{% else %}개인 평가{% endif %}
+        {% if submission.review_type == 'TEAM' %}
+          팀 평가
+        {% else %}
+          개인 평가
+        {% endif %}
       </div>
       <span class="badge badge-ax badge-ax-completed">{{ submission.submitted_at|date:"Y.m.d H:i" }} 제출</span>
     </div>

@@ -34,3 +34,29 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.recipient_id}:{self.category}:{self.title}"
+
+
+class SlackIdentity(models.Model):
+    """Stores a synced Slack member and optionally links it to a project User."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="slack_identity",
+        verbose_name="프로젝트 사용자",
+        null=True,
+        blank=True,
+    )
+    slack_user_id = models.CharField("Slack Member ID", max_length=32, unique=True)
+    slack_email = models.EmailField("Slack 이메일", blank=True, default="")
+    slack_display_name = models.CharField("Slack 표시 이름", max_length=255, blank=True, default="")
+    is_active = models.BooleanField("Slack 활성 사용자", default=True)
+    synced_at = models.DateTimeField("동기화 일시", auto_now=True)
+
+    class Meta:
+        verbose_name = "Slack 사용자 연동"
+        verbose_name_plural = "Slack 사용자 연동 목록"
+        ordering = ("slack_display_name", "slack_user_id")
+
+    def __str__(self):
+        return f"{self.slack_display_name or self.slack_user_id} → {self.user or '미연동'}"

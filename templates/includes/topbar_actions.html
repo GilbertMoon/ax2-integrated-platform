@@ -38,14 +38,18 @@
           <h6 class="dropdown-header mb-0">{{ user.get_role_display }} 계정</h6>
           <span class="dropdown-item-text small text-muted pt-0">{{ user.email }}</span>
         </li>
-        <li><a class="dropdown-item small" href="{% url 'accounts:mypage' %}"><i class="bi bi-person-lines-fill me-2" aria-hidden="true"></i>마이페이지</a></li>
+        <li>
+          <a class="dropdown-item small" href="{% url 'accounts:mypage' %}"><i class="bi bi-person-lines-fill me-2" aria-hidden="true"></i>마이페이지</a>
+        </li>
         <li>
           <hr class="dropdown-divider">
         </li>
         <li>
           <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}
-            <button type="submit" class="dropdown-item small text-danger"><i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>로그아웃</button>
+            <button type="submit" class="dropdown-item small text-danger">
+              <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>로그아웃
+            </button>
           </form>
         </li>
       </ul>

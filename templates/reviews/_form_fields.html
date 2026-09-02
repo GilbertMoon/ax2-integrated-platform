@@ -33,9 +33,7 @@
       {{ existing.submitted_at|date:"Y-m-d H:i" }}에 제출한 응답입니다. 아래에서 고쳐 쓰면 덮어씁니다.
     </div>
   {% endif %}
-  {% if window_state != 'OPEN' %}
-    <div class="alert alert-warning">현재는 평가를 제출할 수 있는 기간이 아닙니다.</div>
-  {% endif %}
+  {% if window_state != 'OPEN' %}<div class="alert alert-warning">현재는 평가를 제출할 수 있는 기간이 아닙니다.</div>{% endif %}
   <form method="post">
     {% csrf_token %}
     {% if panel %}<input type="hidden" name="panel" value="1">{% endif %}
@@ -72,7 +70,11 @@
         <button class="btn btn-ax-primary flex-shrink-0"
                 type="submit"
                 {% if window_state != 'OPEN' %}disabled{% endif %}>
-          {% if existing %}수정 저장{% else %}제출하기{% endif %}
+          {% if existing %}
+            수정 저장
+          {% else %}
+            제출하기
+          {% endif %}
         </button>
       </div>
     </section>

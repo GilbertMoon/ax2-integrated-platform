@@ -53,9 +53,7 @@
                     </div>
                     {% if template.round_titles %}
                       <div class="ax-round-chips">
-                        {% for title in template.round_titles|slice:":3" %}
-                          <span class="ax-round-chip">{{ title }}</span>
-                        {% endfor %}
+                        {% for title in template.round_titles|slice:":3" %}<span class="ax-round-chip">{{ title }}</span>{% endfor %}
                         {% if template.round_titles|length > 3 %}
                           <span class="ax-round-chip">+ {{ template.round_titles|length|add:"-3" }}개 더</span>
                         {% endif %}
@@ -77,7 +75,13 @@
                 <td class="text-end">
                   <div class="d-inline-flex gap-2">
                     <a href="{% url 'rounds:template-edit' template.pk %}"
-                       class="btn btn-sm btn-ax-secondary">{% if template.locked %}보기{% else %}편집{% endif %}</a>
+                       class="btn btn-sm btn-ax-secondary">
+                      {% if template.locked %}
+                        보기
+                      {% else %}
+                        편집
+                      {% endif %}
+                    </a>
                     {% if not template.is_archived %}
                       <form method="post" action="{% url 'rounds:template-copy' template.pk %}">
                         {% csrf_token %}
@@ -105,7 +109,9 @@
                         {% csrf_token %}
                         <button type="submit"
                                 class="btn btn-sm btn-outline-danger"
-                                {% if template.has_copies %}disabled title="이 템플릿을 복제한 템플릿이 있어 삭제할 수 없습니다. 복제본을 먼저 삭제해 주세요."{% endif %}>삭제</button>
+                                {% if template.has_copies %}disabled title="이 템플릿을 복제한 템플릿이 있어 삭제할 수 없습니다. 복제본을 먼저 삭제해 주세요."{% endif %}>
+                          삭제
+                        </button>
                       </form>
                     {% endif %}
                   </div>
@@ -117,7 +123,13 @@
               <td colspan="6">
                 <div class="ax-empty-state">
                   <i class="bi bi-card-checklist"></i>
-                  <p class="fw-semibold mb-2">{% if archived_only %}보관된 템플릿이 없습니다{% else %}아직 데이터가 없습니다{% endif %}</p>
+                  <p class="fw-semibold mb-2">
+                    {% if archived_only %}
+                      보관된 템플릿이 없습니다
+                    {% else %}
+                      아직 데이터가 없습니다
+                    {% endif %}
+                  </p>
                   <p class="text-muted mb-3">
                     {% if archived_only %}
                       사용 중인 템플릿을 보관하면 여기에 모입니다.
@@ -125,7 +137,9 @@
                       등록된 템플릿이 없습니다. 회차를 시작하려면 팀 평가·개인 평가 템플릿이 각각 하나씩 필요합니다.
                     {% endif %}
                   </p>
-                  {% if not archived_only %}<a href="{% url 'rounds:template-create' %}" class="btn btn-ax-primary">새 템플릿 만들기</a>{% endif %}
+                  {% if not archived_only %}
+                    <a href="{% url 'rounds:template-create' %}" class="btn btn-ax-primary">새 템플릿 만들기</a>
+                  {% endif %}
                 </div>
               </td>
             </tr>

@@ -4,7 +4,13 @@
 {% block content %}
   <div class="page-header">
     <div>
-      <h1 class="page-title">{% if round_obj %}{{ round_obj.title }}{% else %}새 평가 회차{% endif %}</h1>
+      <h1 class="page-title">
+        {% if round_obj %}
+          {{ round_obj.title }}
+        {% else %}
+          새 평가 회차
+        {% endif %}
+      </h1>
       <p class="page-desc">평가 기간과 TEAM·PEER 질문 템플릿을 지정합니다. 저장하면 팀 편성 화면으로 넘어갑니다.</p>
     </div>
     {% if round_obj %}
@@ -35,7 +41,10 @@
           </dd>
           <dt class="col-sm-3">점수 반영 비율</dt>
           <dd class="col-sm-9">
-            팀 {{ round_obj.team_score_weight }}% + 개인 {{ round_obj.personal_score_weight }}%{% if round_obj.tutor_score_weight %} + 튜터 {{ round_obj.tutor_score_weight }}%{% endif %}
+            팀 {{ round_obj.team_score_weight }}% + 개인 {{ round_obj.personal_score_weight }}%
+            {% if round_obj.tutor_score_weight %}
+              + 튜터 {{ round_obj.tutor_score_weight }}%
+            {% endif %}
           </dd>
         </dl>
       </div>
@@ -132,7 +141,9 @@
                     </div>
                   </div>
                 </div>
-                <div class="form-text">핸들을 마우스로 끌어 10% 단위로 비율을 조정합니다. 하나를 바꾸면 나머지 둘이 자동으로 조정되어 합은 항상 100%로 유지됩니다. 자물쇠를 체크하면 그 비율은 고정되어 다른 값이 바뀌어도 움직이지 않습니다.</div>
+                <div class="form-text">
+                  핸들을 마우스로 끌어 10% 단위로 비율을 조정합니다. 하나를 바꾸면 나머지 둘이 자동으로 조정되어 합은 항상 100%로 유지됩니다. 자물쇠를 체크하면 그 비율은 고정되어 다른 값이 바뀌어도 움직이지 않습니다.
+                </div>
                 <div class="ax-weight-hidden-fields">
                   {{ form.team_score_weight }}
                   {{ form.personal_score_weight }}

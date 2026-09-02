@@ -23,6 +23,7 @@ line-ending = "auto"
 profile = "django"
 indent = 2
 use_gitignore = true
+ignore = "T003,H006,H021,H031"
 
 # 이메일 클라이언트 호환성에는 인라인 스타일이 필요하고 웹 페이지용 SEO 규칙은 적용되지 않는다.
 [tool.djlint.per-file-ignores]

@@ -1,13 +1,26 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}{% if role == "student" %}내 팀{% else %}프로젝트 팀 편성{% endif %} | AX Evaluation Console{% endblock %}
+{% block title %}
+  {% if role == "student" %}
+    내 팀
+  {% else %}
+    프로젝트 팀 편성
+  {% endif %}
+  | AX Evaluation Console
+{% endblock %}
 {% block content %}
   <link href="{% static 'teams/css/workspace.css' %}" rel="stylesheet">
   <div class="teams-workspace">
     <div class="teams-heading">
       <div>
         <span id="statusBadge" class="teams-status"></span>
-        <h1>{% if role == "student" %}내 팀{% else %}프로젝트 팀 편성{% endif %}</h1>
+        <h1>
+          {% if role == "student" %}
+            내 팀
+          {% else %}
+            프로젝트 팀 편성
+          {% endif %}
+        </h1>
         <p id="pageDescription"></p>
       </div>
       {% if role == "student" and round_options|length > 1 %}

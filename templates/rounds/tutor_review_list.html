@@ -6,7 +6,10 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">{{ round_obj.title }} 튜터 개인평가</h1>
-      <p class="page-desc">수강생 한 명씩 직접 평가합니다. {% include "rounds/_tutor_review_weight_note.html" %}</p>
+      <p class="page-desc">
+        수강생 한 명씩 직접 평가합니다.
+        {% include "rounds/_tutor_review_weight_note.html" %}
+      </p>
     </div>
     <div class="d-flex align-items-center gap-2">
       {% if targets %}
@@ -79,7 +82,11 @@
                 <td class="text-end">
                   <a href="{% url target.url_name round_obj.pk target.pk %}"
                      class="btn btn-sm {% if target.completed %}btn-ax-secondary{% else %}btn-ax-primary{% endif %}">
-                    {% if target.completed %}고쳐 쓰기{% else %}평가하기{% endif %}
+                    {% if target.completed %}
+                      고쳐 쓰기
+                    {% else %}
+                      평가하기
+                    {% endif %}
                   </a>
                 </td>
               </tr>

@@ -1,4 +1,5 @@
 import os
+import time
 
 import requests
 from django.db import transaction
@@ -32,17 +33,23 @@ def _slack_headers():
 
 
 def _slack_post(endpoint, *, headers, payload):
-    response = requests.post(
-        f"{SLACK_API_URL}/{endpoint}",
-        headers=headers,
-        json=payload,
-        timeout=5,
-    )
-    response.raise_for_status()
-    data = response.json()
-    if not data.get("ok"):
-        return None
-    return data
+    for attempt in range(3):
+        response = requests.post(
+            f"{SLACK_API_URL}/{endpoint}",
+            headers=headers,
+            json=payload,
+            timeout=5,
+        )
+        if response.status_code == 429 and attempt < 2:
+            retry_after = int(response.headers.get("Retry-After", "1"))
+            time.sleep(max(retry_after, 1))
+            continue
+        response.raise_for_status()
+        data = response.json()
+        if not data.get("ok"):
+            return None
+        return data
+    return None
 
 
 def send_slack_message(*, title, message="", link=""):
@@ -91,6 +98,40 @@ def send_slack_dm(*, user=None, slack_user_id=None, title, message="", link=""):
         return message_data is not None
     except (requests.RequestException, ValueError, KeyError, TypeError):
         return False
+
+
+def send_slack_dm_ax(ax_user_id, title="알림 제목", message="", link=""):
+    """Send a Slack DM using the project's accounts_user primary key."""
+    user = User.objects.select_related("slack_identity").filter(pk=ax_user_id).first()
+    if not user:
+        return False
+    return send_slack_dm(user=user, title=title, message=message, link=link)
+
+
+def send_slack_dm_ax_batch(ax_user_ids, title="알림 제목", message="", link=""):
+    """Send the same Slack DM to multiple project Users sequentially.
+
+    Unlinked users are skipped and returned as False. Slack API rate-limit
+    responses are retried inside send_slack_dm using Slack's Retry-After value.
+    """
+    user_ids = list(dict.fromkeys(ax_user_ids))
+    users = {
+        user.pk: user
+        for user in User.objects.select_related("slack_identity").filter(pk__in=user_ids)
+    }
+    results = {}
+    for ax_user_id in user_ids:
+        user = users.get(ax_user_id)
+        if not user:
+            results[ax_user_id] = False
+            continue
+        results[ax_user_id] = send_slack_dm(
+            user=user,
+            title=title,
+            message=message,
+            link=link,
+        )
+    return results
 
 
 def fetch_slack_users():

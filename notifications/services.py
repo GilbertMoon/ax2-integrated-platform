@@ -89,29 +89,29 @@ def sync_slack_users():
                 SlackIdentity.objects.filter(user=user).exclude(slack_user_id=slack_user_id).update(
                     user=None
                 )
-                SlackIdentity.objects.update_or_create(
+                identity, _ = SlackIdentity.objects.get_or_create(
                     slack_user_id=slack_user_id,
-                    defaults={
-                        "user": user,
-                        "slack_email": slack_user["email"],
-                        "slack_display_name": slack_user["display_name"],
-                        "is_active": slack_user["is_active"],
-                    },
+                    defaults={"is_active": slack_user["is_active"]},
                 )
+                identity.user = user
+                identity.slack_email = slack_user["email"]
+                identity.slack_display_name = slack_user["display_name"]
+                identity.is_active = slack_user["is_active"]
+                identity.save()
                 linked += 1
             else:
                 # 프로젝트에 아직 가입하지 않은 Slack 사용자도 저장한다.
-                # 그래야 개인/전체 Slack 발송에서 선택할 수 있다.
-                SlackIdentity.objects.update_or_create(
+                # 이미 수동 연결된 사용자의 연결 정보는 동기화에서 유지한다.
+                identity, _ = SlackIdentity.objects.get_or_create(
                     slack_user_id=slack_user_id,
-                    defaults={
-                        "user": None,
-                        "slack_email": slack_user["email"],
-                        "slack_display_name": slack_user["display_name"],
-                        "is_active": slack_user["is_active"],
-                    },
+                    defaults={"is_active": slack_user["is_active"]},
                 )
-                unmatched += 1
+                identity.slack_email = slack_user["email"]
+                identity.slack_display_name = slack_user["display_name"]
+                identity.is_active = slack_user["is_active"]
+                identity.save()
+                if identity.user_id is None:
+                    unmatched += 1
 
         SlackIdentity.objects.exclude(slack_user_id__in=slack_ids).update(is_active=False)
 

@@ -338,8 +338,6 @@ class UpdateAttendanceViewTests(TestCase):
     def test_unknown_user_id_returns_404(self):
         self.client.force_login(self.tutor)
 
-        response = self._post_json(
-            {"user_id": 999999, "date": "2026-09-01", "status": "present"}
-        )
+        response = self._post_json({"user_id": 999999, "date": "2026-09-01", "status": "present"})
 
         self.assertEqual(response.status_code, 404)

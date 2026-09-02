@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,22 +14,52 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AttendanceRecord',
+            name="AttendanceRecord",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField(verbose_name='근태 일자')),
-                ('status', models.CharField(choices=[('present', '출석'), ('late', '지각'), ('absent', '결석')], max_length=20, verbose_name='상태')),
-                ('checked_by_face_recognition', models.BooleanField(default=False, verbose_name='얼굴인식 자동 기록 여부')),
-                ('memo', models.CharField(blank=True, default='', max_length=200, verbose_name='메모')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='수정 일시')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attendance_records', to=settings.AUTH_USER_MODEL, verbose_name='사용자')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("date", models.DateField(verbose_name="근태 일자")),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("present", "출석"), ("late", "지각"), ("absent", "결석")],
+                        max_length=20,
+                        verbose_name="상태",
+                    ),
+                ),
+                (
+                    "checked_by_face_recognition",
+                    models.BooleanField(default=False, verbose_name="얼굴인식 자동 기록 여부"),
+                ),
+                (
+                    "memo",
+                    models.CharField(blank=True, default="", max_length=200, verbose_name="메모"),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, verbose_name="생성 일시")),
+                ("updated_at", models.DateTimeField(auto_now=True, verbose_name="수정 일시")),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="attendance_records",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="사용자",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': '근태 기록',
-                'verbose_name_plural': '근태 기록 목록',
-                'ordering': ['-date'],
-                'constraints': [models.UniqueConstraint(fields=('user', 'date'), name='attendance_user_date_unique')],
+                "verbose_name": "근태 기록",
+                "verbose_name_plural": "근태 기록 목록",
+                "ordering": ["-date"],
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("user", "date"), name="attendance_user_date_unique"
+                    )
+                ],
             },
         ),
     ]

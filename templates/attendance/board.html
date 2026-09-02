@@ -44,9 +44,7 @@
               <tr>
                 <td>
                   <strong>{{ row.display_name }}</strong>
-                  {% if row.by_face %}
-                    <span class="badge text-bg-info ms-1" title="얼굴인식으로 자동 기록됨">얼굴인식</span>
-                  {% endif %}
+                  {% if row.by_face %}<span class="badge text-bg-info ms-1" title="얼굴인식으로 자동 기록됨">얼굴인식</span>{% endif %}
                   <div class="small text-muted">{{ row.email }}</div>
                 </td>
                 <td>

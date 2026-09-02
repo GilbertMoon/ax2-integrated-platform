@@ -88,7 +88,9 @@
                     <td class="text-center">{{ question_form.is_required }}</td>
                     <td class="text-center">
                       {% comment %}저장된 문항은 DELETE 체크박스를 숨겨 두고 버튼이 대신 켠다.{% endcomment %}
-                      <span class="d-none">{% if question_form.instance.pk %}{{ question_form.DELETE }}{% endif %}</span>
+                      <span class="d-none">
+                        {% if question_form.instance.pk %}{{ question_form.DELETE }}{% endif %}
+                      </span>
                       {% if not locked %}
                         <button type="button"
                                 class="btn btn-sm btn-outline-danger ax-remove-question"

@@ -188,10 +188,45 @@
 
 ---
 
-## 11. 산출물 정보
+## 11. 2026-09-01 P3 Migration 검증 결과
+
+### Django Migration 점검
+
+| 항목 | 결과 | 판정 |
+|---|---|---|
+| `python manage.py check` | `System check identified no issues (0 silenced).` | ✅ |
+| `python manage.py showmigrations` | 현재 출력된 Migration 모두 `[X]` | ✅ |
+| 미적용 Migration | 현재 출력상 없음 | ✅ |
+| `python manage.py makemigrations` | `No changes detected` | ✅ |
+| 신규 Migration 파일 | 생성되지 않음 | ✅ |
+| `sqlmigrate` | 신규 Migration이 없어 실행 대상 없음 | ⏸️ |
+| 실제 `migrate` | 본 결과 문서 작성 시점에는 미실행 | ⏸️ |
+
+### 해석
+
+현재 Django Model과 Migration 상태에서는 추가 Migration이 필요하지 않다. 따라서 `makemigrations` 단계에서 새로운 SQL Migration이 생성되지 않았으며, 신규 Migration에 대한 `sqlmigrate` 검토도 수행할 대상이 없다.
+
+따라서 본 문서의 기존 ERD 검증 결과는 **ERD의 69개 테이블 및 36개 FK 관계 반영 여부 기준 PASS**로 유지한다. 다만 실제 PostgreSQL DB의 현재 스키마 및 데이터 정합성 검증은 별도 DB 검증 단계로 남아 있다.
+
+### 다음 DB 검증 단계
+
+- [ ] Migration 전 Backup 확인
+- [ ] 실제 PostgreSQL 스키마와 ERD 대조
+- [ ] Core FK 및 고아 FK 검증
+- [ ] `public.ax_user_team_login_view` 존재 및 조회 검증
+- [ ] `public.user_round_team_view` 존재 및 조회 검증
+- [ ] 필요 시 기존 Migration의 SQL 검토
+- [ ] 개발/검증 DB에서 필요한 Migration 적용
+- [ ] `showmigrations` 최종 재확인
+
+---
+
+## 12. 산출물 정보
 
 - 문서: `docs/erd/ERD_FINAL_CHECKLIST.md`
 - 기준: 2026-08-31 SQL DDL 및 ERD XML
+- 2026-09-01 검증: Django `check`, `showmigrations`, `makemigrations`
 - 검증 대상: 69개 테이블
-- 핵심 검증: 테이블 존재 여부 및 FK 관계 반영 여부
-- 최종 판정: **PASS**
+- 핵심 ERD 검증: 테이블 존재 여부 및 FK 관계 반영 여부
+- Migration 점검 판정: **PASS — 신규 Migration 없음**
+- ERD 최종 판정: **PASS**

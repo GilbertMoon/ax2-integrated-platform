@@ -34,8 +34,8 @@
         </li>
         <li class="sidebar-nav-item">
           <a href="{% url 'rounds:list' %}"
-             title="평가 회차"
-             class="sidebar-nav-link {% if request.resolver_match.namespace == 'rounds' and request.resolver_match.url_name != 'dashboard' and request.resolver_match.url_name != 'results-entry' and request.resolver_match.url_name != 'results' and request.resolver_match.url_name != 'publish-entry' and request.resolver_match.url_name != 'publish-settings' and 'template' not in request.resolver_match.url_name|default_if_none:'' %}active{% endif %}"><i class="bi bi-calendar-range"></i><span class="nav-text">평가 회차</span></a>
+             title="프로젝트 회차"
+             class="sidebar-nav-link {% if request.resolver_match.namespace == 'rounds' and request.resolver_match.url_name != 'dashboard' and request.resolver_match.url_name != 'results-entry' and request.resolver_match.url_name != 'results' and request.resolver_match.url_name != 'publish-entry' and request.resolver_match.url_name != 'publish-settings' and 'template' not in request.resolver_match.url_name|default_if_none:'' %}active{% endif %}"><i class="bi bi-calendar-range"></i><span class="nav-text">프로젝트 회차</span></a>
         </li>
         <li class="sidebar-nav-item">
           <a href="{% url 'rounds:results-entry' %}"

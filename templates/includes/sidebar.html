@@ -35,12 +35,12 @@
         <li class="sidebar-nav-item">
           <a href="{% url 'rounds:project-list' %}"
              title="프로젝트 회차"
-             class="sidebar-nav-link {% if request.resolver_match.namespace == 'rounds' and request.resolver_match.url_name == 'project-list' or request.resolver_match.url_name == 'project-detail' or request.resolver_match.url_name == 'teams' %}active{% endif %}"><i class="bi bi-kanban"></i><span class="nav-text">프로젝트 회차</span></a>
+             class="sidebar-nav-link {% if request.resolver_match.url_name == 'project-list' or request.resolver_match.url_name == 'project-detail' or request.resolver_match.url_name == 'teams' %}active{% endif %}"><i class="bi bi-kanban"></i><span class="nav-text">프로젝트 회차</span></a>
         </li>
         <li class="sidebar-nav-item">
           <a href="{% url 'rounds:list' %}"
              title="평가 회차"
-             class="sidebar-nav-link {% if request.resolver_match.namespace == 'rounds' and 'evaluation-round' in request.resolver_match.url_name|default_if_none:'' %}active{% endif %}"><i class="bi bi-calendar-check"></i><span class="nav-text">평가 회차</span></a>
+             class="sidebar-nav-link {% if request.resolver_match.url_name == 'list' or request.resolver_match.url_name == 'create' or request.resolver_match.url_name == 'edit' or request.resolver_match.url_name == 'start' or request.resolver_match.url_name == 'reviews' or request.resolver_match.url_name == 'tutor-evaluation' or request.resolver_match.url_name == 'tutor-review-list' or request.resolver_match.url_name == 'tutor-review-form' or request.resolver_match.url_name == 'tutor-team-review-list' or request.resolver_match.url_name == 'tutor-team-review-form' or request.resolver_match.url_name == 'complete' or request.resolver_match.url_name == 'send_reminders' or request.resolver_match.url_name == 'delete' or request.resolver_match.url_name == 'revert' or request.resolver_match.url_name == 'reopen' %}active{% endif %}"><i class="bi bi-calendar-check"></i><span class="nav-text">평가 회차</span></a>
         </li>
         <li class="sidebar-nav-item">
           <a href="{% url 'rounds:results-entry' %}"

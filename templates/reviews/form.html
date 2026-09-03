@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 {% block title %}{{ target.label }} 평가 | AX Evaluation Console{% endblock %}
 {% block breadcrumb %}
-  {% if review_type == 'TEAM' %}팀 평가{% else %}개인 평가{% endif %} / {{ target.label }}
+  {% if review_type == 'TEAM' %}
+    팀 평가
+  {% else %}
+    개인 평가
+  {% endif %}
+  / {{ target.label }}
 {% endblock %}
 {% block content %}
   <div class="page-header">

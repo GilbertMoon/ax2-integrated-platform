@@ -169,7 +169,25 @@ Branch: main
 
 ---
 
-## 8. 날짜별 Feedback History
+## 8. Daily Issue YELLOW → GREEN 운영 기준
+
+전날 Daily Issue가 **YELLOW 상태로 남아 있는 상황에서 오늘 날짜의 Daily Issue를 새로 작성한 경우**, 전날 Issue와 당일 Issue를 모두 퇴근 전까지 GREEN으로 처리합니다.
+
+### 운영 기준
+
+- 전날 미완료 항목은 당일 이어서 작업합니다.
+- 전날 Issue의 미완료 작업을 완료하고 검증 후 **GREEN 처리**합니다.
+- 당일 Issue는 당일 목표와 작업 내용을 기준으로 별도로 진행합니다.
+- 당일 작업도 산출물 및 검증 완료 후 **GREEN 처리**합니다.
+- 전날 YELLOW Issue를 남겨둔 상태에서 당일 Issue만 GREEN 처리하지 않습니다.
+
+### 최종 기준
+
+매일 퇴근 전까지 기존에 남아 있던 **YELLOW Issue + 당일 Daily Issue를 모두 GREEN 상태**로 관리합니다.
+
+---
+
+## 9. 날짜별 Feedback History
 
 | 날짜 | 기준 업무 | 주요 단계 |
 |---|---|---|

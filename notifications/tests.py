@@ -1,16 +1,20 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
-from notifications.models import Notification
+from notifications.models import Notification, SlackIdentity
 from notifications.services import (
     EMAIL_CAPABLE_CATEGORIES,
     announce,
     delete_all_notifications,
     delete_notification,
+    link_slack_user,
     mark_all_read,
     mark_read,
     notify_users,
+    sync_slack_users,
     unread_count,
 )
 
@@ -245,3 +249,71 @@ class AnnounceTests(TestCase):
         student.refresh_from_db()
         self.assertFalse(student.wants_email(Notification.Category.SUBMISSION_REMINDER))
         self.assertTrue(student.wants_email(Notification.Category.NOTICE))
+
+
+class SlackDirectMessageTests(TestCase):
+    @patch.dict("os.environ", {"SLACK_BOT_TOKEN": "xoxb-test-token"}, clear=False)
+    @patch("notifications.slack.requests.post")
+    def test_send_slack_dm_opens_user_dm_and_posts_message(self, mock_post):
+        from notifications.slack import send_slack_dm
+
+        open_response = mock_post.return_value
+        open_response.raise_for_status.return_value = None
+        open_response.json.side_effect = [
+            {"ok": True, "channel": {"id": "D123"}},
+            {"ok": True, "ts": "123.456"},
+        ]
+
+        self.assertTrue(
+            send_slack_dm(
+                slack_user_id="U123",
+                title="테스트 알림",
+                message="테스트 메시지",
+            )
+        )
+
+        self.assertEqual(mock_post.call_count, 2)
+        self.assertIn("conversations.open", mock_post.call_args_list[0].args[0])
+        self.assertEqual(mock_post.call_args_list[0].kwargs["json"], {"users": "U123"})
+        self.assertIn("chat.postMessage", mock_post.call_args_list[1].args[0])
+        self.assertEqual(mock_post.call_args_list[1].kwargs["json"]["channel"], "D123")
+
+    @patch.dict("os.environ", {}, clear=True)
+    def test_send_slack_dm_returns_false_without_bot_token(self):
+        from notifications.slack import send_slack_dm
+
+        self.assertFalse(send_slack_dm(slack_user_id="U123", title="테스트"))
+
+
+class SlackSyncTests(TestCase):
+    @patch("notifications.services.fetch_slack_users")
+    def test_sync_preserves_manual_link_when_email_does_not_match(self, mock_fetch):
+        user = User.objects.create_user(
+            email="project-user@example.com",
+            password="strong-test-password",
+            first_name="프로젝트 사용자",
+            role=User.Role.STUDENT,
+            approval_status=User.ApprovalStatus.APPROVED,
+        )
+        identity = SlackIdentity.objects.create(
+            slack_user_id="U_MANUAL",
+            slack_email="old-slack@example.com",
+            slack_display_name="수동 연결 사용자",
+            is_active=True,
+        )
+        link_slack_user(user=user, slack_user_id=identity.slack_user_id)
+
+        mock_fetch.return_value = [
+            {
+                "slack_user_id": "U_MANUAL",
+                "email": "different-slack@example.com",
+                "display_name": "수동 연결 사용자",
+                "is_active": True,
+            }
+        ]
+
+        sync_slack_users()
+
+        identity.refresh_from_db()
+        self.assertEqual(identity.user_id, user.pk)
+        self.assertEqual(identity.slack_email, "different-slack@example.com")

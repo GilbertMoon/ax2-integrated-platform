@@ -11,7 +11,9 @@
   </div>
   <section class="card-custom mb-4">
     <div class="card-header-custom">
-      <div class="card-title-custom"><i class="bi bi-envelope-fill text-primary"></i>수강생 공지 메일</div>
+      <div class="card-title-custom">
+        <i class="bi bi-envelope-fill text-primary"></i>수강생 공지 메일
+      </div>
       <span class="text-muted font-size-115">즉시 또는 예약 발송</span>
     </div>
     <div class="card-body-custom">
@@ -93,7 +95,9 @@
   {% if scheduled_emails %}
     <section class="card-custom mb-4">
       <div class="card-header-custom">
-        <div class="card-title-custom"><i class="bi bi-calendar-event-fill text-primary"></i>예약된 공지 메일</div>
+        <div class="card-title-custom">
+          <i class="bi bi-calendar-event-fill text-primary"></i>예약된 공지 메일
+        </div>
         <span class="text-muted font-size-115">{{ scheduled_emails|length }}건</span>
       </div>
       <div class="table-responsive">
@@ -135,7 +139,9 @@
   {% endif %}
   <section class="card-custom mb-4">
     <div class="card-header-custom">
-      <div class="card-title-custom"><i class="bi bi-person-check-fill text-primary"></i>승인 대기 목록</div>
+      <div class="card-title-custom">
+        <i class="bi bi-person-check-fill text-primary"></i>승인 대기 목록
+      </div>
       <span class="text-muted font-size-115">{{ pending_users|length }}명</span>
     </div>
     <form method="post"
@@ -373,7 +379,9 @@
   </section>
   <section class="card-custom">
     <div class="card-header-custom">
-      <div class="card-title-custom"><i class="bi bi-envelope-paper"></i>사전 등록 명단</div>
+      <div class="card-title-custom">
+        <i class="bi bi-envelope-paper"></i>사전 등록 명단
+      </div>
     </div>
     <div class="card-body-custom">
       <p class="text-muted font-size-115 mb-3">여기에 등록된 이메일로 가입하면 자동 승인됩니다. 명단에 없으면 위 승인 대기 목록으로 넘어갑니다.</p>

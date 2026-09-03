@@ -212,3 +212,65 @@ TemplateQuestionFormSet = forms.inlineformset_factory(
     extra=3,
     can_delete=True,
 )
+
+class ProjectInfoForm(forms.Form):
+    """프로젝트 회차 생성 폼."""
+
+    name = forms.CharField(
+        label="프로젝트명",
+        max_length=255,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "프로젝트명을 입력하세요",
+            }
+        ),
+    )
+
+    description = forms.CharField(
+        label="설명",
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "rows": 3,
+                "placeholder": "프로젝트에 대한 설명을 입력하세요",
+            }
+        ),
+    )
+
+    team_start = forms.DateField(
+        label="프로젝트 시작",
+        widget=forms.DateInput(
+            attrs={"type": "date", "class": "form-control"}
+        ),
+    )
+
+    team_end = forms.DateField(
+        label="프로젝트 종료",
+        widget=forms.DateInput(
+            attrs={"type": "date", "class": "form-control"}
+        ),
+    )
+
+    evaluationround_id = forms.ModelChoiceField(
+        label="연결 평가 회차",
+        queryset=EvaluationRound.objects.all().order_by("-id"),
+        empty_label="평가 회차를 선택하세요",
+        widget=forms.Select(
+            attrs={"class": "form-select"}
+        ),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+
+        start = cleaned.get("team_start")
+        end = cleaned.get("team_end")
+
+        if start and end and start > end:
+            raise forms.ValidationError(
+                "프로젝트 종료일은 시작일보다 빠를 수 없습니다."
+            )
+
+        return cleaned

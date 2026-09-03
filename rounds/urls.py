@@ -18,7 +18,12 @@ urlpatterns = [
 
     # Project-round management: /manage/rounds/
     path("rounds/", project_views.project_list, name="project-list"),
-    path("rounds/<int:round_id>/", project_views.project_detail, name="project-detail"),
+    path(
+        "rounds/new/",
+        project_views.project_create,
+        name="project-create",
+    ),
+    path("rounds/<int:project_id>/", project_views.project_detail, name="project-detail"),
     path("rounds/<int:round_id>/teams/", team_views.management_team_page, name="teams"),
 
     # Evaluation-round management: /manage/evaluation-rounds/

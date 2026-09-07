@@ -70,6 +70,11 @@
              title="수강생 관리"
              class="sidebar-nav-link {% if 'account' in request.resolver_match.url_name|default_if_none:'' or request.resolver_match.url_name == 'tutor_dashboard' %}active{% endif %}"><i class="bi bi-people"></i><span class="nav-text">수강생 관리</span></a>
         </li>
+        <li class="sidebar-nav-item">
+          <a href="{% url 'attendance:board' %}"
+             title="근태"
+             class="sidebar-nav-link {% if request.resolver_match.namespace == 'attendance' %}active{% endif %}"><i class="bi bi-calendar-check"></i><span class="nav-text">근태</span></a>
+        </li>
       </ul>
       <div class="nav-section-title">시스템</div>
       <ul class="sidebar-nav">

@@ -22,6 +22,7 @@ urlpatterns = [
         oauth.kakao_callback,
         name="kakao_callback",
     ),
+    path("api/auth/me/", account_views.auth_me_view, name="api_auth_me"),
     path("attendance/", include("attendance.urls")),
     path("teams/", include("teams.urls")),
     path("student/team/", team_views.student_team_page, name="student-team-page"),

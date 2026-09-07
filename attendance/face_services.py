@@ -7,6 +7,8 @@
 # - 등록용 정적 프로필 사진(ensure_embedding_cached)은 check_liveness=False
 #   → 프로필 사진 자체는 원래 "사진"이라 라이브니스 검사를 하면 안 됨
 # ============================================================
+from datetime import time as time_cls
+from django.utils import timezone
 
 import math
 from datetime import date as date_cls
@@ -20,6 +22,9 @@ User = get_user_model()
 
 FACE_SERVICE_URL = "http://127.0.0.1:5001"
 MATCH_THRESHOLD = 0.4
+
+# 이 시각 이전에 출석 체크하면 "출석", 이후면 "지각"
+ATTENDANCE_DEADLINE = time_cls(9, 0)  # 오전 9시
 
 
 def _cosine_distance(vec1: list[float], vec2: list[float]) -> float:
@@ -123,7 +128,9 @@ def find_matching_student(captured_image_file):
 
 
 def record_face_checkin(captured_image_file) -> dict:
-    """업로드된 사진 파일을 받아서 출석을 자동 기록한다."""
+    """업로드된 사진 파일을 받아서 출석을 자동 기록한다.
+    촬영 시각이 ATTENDANCE_DEADLINE(오전 9시) 이전이면 출석, 이후면 지각으로 기록한다.
+    """
     matched_user, distance, error_message = find_matching_student(captured_image_file)
 
     if error_message:
@@ -136,17 +143,20 @@ def record_face_checkin(captured_image_file) -> dict:
             "distance": distance,
         }
 
-    save_attendance_board(date_cls.today(), {matched_user.id: "present"})
+    now = timezone.localtime(timezone.now())
+    status = "present" if now.time() < ATTENDANCE_DEADLINE else "late"
+
+    save_attendance_board(date_cls.today(), {matched_user.id: status})
 
     from attendance.models import AttendanceRecord
 
     AttendanceRecord.objects.filter(user=matched_user, date=date_cls.today()).update(
         checked_by_face_recognition=True
     )
-
     return {
         "matched": True,
         "user_id": matched_user.id,
         "display_name": matched_user.first_name or matched_user.email,
         "distance": distance,
+        "status": status,
     }

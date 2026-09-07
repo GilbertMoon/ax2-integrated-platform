@@ -961,3 +961,17 @@ def cancel_scheduled_email_view(request, email_id):
         messages.error(request, "이미 처리되었거나 취소할 수 없는 예약 건입니다.")
 
     return redirect(request.META.get("HTTP_REFERER", "accounts:account_admin"))
+@login_required
+@require_GET
+def auth_me_view(request):
+    """
+    로그인한 사용자 본인 정보 조회. 1조(게임) 등 외부 프론트엔드에서 사용.
+    호출 예: GET /api/auth/me/
+    """
+    user = request.user
+    return JsonResponse({
+        "id": user.id,
+        "display_name": user.first_name or user.email,
+        "role": user.role,
+        "email": user.email,
+    })

@@ -174,6 +174,7 @@ def update_attendance_view(request: HttpRequest) -> JsonResponse:
         {"user_id": record.user_id, "date": str(record.date), "status": record.status}
     )
 
+
 @login_required
 def kiosk_page(request):
     """
@@ -200,9 +201,11 @@ def face_checkin_view(request: HttpRequest) -> JsonResponse:
     image_file = request.FILES.get("image")
     if image_file is None:
         return JsonResponse(
-            {"error": {"code": "invalid_request", "message": "image 파일이 필요합니다."}}, status=400
+            {"error": {"code": "invalid_request", "message": "image 파일이 필요합니다."}},
+            status=400,
         )
 
     from attendance.face_services import record_face_checkin
+
     result = record_face_checkin(image_file)
     return JsonResponse(result)

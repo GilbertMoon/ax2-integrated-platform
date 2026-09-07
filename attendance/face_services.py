@@ -7,20 +7,18 @@
 # - 등록용 정적 프로필 사진(ensure_embedding_cached)은 check_liveness=False
 #   → 프로필 사진 자체는 원래 "사진"이라 라이브니스 검사를 하면 안 됨
 # ============================================================
-from datetime import time as time_cls
-from django.utils import timezone
-
 import math
-from datetime import date as date_cls
+from datetime import time as time_cls
 
 import requests
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
-from attendance.services import save_attendance_board
+from attendance.services import save_face_checkin
 
 User = get_user_model()
 
-FACE_SERVICE_URL = "http://127.0.0.1:5001"
 MATCH_THRESHOLD = 0.4
 
 # 이 시각 이전에 출석 체크하면 "출석", 이후면 "지각"
@@ -29,7 +27,7 @@ ATTENDANCE_DEADLINE = time_cls(9, 0)  # 오전 9시
 
 def _cosine_distance(vec1: list[float], vec2: list[float]) -> float:
     """두 벡터 사이의 코사인 거리를 계산한다. 0에 가까울수록 유사."""
-    dot_product = sum(a * b for a, b in zip(vec1, vec2))
+    dot_product = sum(a * b for a, b in zip(vec1, vec2, strict=False))
     norm1 = math.sqrt(sum(a * a for a in vec1))
     norm2 = math.sqrt(sum(b * b for b in vec2))
     if norm1 == 0 or norm2 == 0:
@@ -38,7 +36,9 @@ def _cosine_distance(vec1: list[float], vec2: list[float]) -> float:
     return 1 - cosine_similarity
 
 
-def _request_embedding(image_bytes: bytes, check_liveness: bool = False) -> tuple[list[float] | None, str | None]:
+def _request_embedding(
+    image_bytes: bytes, check_liveness: bool = False
+) -> tuple[list[float] | None, str | None]:
     """
     얼굴인식 서버에 사진을 보내서 벡터(임베딩)를 받아온다.
     check_liveness=True면 사진/화면 재촬영(스푸핑) 여부도 함께 확인한다.
@@ -47,10 +47,10 @@ def _request_embedding(image_bytes: bytes, check_liveness: bool = False) -> tupl
     """
     try:
         response = requests.post(
-            f"{FACE_SERVICE_URL}/embed/",
+            f"{settings.FACE_SERVICE_URL}/embed/",
             files={"image": ("photo.jpg", image_bytes, "image/jpeg")},
             data={"check_liveness": "true" if check_liveness else "false"},
-            timeout=15,
+            timeout=settings.FACE_SERVICE_TIMEOUT,
         )
         result = response.json()
 
@@ -143,16 +143,16 @@ def record_face_checkin(captured_image_file) -> dict:
             "distance": distance,
         }
 
+    today = timezone.localdate()
     now = timezone.localtime(timezone.now())
     status = "present" if now.time() < ATTENDANCE_DEADLINE else "late"
 
-    save_attendance_board(date_cls.today(), {matched_user.id: status})
+    if not save_face_checkin(today, matched_user.id, status):
+        return {
+            "matched": False,
+            "message": "출석 대상 학생이 아닙니다. 관리자에게 문의해주세요.",
+        }
 
-    from attendance.models import AttendanceRecord
-
-    AttendanceRecord.objects.filter(user=matched_user, date=date_cls.today()).update(
-        checked_by_face_recognition=True
-    )
     return {
         "matched": True,
         "user_id": matched_user.id,

@@ -57,3 +57,21 @@ def save_attendance_board(day, status_by_user):
         )
         changed += 1
     return changed
+
+
+def save_face_checkin(day, user_id, status):
+    """얼굴인식으로 인식된 학생 1명의 출결을 기록한다.
+
+    save_attendance_board와 달리 checked_by_face_recognition=True로 남긴다.
+    유효하지 않은 사용자·상태면 아무것도 하지 않고 False를 반환한다.
+    """
+    if user_id not in set(approved_students().values_list("id", flat=True)):
+        return False
+    if status not in set(AttendanceRecord.Status.values):
+        return False
+    AttendanceRecord.objects.update_or_create(
+        user_id=user_id,
+        date=day,
+        defaults={"status": status, "checked_by_face_recognition": True},
+    )
+    return True

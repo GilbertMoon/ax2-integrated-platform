@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-<meta charset="UTF-8">
-<title>출석 체크 키오스크</title>
-<style>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="교실 태블릿용 얼굴인식 출석 체크 키오스크 화면">
+    <title>출석 체크 키오스크</title>
+    <style>
   body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 20px; text-align: center; }
   video, canvas { width: 100%; border-radius: 12px; background: #000; }
   button { padding: 18px 36px; font-size: 20px; margin-top: 20px; border-radius: 10px;
@@ -13,22 +14,18 @@
   .success { background: #d4edda; color: #155724; }
   .fail { background: #f8d7da; color: #721c24; }
   .loading { background: #fff3cd; color: #856404; }
-</style>
-</head>
-<body>
-{% csrf_token %}
-
-<h1>📷 출석 체크</h1>
-<p>카메라를 보고 아래 버튼을 눌러주세요.</p>
-
-<video id="video" autoplay playsinline></video>
-<canvas id="canvas" style="display:none;"></canvas>
-
-<button id="captureBtn">출석 체크하기</button>
-
-<div id="result"></div>
-
-<script>
+    </style>
+  </head>
+  <body>
+    {% csrf_token %}
+    <h1>📷 출석 체크</h1>
+    <p>카메라를 보고 아래 버튼을 눌러주세요.</p>
+    <video id="video" autoplay playsinline>
+    </video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <button id="captureBtn">출석 체크하기</button>
+    <div id="result"></div>
+    <script>
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const resultDiv = document.getElementById('result');
@@ -98,7 +95,6 @@ function getCookie(name) {
   }
   return cookieValue;
 }
-</script>
-
-</body>
+    </script>
+  </body>
 </html>

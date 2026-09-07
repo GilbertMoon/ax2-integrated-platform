@@ -1,158 +1,244 @@
-from types import SimpleNamespace
-
 from django.contrib.auth.decorators import login_required
-from django.db import DatabaseError, connection
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import DatabaseError, connection, transaction
+from django.http import Http404
 from django.shortcuts import redirect, render
 
 from accounts.permissions import is_operations_user
 from rounds.forms import (
-    EvaluationRoundForm,
+    ProjectEvaluationRoundForm,
     ProjectInfoForm,
 )
-from rounds.models import EvaluationRound
+from rounds.models import EvaluationRound, RoundParticipant
+from rounds.services import participant_snapshot_values
 
 
 def _require_operations(user):
+    """운영 담당자만 프로젝트 회차를 관리할 수 있도록 제한한다."""
     if not is_operations_user(user):
-        from django.core.exceptions import PermissionDenied
-
         raise PermissionDenied
 
 
 def _project_rows():
-    """
-    프로젝트 회차의 기준 데이터는 project_info이다.
+    """project_info 기준으로 프로젝트 회차 목록을 조회한다."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                pi.id,
+                pi.name,
+                pi.description,
+                pi.evaluationround_id,
+                pi.team_start,
+                pi.team_end
+            FROM project_info pi
+            ORDER BY pi.id DESC
+            """
+        )
 
-    project_info.id              = 프로젝트 회차 ID
-    project_info.evaluationround_id = 연결된 평가 회차 ID
-    """
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT
-                    pi.id,
-                    pi.name,
-                    pi.description,
-                    pi.evaluationround_id,
-                    pi.team_start,
-                    pi.team_end
-                FROM project_info pi
-                ORDER BY pi.id DESC
-                """
+        columns = [
+            column[0]
+            for column in cursor.description
+        ]
+
+        return [
+            dict(
+                zip(
+                    columns,
+                    row,
+                    strict=True,
+                )
             )
+            for row in cursor.fetchall()
+        ]
 
-            columns = [column[0] for column in cursor.description]
 
-            return [
-                dict(zip(columns, row, strict=True))
-                for row in cursor.fetchall()
-            ]
+def _get_project_info(project_id):
+    """project_info에서 프로젝트 회차 하나를 조회한다."""
+    project_info = next(
+        (
+            row
+            for row in _project_rows()
+            if row["id"] == project_id
+        ),
+        None,
+    )
 
-    except DatabaseError:
-        return []
+    if project_info is None:
+        raise Http404(
+            f"프로젝트 회차 {project_id}를 찾을 수 없습니다."
+        )
+
+    return project_info
+
+
+def _get_evaluation_round(project_info):
+    """프로젝트에 연결된 평가 회차를 조회한다."""
+    evaluationround_id = project_info.get(
+        "evaluationround_id"
+    )
+
+    if not evaluationround_id:
+        return None
+
+    return (
+        EvaluationRound.objects
+        .filter(pk=evaluationround_id)
+        .first()
+    )
 
 
 def _build_project(project_info):
-    """
-    project_info를 프로젝트 회차 화면용 객체로 변환한다.
+    """프로젝트 화면용 객체를 생성한다."""
+    evaluation_round = _get_evaluation_round(
+        project_info
+    )
 
-    중요:
-    - pk = project_info.id
-    - evaluationround_id = 연결된 평가 회차 ID
-    - EvaluationRound는 프로젝트의 본체가 아니라
-      프로젝트에 연결된 평가 운영 정보이다.
-    """
+    project_name = (
+        project_info.get("name")
+        or f"프로젝트 회차 {project_info['id']}"
+    )
 
-    evaluationround_id = project_info.get("evaluationround_id")
+    project_description = (
+        project_info.get("description")
+        or ""
+    )
 
-    evaluation_round = None
+    team_count = 0
 
-    if evaluationround_id:
-        evaluation_round = (
-            EvaluationRound.objects
-            .filter(pk=evaluationround_id)
-            .first()
+    if evaluation_round:
+        team_count = evaluation_round.teams.count()
+
+    participant_count = 0
+
+    if evaluation_round:
+        participant_count = (
+            evaluation_round.participants.count()
         )
 
-    # 프로젝트 이름/설명은 현재 연결된 평가 회차의
-    # title / description을 사용한다.
-    project_name = project_info.get("name") or f"프로젝트 회차 {project_info['id']}"
-
-    project_description = project_info.get("description") or ""
-
-    return SimpleNamespace(
-        # =========================
-        # 프로젝트 회차 식별정보
-        # =========================
-        pk=project_info["id"],
-        project_id=project_info["id"],
-        project_info_id=project_info["id"],
-
-        # =========================
-        # 프로젝트 기본정보
-        # =========================
-        name=project_name,
-        title=project_name,
-        description=project_description,
-
-        # =========================
-        # 프로젝트 기간
-        # =========================
-        project_start=project_info.get("team_start"),
-        project_end=project_info.get("team_end"),
-
-        # =========================
-        # 연결된 평가 회차
-        # =========================
-        evaluationround_id=evaluationround_id,
-        evaluation_round=evaluation_round,
-
-        # =========================
-        # 평가 운영정보
-        # =========================
-        status=(
+    return {
+        "pk": project_info["id"],
+        "project_id": project_info["id"],
+        "project_info_id": project_info["id"],
+        "name": project_name,
+        "title": project_name,
+        "description": project_description,
+        "project_start": project_info.get(
+            "team_start"
+        ),
+        "project_end": project_info.get(
+            "team_end"
+        ),
+        "evaluationround_id": project_info.get(
+            "evaluationround_id"
+        ),
+        "evaluation_round": evaluation_round,
+        "status": (
             evaluation_round.status
             if evaluation_round
             else None
         ),
-
-        status_display=(
+        "status_display": (
             evaluation_round.get_status_display()
             if evaluation_round
             else "평가 회차 미연결"
         ),
-
-        evaluation_start_at=(
+        "evaluation_start_at": (
             evaluation_round.evaluation_start_at
             if evaluation_round
             else None
         ),
-
-        evaluation_end_at=(
+        "evaluation_end_at": (
             evaluation_round.evaluation_end_at
             if evaluation_round
             else None
         ),
+        "team_count": team_count,
+        "participant_count": participant_count,
+    }
 
-        team_count=(
-            evaluation_round.teams.count()
-            if evaluation_round
-            else 0
-        ),
 
-        participant_count=(
-            evaluation_round.participants.count()
-            if evaluation_round
-            else 0
-        ),
-    )
+def _save_round_participants(
+    evaluation_round,
+    users,
+):
+    """평가 회차 참가자와 snapshot 정보를 저장한다."""
+    selected_users = list(users)
 
-@login_required
+    selected_ids = {
+        user.pk
+        for user in selected_users
+    }
+
+    evaluation_round.participants.exclude(
+        user_id__in=selected_ids
+    ).delete()
+
+    existing = {
+        participant.user_id: participant
+        for participant
+        in evaluation_round.participants.all()
+    }
+
+    for user in selected_users:
+        values = participant_snapshot_values(user)
+
+        participant = existing.get(user.pk)
+
+        if participant:
+            for field, value in values.items():
+                setattr(
+                    participant,
+                    field,
+                    value,
+                )
+
+            participant.save(
+                update_fields=tuple(
+                    values.keys()
+                )
+            )
+        else:
+            RoundParticipant.objects.create(
+                round=evaluation_round,
+                user=user,
+                **values,
+            )
+
+
+def _save_project_info(
+    *,
+    project_id,
+    project_cleaned,
+    evaluation_round_id,
+):
+    """project_info 테이블을 수정한다."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE project_info
+            SET
+                name = %s,
+                description = %s,
+                team_start = %s,
+                team_end = %s,
+                evaluationround_id = %s
+            WHERE id = %s
+            """,
+            [
+                project_cleaned["name"],
+                project_cleaned["description"],
+                project_cleaned["team_start"],
+                project_cleaned["team_end"],
+                evaluation_round_id,
+                project_id,
+            ],
+        )
+
+
 @login_required
 def project_create(request):
-    """프로젝트 회차와 평가 회차를 함께 생성한다."""
-
+    """프로젝트 회차와 연결된 평가 회차를 함께 생성한다."""
     _require_operations(request.user)
 
     if request.method == "POST":
@@ -161,92 +247,125 @@ def project_create(request):
             prefix="project",
         )
 
-        evaluation_form = EvaluationRoundForm(
+        evaluation_form = ProjectEvaluationRoundForm(
             request.POST,
             prefix="evaluation",
         )
 
-        if project_form.is_valid() and evaluation_form.is_valid():
-            project_cleaned = project_form.cleaned_data
-            evaluation_cleaned = evaluation_form.cleaned_data
+        if (
+            project_form.is_valid()
+            and evaluation_form.is_valid()
+        ):
+            project_cleaned = (
+                project_form.cleaned_data
+            )
+            evaluation_cleaned = (
+                evaluation_form.cleaned_data
+            )
 
-            with transaction.atomic():
-                # -----------------------------
-                # 1. 평가 회차 생성
-                # -----------------------------
-                evaluation_round = EvaluationRound(
-                    title=evaluation_cleaned["title"],
-                    description=evaluation_cleaned["description"],
-                    status=evaluation_cleaned["status"],
-                    evaluation_start_at=(
-                        evaluation_cleaned["evaluation_start_at"]
-                    ),
-                    evaluation_end_at=(
-                        evaluation_cleaned["evaluation_end_at"]
-                    ),
-                    target_team_count=(
-                        evaluation_cleaned["target_team_count"]
-                    ),
-                    team_score_weight=(
-                        evaluation_cleaned["team_score_weight"]
-                    ),
-                    personal_score_weight=(
-                        evaluation_cleaned["personal_score_weight"]
-                    ),
-                    tutor_score_weight=(
-                        evaluation_cleaned["tutor_score_weight"]
-                    ),
-                    team_template=(
-                        evaluation_cleaned["team_template"]
-                    ),
-                    peer_template=(
-                        evaluation_cleaned["peer_template"]
-                    ),
-                    created_by=request.user,
-                )
-
-                evaluation_round.full_clean()
-                evaluation_round.save()
-
-                # -----------------------------
-                # 2. 프로젝트 회차 생성
-                # -----------------------------
-                with connection.cursor() as cursor:
-                    cursor.execute(
-                        """
-                        INSERT INTO project_info (
-                            name,
-                            description,
-                            team_start,
-                            team_end,
-                            evaluationround_id
+            try:
+                with transaction.atomic():
+                    # ---------------------------------
+                    # 1. 평가 회차 생성
+                    # ---------------------------------
+                    evaluation_round = (
+                        evaluation_form.save(
+                            commit=False
                         )
-                        VALUES (%s, %s, %s, %s, %s)
-                        RETURNING id
-                        """,
-                        [
-                            project_cleaned["name"],
-                            project_cleaned["description"],
-                            project_cleaned["team_start"],
-                            project_cleaned["team_end"],
-                            evaluation_round.pk,
-                        ],
                     )
 
-                    project_id = cursor.fetchone()[0]
+                    # 신규 프로젝트에 연결되는 평가 회차는
+                    # 항상 준비 중(DRAFT) 상태로 생성한다.
+                    evaluation_round.status = (
+                        EvaluationRound.Status.DRAFT
+                    )
 
-            return redirect(
-                "rounds:project-detail",
-                project_id=project_id,
-            )
+                    evaluation_round.created_by = (
+                        request.user
+                    )
+
+                    evaluation_round.full_clean()
+                    evaluation_round.save()
+
+                    # ---------------------------------
+                    # 2. 참가자 저장
+                    # ---------------------------------
+                    participants = (
+                        evaluation_cleaned.get(
+                            "participants"
+                        )
+                        or []
+                    )
+
+                    _save_round_participants(
+                        evaluation_round,
+                        participants,
+                    )
+
+                    # ---------------------------------
+                    # 3. 프로젝트 생성
+                    # ---------------------------------
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            """
+                            INSERT INTO project_info (
+                                name,
+                                description,
+                                team_start,
+                                team_end,
+                                evaluationround_id
+                            )
+                            VALUES (
+                                %s,
+                                %s,
+                                %s,
+                                %s,
+                                %s
+                            )
+                            RETURNING id
+                            """,
+                            [
+                                project_cleaned["name"],
+                                project_cleaned[
+                                    "description"
+                                ],
+                                project_cleaned[
+                                    "team_start"
+                                ],
+                                project_cleaned[
+                                    "team_end"
+                                ],
+                                evaluation_round.pk,
+                            ],
+                        )
+
+                        project_id = (
+                            cursor.fetchone()[0]
+                        )
+
+            except (
+                DatabaseError,
+                ValidationError,
+            ) as error:
+                evaluation_form.add_error(
+                    None,
+                    error,
+                )
+            else:
+                return redirect(
+                    "rounds:project-detail",
+                    project_id=project_id,
+                )
 
     else:
         project_form = ProjectInfoForm(
             prefix="project",
         )
 
-        evaluation_form = EvaluationRoundForm(
-            prefix="evaluation",
+        evaluation_form = (
+            ProjectEvaluationRoundForm(
+                prefix="evaluation",
+            )
         )
 
     return render(
@@ -258,10 +377,10 @@ def project_create(request):
         },
     )
 
+
 @login_required
 def project_list(request):
     """프로젝트 회차 관리 목록."""
-
     _require_operations(request.user)
 
     project_infos = _project_rows()
@@ -282,31 +401,18 @@ def project_list(request):
 
 @login_required
 def project_detail(request, project_id):
-    """
-    프로젝트 회차 상세.
-
-    project_id는 반드시 project_info.id이다.
-    """
-
+    """프로젝트 회차 상세."""
     _require_operations(request.user)
 
-    project_info = next(
-        (
-            row
-            for row in _project_rows()
-            if row["id"] == project_id
-        ),
-        None,
+    project_info = _get_project_info(
+        project_id
     )
 
-    if project_info is None:
-        from django.http import Http404
-
-        raise Http404(
-            f"프로젝트 회차 {project_id}를 찾을 수 없습니다."
-        )
-
     project = _build_project(project_info)
+
+    evaluation_round = project[
+        "evaluation_round"
+    ]
 
     return render(
         request,
@@ -314,46 +420,53 @@ def project_detail(request, project_id):
         {
             "project": project,
             "project_info": project_info,
-            "evaluation_round": project.evaluation_round,
-            "participant_count": project.participant_count,
-            "team_count": project.team_count,
+            "evaluation_round": evaluation_round,
+            "participant_count": project[
+                "participant_count"
+            ],
+            "team_count": project[
+                "team_count"
+            ],
         },
     )
 
+
 @login_required
 def project_edit(request, project_id):
-    """프로젝트 회차와 연결된 평가 회차 정보를 함께 수정한다."""
-
+    """프로젝트 회차와 연결된 평가 회차 설정을 수정한다."""
     _require_operations(request.user)
 
-    project_info = next(
-        (
-            row
-            for row in _project_rows()
-            if row["id"] == project_id
-        ),
-        None,
+    project_info = _get_project_info(
+        project_id
     )
 
-    if project_info is None:
-        from django.http import Http404
-
-        raise Http404(
-            f"프로젝트 회차 {project_id}를 찾을 수 없습니다."
-        )
-
-    evaluation_round = (
-        EvaluationRound.objects
-        .filter(pk=project_info["evaluationround_id"])
-        .first()
+    evaluation_round = _get_evaluation_round(
+        project_info
     )
 
     if evaluation_round is None:
-        from django.http import Http404
-
         raise Http404(
-            f"연결된 평가 회차 "
-            f"{project_info['evaluationround_id']}를 찾을 수 없습니다."
+            "프로젝트에 연결된 평가 회차를 "
+            "찾을 수 없습니다."
+        )
+
+    # 시작된 평가 회차는 기존 lifecycle 규칙에 따라
+    # 프로젝트 설정 화면에서도 수정하지 않는다.
+    if (
+        evaluation_round.status
+        != EvaluationRound.Status.DRAFT
+    ):
+        return render(
+            request,
+            "rounds/project_edit.html",
+            {
+                "project_form": None,
+                "evaluation_form": None,
+                "project_info": project_info,
+                "project_id": project_id,
+                "evaluation_round": evaluation_round,
+                "read_only": True,
+            },
         )
 
     if request.method == "POST":
@@ -362,96 +475,115 @@ def project_edit(request, project_id):
             prefix="project",
         )
 
-        evaluation_form = EvaluationRoundForm(
-            request.POST,
-            instance=evaluation_round,
-            prefix="evaluation",
+        evaluation_form = (
+            ProjectEvaluationRoundForm(
+                request.POST,
+                instance=evaluation_round,
+                prefix="evaluation",
+            )
         )
 
-        if project_form.is_valid() and evaluation_form.is_valid():
-            project_cleaned = project_form.cleaned_data
-            evaluation_cleaned = evaluation_form.cleaned_data
-
-            # ---------------------------------
-            # 1. 평가 회차 저장
-            # ---------------------------------
-            evaluation_round.title = evaluation_cleaned["title"]
-            evaluation_round.description = (
-                evaluation_cleaned["description"]
+        if (
+            project_form.is_valid()
+            and evaluation_form.is_valid()
+        ):
+            project_cleaned = (
+                project_form.cleaned_data
             )
-            evaluation_round.status = evaluation_cleaned["status"]
-            evaluation_round.evaluation_start_at = (
-                evaluation_cleaned["evaluation_start_at"]
-            )
-            evaluation_round.evaluation_end_at = (
-                evaluation_cleaned["evaluation_end_at"]
-            )
-            evaluation_round.target_team_count = (
-                evaluation_cleaned["target_team_count"]
-            )
-            evaluation_round.team_score_weight = (
-                evaluation_cleaned["team_score_weight"]
-            )
-            evaluation_round.personal_score_weight = (
-                evaluation_cleaned["personal_score_weight"]
-            )
-            evaluation_round.tutor_score_weight = (
-                evaluation_cleaned["tutor_score_weight"]
-            )
-            evaluation_round.team_template = (
-                evaluation_cleaned["team_template"]
-            )
-            evaluation_round.peer_template = (
-                evaluation_cleaned["peer_template"]
+            evaluation_cleaned = (
+                evaluation_form.cleaned_data
             )
 
-            evaluation_round.save()
+            try:
+                with transaction.atomic():
+                    # ---------------------------------
+                    # 1. 평가 회차 설정 수정
+                    # ---------------------------------
+                    evaluation_round = (
+                        evaluation_form.save(
+                            commit=False
+                        )
+                    )
 
-            # ---------------------------------
-            # 2. 프로젝트 회차 저장
-            # ---------------------------------
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    UPDATE project_info
-                    SET
-                        name = %s,
-                        description = %s,
-                        team_start = %s,
-                        team_end = %s,
-                        evaluationround_id = %s
-                    WHERE id = %s
-                    """,
-                    [
-                        project_cleaned["name"],
-                        project_cleaned["description"],
-                        project_cleaned["team_start"],
-                        project_cleaned["team_end"],
-                        project_cleaned["evaluationround_id"].pk,
-                        project_id,
-                    ],
+                    # status는 변경하지 않는다.
+                    evaluation_round.status = (
+                        EvaluationRound.Status.DRAFT
+                    )
+
+                    evaluation_round.full_clean()
+                    evaluation_round.save()
+
+                    # ---------------------------------
+                    # 2. 참가자 저장
+                    # ---------------------------------
+                    participants = (
+                        evaluation_cleaned.get(
+                            "participants"
+                        )
+                        or []
+                    )
+
+                    _save_round_participants(
+                        evaluation_round,
+                        participants,
+                    )
+
+                    # ---------------------------------
+                    # 3. 프로젝트 정보 수정
+                    # ---------------------------------
+                    _save_project_info(
+                        project_id=project_id,
+                        project_cleaned=project_cleaned,
+                        evaluation_round_id=(
+                            evaluation_round.pk
+                        ),
+                    )
+
+            except (
+                DatabaseError,
+                ValidationError,
+            ) as error:
+                evaluation_form.add_error(
+                    None,
+                    error,
                 )
-
-            return redirect(
-                "rounds:project-detail",
-                project_id=project_id,
-            )
+            else:
+                return redirect(
+                    "rounds:project-detail",
+                    project_id=project_id,
+                )
 
     else:
         project_form = ProjectInfoForm(
             initial={
                 "name": project_info["name"],
-                "description": project_info["description"],
-                "team_start": project_info["team_start"],
-                "team_end": project_info["team_end"],
-                "evaluationround_id": evaluation_round,
+                "description": project_info[
+                    "description"
+                ],
+                "team_start": project_info[
+                    "team_start"
+                ],
+                "team_end": project_info[
+                    "team_end"
+                ],
             },
             prefix="project",
         )
 
-        evaluation_form = EvaluationRoundForm(
-            instance=evaluation_round,
-            prefix="evaluation",
+        evaluation_form = (
+            ProjectEvaluationRoundForm(
+                instance=evaluation_round,
+                prefix="evaluation",
+            )
+        )
+
+        evaluation_form.fields[
+            "participants"
+        ].initial = (
+            evaluation_round.participants.values_list(
+                "user_id",
+                flat=True,
+            )
         )
 
     return render(
@@ -463,5 +595,6 @@ def project_edit(request, project_id):
             "project_info": project_info,
             "project_id": project_id,
             "evaluation_round": evaluation_round,
+            "read_only": False,
         },
     )

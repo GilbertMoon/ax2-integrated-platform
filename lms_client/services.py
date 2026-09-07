@@ -5,6 +5,7 @@ from typing import Optional
 from .models import RoundScore
 
 
+LMS_DB_ALIAS = "assignment_lms"
 LMS_SCORE_MAX = 100.0
 CORE_SCORE_MAX = 5.0
 
@@ -12,10 +13,10 @@ CORE_SCORE_MAX = 5.0
 def get_round_score(round_id: int, student_id: int) -> Optional[RoundScore]:
     """2조 LMS의 회차별 학생 점수 스냅샷을 읽는다.
 
-    LMS DB에는 쓰지 않으며, 반드시 별도 DB alias인 ``lms``를 사용한다.
+    LMS DB에는 쓰지 않으며, 별도 DB alias인 ``assignment_lms``를 사용한다.
     """
     return (
-        RoundScore.objects.using("lms")
+        RoundScore.objects.using(LMS_DB_ALIAS)
         .filter(round_id=round_id, student_id=student_id)
         .order_by("-closed_at")
         .first()

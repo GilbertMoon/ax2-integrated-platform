@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-새 프로젝트 회차 생성
+프로젝트 회차 {{ project_id }} 수정
 {% endblock %}
 
 {% block breadcrumb %}
@@ -17,12 +17,12 @@
         </div>
 
         <h1 class="page-title">
-            새 프로젝트 회차 생성
+            {{ project_info.name }} 수정
         </h1>
     </div>
 
     <a
-        href="{% url 'rounds:project-list' %}"
+        href="{% url 'rounds:project-detail' project_id %}"
         class="btn btn-ax-secondary"
     >
         취소
@@ -33,7 +33,6 @@
 <form method="post">
 
     {% csrf_token %}
-
 
     <!-- ================================= -->
     <!-- 프로젝트 정보 -->
@@ -48,7 +47,7 @@
                 </div>
 
                 <div class="small text-muted">
-                    새 프로젝트 회차의 기본 정보를 입력합니다.
+                    프로젝트 회차의 기본 정보를 수정합니다.
                 </div>
             </div>
         </div>
@@ -133,6 +132,24 @@
                 {% endif %}
             </div>
 
+
+            <div class="mb-3">
+                <label
+                    for="{{ project_form.evaluationround_id.id_for_label }}"
+                    class="form-label"
+                >
+                    연결된 평가 회차
+                </label>
+
+                {{ project_form.evaluationround_id }}
+
+                {% if project_form.evaluationround_id.errors %}
+                    <div class="text-danger small">
+                        {{ project_form.evaluationround_id.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
         </div>
     </section>
 
@@ -150,7 +167,7 @@
                 </div>
 
                 <div class="small text-muted">
-                    프로젝트에서 사용할 평가 회차의 정보를 입력합니다.
+                    연결된 평가 회차의 운영 정보를 수정합니다.
                 </div>
             </div>
         </div>
@@ -288,7 +305,7 @@
                         for="{{ evaluation_form.team_score_weight.id_for_label }}"
                         class="form-label"
                     >
-                        팀 평가 비율
+                        팀 평가
                     </label>
 
                     {{ evaluation_form.team_score_weight }}
@@ -300,7 +317,7 @@
                         for="{{ evaluation_form.personal_score_weight.id_for_label }}"
                         class="form-label"
                     >
-                        개인 평가 비율
+                        개인 평가
                     </label>
 
                     {{ evaluation_form.personal_score_weight }}
@@ -312,13 +329,20 @@
                         for="{{ evaluation_form.tutor_score_weight.id_for_label }}"
                         class="form-label"
                     >
-                        튜터 평가 비율
+                        튜터 평가
                     </label>
 
                     {{ evaluation_form.tutor_score_weight }}
                 </div>
 
             </div>
+
+
+            {% if evaluation_form.team_score_weight.errors %}
+                <div class="text-danger small mb-3">
+                    {{ evaluation_form.team_score_weight.errors }}
+                </div>
+            {% endif %}
 
 
             <div class="mb-3">
@@ -370,11 +394,11 @@
             type="submit"
             class="btn btn-primary"
         >
-            프로젝트 및 평가 회차 생성
+            프로젝트 및 평가 회차 저장
         </button>
 
         <a
-            href="{% url 'rounds:project-list' %}"
+            href="{% url 'rounds:project-detail' project_id %}"
             class="btn btn-ax-secondary"
         >
             취소

@@ -9,114 +9,135 @@ from rounds.models import EvaluationRound, QuestionTemplate, TemplateQuestion
 
 
 class EvaluationRoundForm(forms.ModelForm):
-    """회차 기본 정보 폼.
-
-    참가 수강생은 화면에서 고르지 않는다 - 승인된 활성 수강생 전원이 자동으로 참가자가 된다.
-    필드 자체는 save_round가 쓰기 때문에 남겨 두되, 값은 clean에서 서버가 채운다.
-    """
-
-    participants = forms.ModelMultipleChoiceField(
-        label="참가 수강생",
-        queryset=User.objects.none(),
-        required=False,
-        widget=forms.MultipleHiddenInput,
-    )
-
     class Meta:
         model = EvaluationRound
-        fields = (
+        fields = [
             "title",
             "description",
+            "status",
             "evaluation_start_at",
             "evaluation_end_at",
-            "team_template",
-            "peer_template",
+            "target_team_count",
             "team_score_weight",
             "personal_score_weight",
             "tutor_score_weight",
-        )
+            "team_template",
+            "peer_template",
+        ]
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 3}),
-            "evaluation_start_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "evaluation_end_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "team_score_weight": forms.NumberInput(attrs={"min": 0, "max": 100}),
-            "personal_score_weight": forms.NumberInput(attrs={"min": 0, "max": 100}),
-            "tutor_score_weight": forms.NumberInput(attrs={"min": 0, "max": 100}),
-        }
-        labels = {
-            "title": "회차 제목",
-            "description": "설명",
-            "evaluation_start_at": "평가 시작",
-            "evaluation_end_at": "평가 종료",
-            "team_template": "팀 평가 템플릿",
-            "peer_template": "개인 평가 템플릿",
-            "team_score_weight": "팀 점수 비율(%)",
-            "personal_score_weight": "개인 점수 비율(%)",
-            "tutor_score_weight": "튜터 점수 비율(%)",
-        }
-        help_texts = {
-            "tutor_score_weight": "0%면 튜터 점수를 최종 점수에 반영하지 않습니다. 세 비율의 합은 100%여야 합니다.",
+            "title": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                }
+            ),
+            "status": forms.Select(
+                attrs={"class": "form-select"}
+            ),
+            "evaluation_start_at": forms.DateTimeInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "datetime-local",
+                },
+                format="%Y-%m-%dT%H:%M",
+            ),
+            "evaluation_end_at": forms.DateTimeInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "datetime-local",
+                },
+                format="%Y-%m-%dT%H:%M",
+            ),
+            "target_team_count": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 2,
+                }
+            ),
+            "team_score_weight": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 0,
+                    "max": 100,
+                }
+            ),
+            "personal_score_weight": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 0,
+                    "max": 100,
+                }
+            ),
+            "tutor_score_weight": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 0,
+                    "max": 100,
+                }
+            ),
+            "team_template": forms.Select(
+                attrs={"class": "form-select"}
+            ),
+            "peer_template": forms.Select(
+                attrs={"class": "form-select"}
+            ),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["participants"].queryset = User.objects.filter(
-            role=User.Role.STUDENT,
-            approval_status=User.ApprovalStatus.APPROVED,
-            is_active=True,
-        ).order_by("first_name", "email")
-        # 보관된 템플릿은 선택지에서 뺀다 - 다만 이 회차가 이미 쓰고 있는 템플릿이 그
-        # 사이에 (다른 회차 때문에) 보관됐다면, 지금 선택된 값이 조용히 사라지면 안 되니
-        # 예외로 계속 보여준다.
-        self.fields["team_template"].queryset = QuestionTemplate.objects.filter(
-            Q(category=QuestionTemplate.Category.TEAM)
-            & (Q(is_archived=False) | Q(pk=self.instance.team_template_id))
-        )
-        self.fields["peer_template"].queryset = QuestionTemplate.objects.filter(
-            Q(category=QuestionTemplate.Category.PEER)
-            & (Q(is_archived=False) | Q(pk=self.instance.peer_template_id))
-        )
-        if self.instance.pk:
-            self.fields["participants"].initial = self.instance.participants.values_list(
-                "user_id", flat=True
+
+        self.fields["team_template"].queryset = (
+            QuestionTemplate.objects
+            .filter(
+                category=QuestionTemplate.Category.TEAM,
+                is_archived=False,
             )
-        else:
-            # 새 회차는 평가 시작을 오늘, 종료를 그로부터 일주일 뒤로 미리 채워 준다 -
-            # 매번 직접 입력하지 않아도 되고, 빈 값 그대로 저장 시도해 검증 오류를 보는 일을 줄인다.
-            start_default = timezone.localtime(timezone.now())
-            self.fields["evaluation_start_at"].initial = start_default
-            self.fields["evaluation_end_at"].initial = start_default + timedelta(days=7)
-        # 세 비율 필드는 옛 폼(비율 필드가 없던 시절)이 보낸 요청도 계속 통과해야 하므로
-        # 필수로 두지 않는다 - 값이 안 오면 clean()에서 모델 기본값(40/60/0) 또는 기존 값으로
-        # 채운다.
-        for weight_field in ("team_score_weight", "personal_score_weight", "tutor_score_weight"):
-            self.fields[weight_field].required = False
-        for field in self.fields.values():
-            if not isinstance(field.widget, forms.CheckboxSelectMultiple):
-                field.widget.attrs.setdefault(
-                    "class",
-                    "form-select" if isinstance(field.widget, forms.Select) else "form-control",
-                )
+            .order_by("name")
+        )
+
+        self.fields["peer_template"].queryset = (
+            QuestionTemplate.objects
+            .filter(
+                category=QuestionTemplate.Category.PEER,
+                is_archived=False,
+            )
+            .order_by("name")
+        )
+
+        self.fields["evaluation_start_at"].input_formats = [
+            "%Y-%m-%dT%H:%M",
+        ]
+
+        self.fields["evaluation_end_at"].input_formats = [
+            "%Y-%m-%dT%H:%M",
+        ]
 
     def clean(self):
-        cleaned = super().clean()
-        # 화면에서 온 값은 무시하고 승인된 활성 수강생 전원으로 다시 채운다.
-        user_ids = set(self.fields["participants"].queryset.values_list("pk", flat=True))
-        if self.instance.pk:
-            # 이미 참가 중인 사람은 승인·활성 상태가 바뀌었더라도 빼지 않는다. 팀에 배정된
-            # 참가자는 삭제 자체가 막히고(TeamMembership PROTECT), 팀 배정을 조용히 잃는
-            # 것도 곤란하다 - 내보내려면 팀 편성에서 먼저 빼야 한다.
-            user_ids |= set(self.instance.participants.values_list("user_id", flat=True))
-        cleaned["participants"] = User.objects.filter(pk__in=user_ids)
-        for weight_field in ("team_score_weight", "personal_score_weight", "tutor_score_weight"):
-            if cleaned.get(weight_field) is None:
-                default = (
-                    getattr(self.instance, weight_field)
-                    if self.instance.pk
-                    else EvaluationRound._meta.get_field(weight_field).default
-                )
-                cleaned[weight_field] = default
-        return cleaned
+        cleaned_data = super().clean()
+
+        start = cleaned_data.get("evaluation_start_at")
+        end = cleaned_data.get("evaluation_end_at")
+
+        if start and end and start >= end:
+            self.add_error(
+                "evaluation_end_at",
+                "종료 시각은 시작 시각보다 늦어야 합니다.",
+            )
+
+        team_weight = cleaned_data.get("team_score_weight") or 0
+        personal_weight = cleaned_data.get("personal_score_weight") or 0
+        tutor_weight = cleaned_data.get("tutor_score_weight") or 0
+
+        if team_weight + personal_weight + tutor_weight != 100:
+            self.add_error(
+                "team_score_weight",
+                "팀·개인·튜터 점수 비율의 합은 100%여야 합니다.",
+            )
+
+        return cleaned_data
 
 
 class QuestionTemplateForm(forms.ModelForm):

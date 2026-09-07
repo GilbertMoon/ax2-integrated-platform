@@ -88,6 +88,12 @@ urlpatterns = [
         name="publish-all-results",
     ),
 
+    path(
+        "rounds/<int:project_id>/edit/",
+        project_views.project_edit,
+        name="project-edit",
+    ),
+
     path("results/", views.results_entry, name="results-entry"),
     path("publish/", views.publish_entry, name="publish-entry"),
     path("tutor-evaluation/", views.tutor_evaluation_entry, name="tutor-evaluation-entry"),

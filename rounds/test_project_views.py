@@ -7,7 +7,7 @@ class ProjectRoundUrlTests(SimpleTestCase):
         self.assertEqual(reverse("rounds:project-list"), "/manage/rounds/")
 
     def test_project_round_detail_is_under_manage_rounds(self):
-        self.assertEqual(reverse("rounds:project-detail", kwargs={"round_id": 10}), "/manage/rounds/10/")
+        self.assertEqual(reverse("rounds:project-detail", kwargs={"project_id": 10}), "/manage/rounds/10/")
 
     def test_evaluation_round_list_is_separate(self):
         self.assertEqual(reverse("rounds:list"), "/manage/evaluation-rounds/")

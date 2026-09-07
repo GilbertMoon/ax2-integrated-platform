@@ -19,17 +19,30 @@
     </div>
 
     <h1 class="page-title">
-      {{ project.project_title }}
+      {{ project.title }}
     </h1>
 
   </div>
 
-  <a
-    href="{% url 'rounds:project-list' %}"
-    class="btn btn-ax-secondary"
-  >
-    목록
-  </a>
+  <div class="d-flex gap-2">
+
+    <!-- 프로젝트 정보 수정 -->
+    <a
+      href="{% url 'rounds:project-edit' project.project_info_id %}"
+      class="btn btn-primary"
+    >
+      프로젝트 정보 수정
+    </a>
+
+    <!-- 목록 -->
+    <a
+      href="{% url 'rounds:project-list' %}"
+      class="btn btn-ax-secondary"
+    >
+      목록
+    </a>
+
+  </div>
 
 </div>
 
@@ -144,37 +157,42 @@
     <div class="d-flex flex-wrap gap-2">
 
       {% if project.evaluationround_id %}
+
         <a
           href="{% url 'rounds:teams' project.evaluationround_id %}"
           class="btn btn-primary"
         >
           팀 편성 / 관리
         </a>
+
       {% else %}
+
         <button
           type="button"
           class="btn btn-secondary"
           disabled
         >
-            팀 편성 / 관리
+          팀 편성 / 관리
         </button>
+
       {% endif %}
+
 
       {% if evaluation_round %}
 
-      <a
-        href="{% url 'rounds:reviews' evaluation_round.pk %}"
-        class="btn btn-outline-primary"
-      >
-        평가 진행 현황
-      </a>
+        <a
+          href="{% url 'rounds:reviews' evaluation_round.pk %}"
+          class="btn btn-outline-primary"
+        >
+          평가 진행 현황
+        </a>
 
-      <a
-        href="{% url 'rounds:results' evaluation_round.pk %}"
-        class="btn btn-outline-primary"
-      >
-        결과 관리
-      </a>
+        <a
+          href="{% url 'rounds:results' evaluation_round.pk %}"
+          class="btn btn-outline-primary"
+        >
+          결과 관리
+        </a>
 
       {% endif %}
 
@@ -210,6 +228,8 @@
 
     <dl class="row mb-0">
 
+      <!-- 프로젝트 회차 ID -->
+
       <dt class="col-sm-3">
         프로젝트 회차 ID
       </dt>
@@ -219,6 +239,30 @@
       </dd>
 
 
+      <!-- 프로젝트명 -->
+
+      <dt class="col-sm-3">
+        프로젝트명
+      </dt>
+
+      <dd class="col-sm-9">
+        {{ project_info.name|default:"미등록" }}
+      </dd>
+
+
+      <!-- 프로젝트 설명 -->
+
+      <dt class="col-sm-3">
+        프로젝트 설명
+      </dt>
+
+      <dd class="col-sm-9">
+        {{ project_info.description|default:"미등록" }}
+      </dd>
+
+
+      <!-- 프로젝트 시작일 -->
+
       <dt class="col-sm-3">
         프로젝트 시작일
       </dt>
@@ -227,6 +271,8 @@
         {{ project_info.team_start|date:"Y-m-d"|default:"미등록" }}
       </dd>
 
+
+      <!-- 프로젝트 종료일 -->
 
       <dt class="col-sm-3">
         프로젝트 종료일
@@ -268,47 +314,64 @@
 
     {% if evaluation_round %}
 
-    <dl class="row mb-0">
+      <dl class="row mb-0">
 
-      <dt class="col-sm-3">
-        평가 회차 ID
-      </dt>
+        <!-- 평가 회차 ID -->
 
-      <dd class="col-sm-9">
-        {{ project.evaluationround_id }}
-      </dd>
+        <dt class="col-sm-3">
+          평가 회차 ID
+        </dt>
 
-
-      <dt class="col-sm-3">
-        평가 상태
-      </dt>
-
-      <dd class="col-sm-9">
-        {{ project.status_display }}
-      </dd>
+        <dd class="col-sm-9">
+          {{ project.evaluationround_id }}
+        </dd>
 
 
-      <dt class="col-sm-3">
-        평가 기간
-      </dt>
+        <!-- 평가 회차명 -->
 
-      <dd class="col-sm-9">
+        <dt class="col-sm-3">
+          평가 회차명
+        </dt>
 
-        {{ project.evaluation_start_at|date:"Y-m-d H:i" }}
+        <dd class="col-sm-9">
+          {{ evaluation_round.title }}
+        </dd>
 
-        ~
 
-        {{ project.evaluation_end_at|date:"Y-m-d H:i" }}
+        <!-- 평가 상태 -->
 
-      </dd>
+        <dt class="col-sm-3">
+          평가 상태
+        </dt>
 
-    </dl>
+        <dd class="col-sm-9">
+          {{ project.status_display }}
+        </dd>
+
+
+        <!-- 평가 기간 -->
+
+        <dt class="col-sm-3">
+          평가 기간
+        </dt>
+
+        <dd class="col-sm-9">
+
+          {{ project.evaluation_start_at|date:"Y-m-d H:i" }}
+
+          ~
+
+          {{ project.evaluation_end_at|date:"Y-m-d H:i" }}
+
+        </dd>
+
+      </dl>
 
     {% else %}
 
-    <div class="text-muted">
-      연결된 평가 회차가 없습니다.
-    </div>
+      <div class="text-muted">
+        연결된 평가 회차가 없습니다.
+      </div>
 
     {% endif %}
 

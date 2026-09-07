@@ -110,6 +110,7 @@ class EvaluationResult(models.Model):
     team_score_raw = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     peer_score_raw = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     tutor_score_raw = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    lms_score_raw = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     final_score_raw = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     display_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     primary_rank = models.PositiveIntegerField(null=True, blank=True)
@@ -151,13 +152,18 @@ class EvaluationResult(models.Model):
                 name="results_tutor_score_five_point_range",
             ),
             models.CheckConstraint(
+                condition=Q(lms_score_raw__isnull=True)
+                | Q(lms_score_raw__gte=0, lms_score_raw__lte=5),
+                name="results_lms_score_five_point_range",
+            ),
+            models.CheckConstraint(
                 condition=Q(final_score_raw__isnull=True)
-                | Q(final_score_raw__gte=1, final_score_raw__lte=5),
+                | Q(final_score_raw__gte=0, final_score_raw__lte=5),
                 name="results_final_score_five_point_range",
             ),
             models.CheckConstraint(
                 condition=Q(display_score__isnull=True)
-                | Q(display_score__gte=1, display_score__lte=5),
+                | Q(display_score__gte=0, display_score__lte=5),
                 name="results_display_score_five_point_range",
             ),
             models.UniqueConstraint(

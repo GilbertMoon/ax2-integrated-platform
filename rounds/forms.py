@@ -34,6 +34,7 @@ class EvaluationRoundForm(forms.ModelForm):
             "team_score_weight",
             "personal_score_weight",
             "tutor_score_weight",
+            "lms_score_weight",
         )
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
@@ -42,6 +43,7 @@ class EvaluationRoundForm(forms.ModelForm):
             "team_score_weight": forms.NumberInput(attrs={"min": 0, "max": 100}),
             "personal_score_weight": forms.NumberInput(attrs={"min": 0, "max": 100}),
             "tutor_score_weight": forms.NumberInput(attrs={"min": 0, "max": 100}),
+            "lms_score_weight": forms.NumberInput(attrs={"min": 0, "max": 100}),
         }
         labels = {
             "title": "회차 제목",
@@ -53,9 +55,10 @@ class EvaluationRoundForm(forms.ModelForm):
             "team_score_weight": "팀 점수 비율(%)",
             "personal_score_weight": "개인 점수 비율(%)",
             "tutor_score_weight": "튜터 점수 비율(%)",
+            "lms_score_weight": "LMS 점수 비율(%)",
         }
         help_texts = {
-            "tutor_score_weight": "0%면 튜터 점수를 최종 점수에 반영하지 않습니다. 세 비율의 합은 100%여야 합니다.",
+            "lms_score_weight": "0%면 LMS 점수를 반영하지 않습니다. 네 비율의 합은 100%여야 합니다.",
         }
 
     def __init__(self, *args, **kwargs):
@@ -86,10 +89,14 @@ class EvaluationRoundForm(forms.ModelForm):
             start_default = timezone.localtime(timezone.now())
             self.fields["evaluation_start_at"].initial = start_default
             self.fields["evaluation_end_at"].initial = start_default + timedelta(days=7)
-        # 세 비율 필드는 옛 폼(비율 필드가 없던 시절)이 보낸 요청도 계속 통과해야 하므로
-        # 필수로 두지 않는다 - 값이 안 오면 clean()에서 모델 기본값(40/60/0) 또는 기존 값으로
-        # 채운다.
-        for weight_field in ("team_score_weight", "personal_score_weight", "tutor_score_weight"):
+        # 비율 필드는 옛 폼(비율 필드가 없던 시절)이 보낸 요청도 계속 통과해야 하므로 필수로
+        # 두지 않는다 - 값이 안 오면 clean()에서 모델 기본값 또는 기존 값을 채운다.
+        for weight_field in (
+            "team_score_weight",
+            "personal_score_weight",
+            "tutor_score_weight",
+            "lms_score_weight",
+        ):
             self.fields[weight_field].required = False
         for field in self.fields.values():
             if not isinstance(field.widget, forms.CheckboxSelectMultiple):
@@ -108,7 +115,12 @@ class EvaluationRoundForm(forms.ModelForm):
             # 것도 곤란하다 - 내보내려면 팀 편성에서 먼저 빼야 한다.
             user_ids |= set(self.instance.participants.values_list("user_id", flat=True))
         cleaned["participants"] = User.objects.filter(pk__in=user_ids)
-        for weight_field in ("team_score_weight", "personal_score_weight", "tutor_score_weight"):
+        for weight_field in (
+            "team_score_weight",
+            "personal_score_weight",
+            "tutor_score_weight",
+            "lms_score_weight",
+        ):
             if cleaned.get(weight_field) is None:
                 default = (
                     getattr(self.instance, weight_field)

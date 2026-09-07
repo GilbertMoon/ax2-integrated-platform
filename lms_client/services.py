@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Iterable, Optional
 
 from .models import RoundScore
 
@@ -41,3 +41,24 @@ def get_normalized_score(round_id: int, student_id: int) -> Optional[float]:
     if snapshot is None:
         return None
     return normalize_score(snapshot.total)
+
+
+def get_normalized_scores(round_id: int, student_ids: Iterable[int]) -> dict[int, float | None]:
+    """한 회차의 여러 학생 LMS 점수를 한 번에 조회해 0~5 점 척도로 돌려준다.
+
+    4조 채점 실행에서 학생마다 LMS DB를 개별 조회하지 않도록 배치 조회한다. 점수 마감
+    스냅샷이 없는 학생은 결과 dict에 포함하지 않으며, 호출부는 이를 N/A로 처리한다.
+    """
+    ids = {int(student_id) for student_id in student_ids}
+    if not ids:
+        return {}
+
+    snapshots = (
+        RoundScore.objects.using(LMS_DB_ALIAS)
+        .filter(round_id=round_id, student_id__in=ids)
+        .order_by("student_id", "-closed_at")
+    )
+    scores: dict[int, float | None] = {}
+    for snapshot in snapshots:
+        scores.setdefault(snapshot.student_id, normalize_score(snapshot.total))
+    return scores

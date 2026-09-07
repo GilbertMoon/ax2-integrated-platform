@@ -45,10 +45,6 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-local-development-key")
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
-# 메일 본문 링크처럼 요청 객체 없이 만들어야 하는 절대 URL의 기준이다(예약 발송·스케줄러는
-# request가 없어서 build_absolute_uri를 쓸 수 없다). Sites 프레임워크는 쓰지 않는다 -
-# 도메인이 DB에 있어서 배포 환경과 어긋나도 드러나지 않는다.
-# 지정하지 않으면 CSRF 신뢰 출처의 첫 항목을 쓰고, 그것도 없으면 로컬 주소로 떨어진다.
 SITE_URL = os.getenv("DJANGO_SITE_URL", "").strip().rstrip("/") or (
     CSRF_TRUSTED_ORIGINS[0].rstrip("/") if CSRF_TRUSTED_ORIGINS else "http://127.0.0.1:8000"
 )
@@ -76,6 +72,8 @@ INSTALLED_APPS = [
     "audit.apps.AuditConfig",
     "notices.apps.NoticesConfig",
     "notifications.apps.NotificationsConfig",
+    "lms.apps.LmsConfig",
+    "lms_client.apps.LmsClientConfig",
 ]
 
 MIDDLEWARE = [
@@ -128,17 +126,41 @@ if all(os.getenv(key) for key in POSTGRES_KEYS):
             "HOST": os.environ["POSTGRES_HOST"],
             "PORT": os.environ["POSTGRES_PORT"],
             "CONN_MAX_AGE": env_int("POSTGRES_CONN_MAX_AGE", 60),
-        }
+        },
+        "assignment_lms": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("LMS_DB_NAME", "assignment_lms"),
+            "USER": os.getenv("LMS_DB_USER", "postgres"),
+            "PASSWORD": os.getenv("LMS_DB_PASSWORD", ""),
+            "HOST": os.getenv("LMS_DB_HOST", "127.0.0.1"),
+            "PORT": os.getenv("LMS_DB_PORT", "5432"),
+            "OPTIONS": {
+                "options": "-c default_transaction_read_only=on",
+            },
+        },
     }
 elif DEBUG:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
-        }
+        },
+        "assignment_lms": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("LMS_DB_NAME", "assignment_lms"),
+            "USER": os.getenv("LMS_DB_USER", "postgres"),
+            "PASSWORD": os.getenv("LMS_DB_PASSWORD", ""),
+            "HOST": os.getenv("LMS_DB_HOST", "127.0.0.1"),
+            "PORT": os.getenv("LMS_DB_PORT", "5432"),
+            "OPTIONS": {
+                "options": "-c default_transaction_read_only=on",
+            },
+        },
     }
 else:
     raise ImproperlyConfigured("Production requires all POSTGRES_* settings")
+
+DATABASE_ROUTERS = ["lms.db_router.LmsDatabaseRouter"]
 
 AUTH_USER_MODEL = "accounts.User"
 AUTHENTICATION_BACKENDS = (
@@ -151,8 +173,6 @@ SITE_ID = 1
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*"]
-# 확인 메일을 보낼 수 없는 환경이라(발신 도메인 PTR 미설정) 소유 확인 단계를 두지 않는다.
-# 소셜 로그인은 공급자가 확인한 이메일만 받으므로(CustomSocialAccountAdapter) 영향이 없다.
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_UNIQUE_EMAIL = True
 SOCIALACCOUNT_ADAPTER = "accounts.adapters.CustomSocialAccountAdapter"
@@ -198,9 +218,6 @@ if KAKAO_OAUTH_ENABLED:
     }
 SOCIALACCOUNT_REQUESTS_TIMEOUT = env_int("SOCIALACCOUNT_REQUESTS_TIMEOUT", 5)
 
-# Development prints messages to the terminal. Production opts into SMTP with
-# DJANGO_EMAIL_BACKEND and the remaining DJANGO_EMAIL_* variables; credentials
-# are intentionally never stored in this repository.
 EMAIL_BACKEND = os.getenv(
     "DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
 ).strip()
@@ -267,11 +284,8 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-# 사용자가 올린 파일(프로필 사진). 정적 파일과 달리 배포 때마다 새로 만들면 안 되므로
-# 운영 환경에서는 이 경로를 영구 볼륨에 연결해야 한다.
 MEDIA_URL = "media/"
 MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT") or BASE_DIR / "media")
-# 프로필 사진 업로드 상한 (bytes). accounts.forms에서 함께 확인한다.
 PROFILE_IMAGE_MAX_BYTES = 2 * 1024 * 1024
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},

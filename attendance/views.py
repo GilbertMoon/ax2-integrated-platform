@@ -173,3 +173,36 @@ def update_attendance_view(request: HttpRequest) -> JsonResponse:
     return JsonResponse(
         {"user_id": record.user_id, "date": str(record.date), "status": record.status}
     )
+
+@login_required
+def kiosk_page(request):
+    """
+    교실 태블릿에 띄워둘 키오스크 화면.
+    튜터 계정으로 로그인한 상태에서 이 페이지를 열어두면,
+    학생들이 차례로 와서 촬영 버튼만 누르면 됩니다.
+    """
+    if not is_operations_user(request.user):
+        raise PermissionDenied
+    return render(request, "attendance/kiosk.html")
+
+
+@require_POST
+def face_checkin_view(request: HttpRequest) -> JsonResponse:
+    """
+    얼굴 사진을 업로드받아 출석을 자동 기록한다.
+    호출 예: POST /attendance/face-checkin/  (multipart/form-data, "image" 필드에 사진)
+    """
+    if not is_operations_user(request.user):
+        return JsonResponse(
+            {"error": {"code": "permission_denied", "message": "permission denied"}}, status=403
+        )
+
+    image_file = request.FILES.get("image")
+    if image_file is None:
+        return JsonResponse(
+            {"error": {"code": "invalid_request", "message": "image 파일이 필요합니다."}}, status=400
+        )
+
+    from attendance.face_services import record_face_checkin
+    result = record_face_checkin(image_file)
+    return JsonResponse(result)

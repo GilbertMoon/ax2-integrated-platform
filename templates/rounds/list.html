@@ -9,7 +9,6 @@
     </div>
     <a href="{% url 'rounds:project-create' %}" class="btn btn-ax-primary">새 회차</a>
   </div>
-
   <section class="card-custom">
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0">
@@ -24,101 +23,76 @@
             <th scope="col" class="text-end">되돌리기</th>
           </tr>
         </thead>
-
         <tbody>
           {% for item in rounds %}
             <tr>
               <td>
                 <strong>{{ item.title }}</strong>
-                <div class="small text-muted">
-                  {{ item.description|truncatechars:60 }}
-                </div>
+                <div class="small text-muted">{{ item.description|truncatechars:60 }}</div>
               </td>
-
               <td>
                 <span class="badge {% if item.status == 'IN_PROGRESS' %}bg-primary{% elif item.status == 'COMPLETED' %}bg-success{% else %}text-bg-secondary{% endif %}">
                   {{ item.get_status_display }}
                 </span>
               </td>
-
               <td class="small">
                 {{ item.evaluation_start_at|date:"Y-m-d H:i" }}
                 <br>
                 {{ item.evaluation_end_at|date:"Y-m-d H:i" }}
               </td>
-
               <td>{{ item.participant_count }}명</td>
               <td>{{ item.team_count }}팀</td>
-
               <td class="text-end">
                 {% if item.status == 'DRAFT' %}
                   <a href="{% url 'rounds:edit' item.pk %}"
                      class="btn btn-sm btn-outline-primary">수정</a>
-
                   <a href="{% url 'rounds:teams' item.pk %}"
                      class="btn btn-sm btn-primary">팀 구성</a>
-
                 {% elif item.status == 'IN_PROGRESS' %}
                   <a href="{% url 'rounds:reviews' item.pk %}"
                      class="btn btn-sm btn-primary">진행 현황</a>
-
                 {% else %}
                   <a href="{% url 'rounds:results' item.pk %}"
                      class="btn btn-sm btn-primary">결과</a>
                 {% endif %}
               </td>
-
               <td class="text-end">
                 {% if item.status == 'DRAFT' %}
                   <form method="post"
                         action="{% url 'rounds:delete' item.pk %}"
                         onsubmit="return confirm('{{ item.title }} 회차를 삭제하시겠습니까? 참가자·팀 배정도 함께 지워집니다. 계속할까요?')">
                     {% csrf_token %}
-                    <button type="submit"
-                            class="btn btn-sm btn-outline-danger">삭제</button>
+                    <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
                   </form>
-
                 {% elif item.status == 'IN_PROGRESS' %}
                   <form method="post" action="{% url 'rounds:revert' item.pk %}">
                     {% csrf_token %}
                     <button type="submit"
                             class="btn btn-sm btn-outline-secondary"
-                            {% if item.submission_count %}
-                              disabled
-                              title="제출된 평가가 있어 되돌릴 수 없습니다."
-                            {% endif %}>
+                            {% if item.submission_count %}disabled title="제출된 평가가 있어 되돌릴 수 없습니다."{% endif %}>
                       준비중으로
                     </button>
                   </form>
-
                 {% else %}
                   <div class="d-flex gap-2 justify-content-end">
                     <form method="post" action="{% url 'rounds:reopen' item.pk %}">
                       {% csrf_token %}
                       <button type="submit"
                               class="btn btn-sm btn-outline-secondary"
-                              {% if item.run_count %}
-                                disabled
-                                title="채점 기록이 있어 다시 열 수 없습니다. 전체삭제를 사용해 주세요."
-                              {% endif %}>
+                              {% if item.run_count %}disabled title="채점 기록이 있어 다시 열 수 없습니다. 전체삭제를 사용해 주세요."{% endif %}>
                         다시 열기
                       </button>
                     </form>
-
                     {% comment %}
                     완료 회차는 이력 보존을 위해 삭제 전 확인 절차를 거친다.
                     무엇이 사라지는지 건수를 보여주고 제목을 직접 받는다.
                     서버에서도 다시 확인한다.
                     {% endcomment %}
-
                     <button type="button"
                             class="btn btn-sm btn-outline-danger"
                             data-bs-toggle="modal"
-                            data-bs-target="#deleteRoundModal{{ item.pk }}">
-                      삭제
-                    </button>
+                            data-bs-target="#deleteRoundModal{{ item.pk }}">삭제</button>
                   </div>
-
                   <div class="modal fade"
                        id="deleteRoundModal{{ item.pk }}"
                        tabindex="-1"
@@ -127,37 +101,25 @@
                     <div class="modal-dialog modal-dialog-centered">
                       <div class="modal-content">
                         <div class="modal-header">
-                          <h2 class="h6 fw-bold mb-0"
-                              id="deleteRoundLabel{{ item.pk }}">
-                            회차를 정말 삭제하시겠습니까?
-                          </h2>
-
+                          <h2 class="h6 fw-bold mb-0" id="deleteRoundLabel{{ item.pk }}">회차를 정말 삭제하시겠습니까?</h2>
                           <button type="button"
                                   class="btn-close"
                                   data-bs-dismiss="modal"
                                   aria-label="닫기"></button>
                         </div>
-
                         <form method="post" action="{% url 'rounds:delete' item.pk %}">
                           {% csrf_token %}
-
                           <div class="modal-body text-start">
                             <p class="mb-2">
                               <strong>{{ item.title }}</strong> 회차의 관련 기록을 함께 삭제합니다.
                               되돌릴 수 없습니다.
                             </p>
-
                             <ul class="text-muted font-size-135 mb-3">
                               <li>참가자 {{ item.participant_count }}명 · 팀 {{ item.team_count }}팀</li>
                               <li>제출물 {{ item.submission_count }}건</li>
                               <li>채점 기록 {{ item.run_count }}건</li>
                             </ul>
-
-                            <label class="form-label small fw-bold"
-                                   for="confirmTitle{{ item.pk }}">
-                              계속하려면 회차 제목을 그대로 입력해 주세요.
-                            </label>
-
+                            <label class="form-label small fw-bold" for="confirmTitle{{ item.pk }}">계속하려면 회차 제목을 그대로 입력해 주세요.</label>
                             <input type="text"
                                    class="form-control"
                                    id="confirmTitle{{ item.pk }}"
@@ -165,18 +127,9 @@
                                    autocomplete="off"
                                    placeholder="{{ item.title }}">
                           </div>
-
                           <div class="modal-footer">
-                            <button type="button"
-                                    class="btn btn-ax-secondary"
-                                    data-bs-dismiss="modal">
-                              취소
-                            </button>
-
-                            <button type="submit"
-                                    class="btn btn-danger">
-                              삭제
-                            </button>
+                            <button type="button" class="btn btn-ax-secondary" data-bs-dismiss="modal">취소</button>
+                            <button type="submit" class="btn btn-danger">삭제</button>
                           </div>
                         </form>
                       </div>
@@ -185,26 +138,17 @@
                 {% endif %}
               </td>
             </tr>
-
           {% empty %}
             <tr>
               <td colspan="7">
                 <div class="ax-empty-state">
                   <i class="bi bi-calendar-range"></i>
-
-                  <p class="fw-semibold mb-2">
-                    아직 회차가 없습니다
-                  </p>
-
+                  <p class="fw-semibold mb-2">아직 회차가 없습니다</p>
                   <p class="text-muted mb-3">
                     등록된 평가 회차가 없습니다.
                     새 회차를 만들어 시작해 보세요.
                   </p>
-
-                  <a href="{% url 'rounds:project-create' %}"
-                     class="btn btn-ax-primary">
-                    새 회차 만들기
-                  </a>
+                  <a href="{% url 'rounds:project-create' %}" class="btn btn-ax-primary">새 회차 만들기</a>
                 </div>
               </td>
             </tr>

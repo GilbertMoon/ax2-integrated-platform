@@ -1,382 +1,155 @@
 {% extends "base.html" %}
-
-{% block title %}
-프로젝트 회차 {{ project.project_info_id }} | 프로젝트 회차 관리
-{% endblock %}
-
-{% block breadcrumb %}
-프로젝트 회차 관리
-{% endblock %}
-
+{% block title %}프로젝트 회차 {{ project.project_info_id }} | 프로젝트 회차 관리{% endblock %}
+{% block breadcrumb %}프로젝트 회차 관리{% endblock %}
 {% block content %}
-
-<div class="page-header">
-
-  <div>
-
-    <div class="small text-muted mb-1">
-      프로젝트 회차
-    </div>
-
-    <h1 class="page-title">
-      {{ project.title }}
-    </h1>
-
-  </div>
-
-  <div class="d-flex gap-2">
-
-    <!-- 프로젝트 정보 수정 -->
-    <a
-      href="{% url 'rounds:project-edit' project.project_info_id %}"
-      class="btn btn-primary"
-    >
-      프로젝트 정보 수정
-    </a>
-
-    <!-- 목록 -->
-    <a
-      href="{% url 'rounds:project-list' %}"
-      class="btn btn-ax-secondary"
-    >
-      목록
-    </a>
-
-  </div>
-
-</div>
-
-
-<!-- 프로젝트 기본 정보 -->
-
-<div class="row g-3 mb-4">
-
-  <!-- 프로젝트 회차 -->
-  <div class="col-md-3">
-
-    <section class="card-custom h-100 p-3">
-
-      <div class="small text-muted mb-1">
-        프로젝트 회차
-      </div>
-
-      <strong>
-        {{ project.project_info_id }}
-      </strong>
-
-    </section>
-
-  </div>
-
-
-  <!-- 프로젝트 기간 -->
-  <div class="col-md-3">
-
-    <section class="card-custom h-100 p-3">
-
-      <div class="small text-muted mb-1">
-        프로젝트 기간
-      </div>
-
-      <strong>
-
-        {{ project.project_start|date:"Y-m-d"|default:"미등록" }}
-
-        ~
-
-        {{ project.project_end|date:"Y-m-d"|default:"미등록" }}
-
-      </strong>
-
-    </section>
-
-  </div>
-
-
-  <!-- 팀 -->
-  <div class="col-md-3">
-
-    <section class="card-custom h-100 p-3">
-
-      <div class="small text-muted mb-1">
-        팀
-      </div>
-
-      <strong>
-        {{ team_count }}팀
-      </strong>
-
-    </section>
-
-  </div>
-
-
-  <!-- 참가자 -->
-  <div class="col-md-3">
-
-    <section class="card-custom h-100 p-3">
-
-      <div class="small text-muted mb-1">
-        참가자
-      </div>
-
-      <strong>
-        {{ participant_count }}명
-      </strong>
-
-    </section>
-
-  </div>
-
-</div>
-
-
-<!-- 프로젝트 운영 -->
-
-<section class="card-custom mb-4">
-
-  <div class="card-header-custom">
-
+  <div class="page-header">
     <div>
-
-      <div class="card-title-custom">
-        프로젝트 운영
-      </div>
-
-      <div class="small text-muted">
-        프로젝트 회차에 속한 팀과 참가자를 관리합니다.
-      </div>
-
+      <div class="small text-muted mb-1">프로젝트 회차</div>
+      <h1 class="page-title">{{ project.title }}</h1>
     </div>
-
-  </div>
-
-
-  <div class="p-3">
-
-    <div class="d-flex flex-wrap gap-2">
-
-      {% if project.evaluationround_id %}
-
-        <a
-          href="{% url 'rounds:teams' project.evaluationround_id %}"
-          class="btn btn-primary"
-        >
-          팀 편성 / 관리
-        </a>
-
-      {% else %}
-
-        <button
-          type="button"
-          class="btn btn-secondary"
-          disabled
-        >
-          팀 편성 / 관리
-        </button>
-
-      {% endif %}
-
-
-      {% if evaluation_round %}
-
-        <a
-          href="{% url 'rounds:reviews' evaluation_round.pk %}"
-          class="btn btn-outline-primary"
-        >
-          평가 진행 현황
-        </a>
-
-        <a
-          href="{% url 'rounds:results' evaluation_round.pk %}"
-          class="btn btn-outline-primary"
-        >
-          결과 관리
-        </a>
-
-      {% endif %}
-
+    <div class="d-flex gap-2">
+      <!-- 프로젝트 정보 수정 -->
+      <a href="{% url 'rounds:project-edit' project.project_info_id %}"
+         class="btn btn-primary">프로젝트 정보 수정</a>
+      <!-- 목록 -->
+      <a href="{% url 'rounds:project-list' %}" class="btn btn-ax-secondary">목록</a>
     </div>
-
   </div>
-
-</section>
-
-
-<!-- 프로젝트 회차 정보 -->
-
-<section class="card-custom mb-4">
-
-  <div class="card-header-custom">
-
-    <div>
-
-      <div class="card-title-custom">
-        프로젝트 회차 정보
-      </div>
-
-      <div class="small text-muted">
-        project_info 테이블에 등록된 프로젝트 회차 정보입니다.
-      </div>
-
+  <!-- 프로젝트 기본 정보 -->
+  <div class="row g-3 mb-4">
+    <!-- 프로젝트 회차 -->
+    <div class="col-md-3">
+      <section class="card-custom h-100 p-3">
+        <div class="small text-muted mb-1">프로젝트 회차</div>
+        <strong>{{ project.project_info_id }}</strong>
+      </section>
     </div>
-
-  </div>
-
-
-  <div class="p-3">
-
-    <dl class="row mb-0">
-
-      <!-- 프로젝트 회차 ID -->
-
-      <dt class="col-sm-3">
-        프로젝트 회차 ID
-      </dt>
-
-      <dd class="col-sm-9">
-        {{ project_info.id }}
-      </dd>
-
-
-      <!-- 프로젝트명 -->
-
-      <dt class="col-sm-3">
-        프로젝트명
-      </dt>
-
-      <dd class="col-sm-9">
-        {{ project_info.name|default:"미등록" }}
-      </dd>
-
-
-      <!-- 프로젝트 설명 -->
-
-      <dt class="col-sm-3">
-        프로젝트 설명
-      </dt>
-
-      <dd class="col-sm-9">
-        {{ project_info.description|default:"미등록" }}
-      </dd>
-
-
-      <!-- 프로젝트 시작일 -->
-
-      <dt class="col-sm-3">
-        프로젝트 시작일
-      </dt>
-
-      <dd class="col-sm-9">
-        {{ project_info.team_start|date:"Y-m-d"|default:"미등록" }}
-      </dd>
-
-
-      <!-- 프로젝트 종료일 -->
-
-      <dt class="col-sm-3">
-        프로젝트 종료일
-      </dt>
-
-      <dd class="col-sm-9">
-        {{ project_info.team_end|date:"Y-m-d"|default:"미등록" }}
-      </dd>
-
-    </dl>
-
-  </div>
-
-</section>
-
-
-<!-- 연결된 평가 회차 -->
-
-<section class="card-custom">
-
-  <div class="card-header-custom">
-
-    <div>
-
-      <div class="card-title-custom">
-        연결된 평가 회차
-      </div>
-
-      <div class="small text-muted">
-        프로젝트 회차에 연결된 평가 회차입니다.
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <div class="p-3">
-
-    {% if evaluation_round %}
-
-      <dl class="row mb-0">
-
-        <!-- 평가 회차 ID -->
-
-        <dt class="col-sm-3">
-          평가 회차 ID
-        </dt>
-
-        <dd class="col-sm-9">
-          {{ project.evaluationround_id }}
-        </dd>
-
-
-        <!-- 평가 회차명 -->
-
-        <dt class="col-sm-3">
-          평가 회차명
-        </dt>
-
-        <dd class="col-sm-9">
-          {{ evaluation_round.title }}
-        </dd>
-
-
-        <!-- 평가 상태 -->
-
-        <dt class="col-sm-3">
-          평가 상태
-        </dt>
-
-        <dd class="col-sm-9">
-          {{ project.status_display }}
-        </dd>
-
-
-        <!-- 평가 기간 -->
-
-        <dt class="col-sm-3">
-          평가 기간
-        </dt>
-
-        <dd class="col-sm-9">
-
-          {{ project.evaluation_start_at|date:"Y-m-d H:i" }}
-
+    <!-- 프로젝트 기간 -->
+    <div class="col-md-3">
+      <section class="card-custom h-100 p-3">
+        <div class="small text-muted mb-1">프로젝트 기간</div>
+        <strong>
+          {{ project.project_start|date:"Y-m-d"|default:"미등록" }}
           ~
-
-          {{ project.evaluation_end_at|date:"Y-m-d H:i" }}
-
-        </dd>
-
-      </dl>
-
-    {% else %}
-
-      <div class="text-muted">
-        연결된 평가 회차가 없습니다.
-      </div>
-
-    {% endif %}
-
+          {{ project.project_end|date:"Y-m-d"|default:"미등록" }}
+        </strong>
+      </section>
+    </div>
+    <!-- 팀 -->
+    <div class="col-md-3">
+      <section class="card-custom h-100 p-3">
+        <div class="small text-muted mb-1">팀</div>
+        <strong>{{ team_count }}팀</strong>
+      </section>
+    </div>
+    <!-- 참가자 -->
+    <div class="col-md-3">
+      <section class="card-custom h-100 p-3">
+        <div class="small text-muted mb-1">참가자</div>
+        <strong>{{ participant_count }}명</strong>
+      </section>
+    </div>
   </div>
-
-</section>
-
+  <!-- 프로젝트 운영 -->
+  <section class="card-custom mb-4">
+    <div class="card-header-custom">
+      <div>
+        <div class="card-title-custom">프로젝트 운영</div>
+        <div class="small text-muted">프로젝트 회차에 속한 팀과 참가자를 관리합니다.</div>
+      </div>
+    </div>
+    <div class="p-3">
+      <div class="d-flex flex-wrap gap-2">
+        {% if project.evaluationround_id %}
+          <a href="{% url 'rounds:teams' project.evaluationround_id %}"
+             class="btn btn-primary">팀 편성 / 관리</a>
+        {% else %}
+          <button type="button" class="btn btn-secondary" disabled>팀 편성 / 관리</button>
+        {% endif %}
+        {% if evaluation_round %}
+          <a href="{% url 'rounds:reviews' evaluation_round.pk %}"
+             class="btn btn-outline-primary">평가 진행 현황</a>
+          <a href="{% url 'rounds:results' evaluation_round.pk %}"
+             class="btn btn-outline-primary">결과 관리</a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+  <!-- 프로젝트 회차 정보 -->
+  <section class="card-custom mb-4">
+    <div class="card-header-custom">
+      <div>
+        <div class="card-title-custom">프로젝트 회차 정보</div>
+        <div class="small text-muted">project_info 테이블에 등록된 프로젝트 회차 정보입니다.</div>
+      </div>
+    </div>
+    <div class="p-3">
+      <dl class="row mb-0">
+        <!-- 프로젝트 회차 ID -->
+        <dt class="col-sm-3">프로젝트 회차 ID</dt>
+        <dd class="col-sm-9">
+          {{ project_info.id }}
+        </dd>
+        <!-- 프로젝트명 -->
+        <dt class="col-sm-3">프로젝트명</dt>
+        <dd class="col-sm-9">
+          {{ project_info.name|default:"미등록" }}
+        </dd>
+        <!-- 프로젝트 설명 -->
+        <dt class="col-sm-3">프로젝트 설명</dt>
+        <dd class="col-sm-9">
+          {{ project_info.description|default:"미등록" }}
+        </dd>
+        <!-- 프로젝트 시작일 -->
+        <dt class="col-sm-3">프로젝트 시작일</dt>
+        <dd class="col-sm-9">
+          {{ project_info.team_start|date:"Y-m-d"|default:"미등록" }}
+        </dd>
+        <!-- 프로젝트 종료일 -->
+        <dt class="col-sm-3">프로젝트 종료일</dt>
+        <dd class="col-sm-9">
+          {{ project_info.team_end|date:"Y-m-d"|default:"미등록" }}
+        </dd>
+      </dl>
+    </div>
+  </section>
+  <!-- 연결된 평가 회차 -->
+  <section class="card-custom">
+    <div class="card-header-custom">
+      <div>
+        <div class="card-title-custom">연결된 평가 회차</div>
+        <div class="small text-muted">프로젝트 회차에 연결된 평가 회차입니다.</div>
+      </div>
+    </div>
+    <div class="p-3">
+      {% if evaluation_round %}
+        <dl class="row mb-0">
+          <!-- 평가 회차 ID -->
+          <dt class="col-sm-3">평가 회차 ID</dt>
+          <dd class="col-sm-9">
+            {{ project.evaluationround_id }}
+          </dd>
+          <!-- 평가 회차명 -->
+          <dt class="col-sm-3">평가 회차명</dt>
+          <dd class="col-sm-9">
+            {{ evaluation_round.title }}
+          </dd>
+          <!-- 평가 상태 -->
+          <dt class="col-sm-3">평가 상태</dt>
+          <dd class="col-sm-9">
+            {{ project.status_display }}
+          </dd>
+          <!-- 평가 기간 -->
+          <dt class="col-sm-3">평가 기간</dt>
+          <dd class="col-sm-9">
+            {{ project.evaluation_start_at|date:"Y-m-d H:i" }}
+            ~
+            {{ project.evaluation_end_at|date:"Y-m-d H:i" }}
+          </dd>
+        </dl>
+      {% else %}
+        <div class="text-muted">연결된 평가 회차가 없습니다.</div>
+      {% endif %}
+    </div>
+  </section>
 {% endblock %}

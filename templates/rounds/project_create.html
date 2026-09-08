@@ -1,645 +1,276 @@
 {% extends "base.html" %}
-
-{% block title %}
-프로젝트 회차 생성
-{% endblock %}
-
-{% block breadcrumb %}
-프로젝트 회차 관리
-{% endblock %}
-
+{% block title %}프로젝트 회차 생성{% endblock %}
+{% block breadcrumb %}프로젝트 회차 관리{% endblock %}
 {% block content %}
-
-<div class="page-header">
+  <div class="page-header">
     <div>
-        <div class="small text-muted mb-1">
-            프로젝트 회차
-        </div>
-
-        <h1 class="page-title">
-            프로젝트 회차 생성
-        </h1>
+      <div class="small text-muted mb-1">프로젝트 회차</div>
+      <h1 class="page-title">프로젝트 회차 생성</h1>
     </div>
-
-    <a
-        href="{% url 'rounds:project-list' %}"
-        class="btn btn-ax-secondary"
-    >
-        취소
-    </a>
-</div>
-
-
-<form method="post">
-
+    <a href="{% url 'rounds:project-list' %}" class="btn btn-ax-secondary">취소</a>
+  </div>
+  <form method="post">
     {% csrf_token %}
-
     <!-- ================================= -->
     <!-- 프로젝트 정보 -->
     <!-- ================================= -->
-
     <section class="card-custom mb-4">
-
-        <div class="card-header-custom">
-            <div>
-                <div class="card-title-custom">
-                    프로젝트 정보
-                </div>
-
-                <div class="small text-muted">
-                    프로젝트 회차의 기본 정보를 입력합니다.
-                </div>
-            </div>
+      <div class="card-header-custom">
+        <div>
+          <div class="card-title-custom">프로젝트 정보</div>
+          <div class="small text-muted">프로젝트 회차의 기본 정보를 입력합니다.</div>
         </div>
-
-        <div class="p-3">
-
-            {% if project_form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {{ project_form.non_field_errors }}
-                </div>
-            {% endif %}
-
-            <div class="mb-3">
-                <label
-                    for="{{ project_form.name.id_for_label }}"
-                    class="form-label"
-                >
-                    프로젝트명
-                </label>
-
-                {{ project_form.name }}
-
-                {% for error in project_form.name.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            </div>
-
-
-            <div class="mb-3">
-                <label
-                    for="{{ project_form.description.id_for_label }}"
-                    class="form-label"
-                >
-                    프로젝트 설명
-                </label>
-
-                {{ project_form.description }}
-
-                {% for error in project_form.description.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            </div>
-
-
-            <div class="mb-3">
-                <label
-                    for="{{ project_form.team_start.id_for_label }}"
-                    class="form-label"
-                >
-                    프로젝트 시작일
-                </label>
-
-                {{ project_form.team_start }}
-
-                {% for error in project_form.team_start.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            </div>
-
-
-            <div class="mb-3">
-                <label
-                    for="{{ project_form.team_end.id_for_label }}"
-                    class="form-label"
-                >
-                    프로젝트 종료일
-                </label>
-
-                {{ project_form.team_end }}
-
-                {% for error in project_form.team_end.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            </div>
-
+      </div>
+      <div class="p-3">
+        {% if project_form.non_field_errors %}
+          <div class="alert alert-danger">{{ project_form.non_field_errors }}</div>
+        {% endif %}
+        <div class="mb-3">
+          <label for="{{ project_form.name.id_for_label }}" class="form-label">프로젝트명</label>
+          {{ project_form.name }}
+          {% for error in project_form.name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
         </div>
+        <div class="mb-3">
+          <label for="{{ project_form.description.id_for_label }}" class="form-label">프로젝트 설명</label>
+          {{ project_form.description }}
+          {% for error in project_form.description.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="mb-3">
+          <label for="{{ project_form.team_start.id_for_label }}" class="form-label">프로젝트 시작일</label>
+          {{ project_form.team_start }}
+          {% for error in project_form.team_start.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="mb-3">
+          <label for="{{ project_form.team_end.id_for_label }}" class="form-label">프로젝트 종료일</label>
+          {{ project_form.team_end }}
+          {% for error in project_form.team_end.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+      </div>
     </section>
-
-
     <!-- ================================= -->
     <!-- 평가 회차 정보 -->
     <!-- ================================= -->
-
     <section class="card-custom mb-4">
-
-        <div class="card-header-custom">
-            <div>
-                <div class="card-title-custom">
-                    평가 회차 정보
-                </div>
-
-                <div class="small text-muted">
-                    프로젝트에서 사용할 평가 회차의 정보를 입력합니다.
-                </div>
-            </div>
+      <div class="card-header-custom">
+        <div>
+          <div class="card-title-custom">평가 회차 정보</div>
+          <div class="small text-muted">프로젝트에서 사용할 평가 회차의 정보를 입력합니다.</div>
         </div>
-
-        <div class="p-3">
-
-            {% if evaluation_form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {{ evaluation_form.non_field_errors }}
-                </div>
-            {% endif %}
-
-
-            <div class="mb-3">
-                <label
-                    for="{{ evaluation_form.title.id_for_label }}"
-                    class="form-label"
-                >
-                    평가 회차명
-                </label>
-
-                {{ evaluation_form.title }}
-
-                {% for error in evaluation_form.title.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            </div>
-
-
-            <div class="mb-3">
-                <label
-                    for="{{ evaluation_form.description.id_for_label }}"
-                    class="form-label"
-                >
-                    평가 설명
-                </label>
-
-                {{ evaluation_form.description }}
-
-                {% for error in evaluation_form.description.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            </div>
-
-
-            <div class="row">
-
-                <div class="col-md-6 mb-3">
-                    <label
-                        for="{{ evaluation_form.evaluation_start_at.id_for_label }}"
-                        class="form-label"
-                    >
-                        평가 시작 일시
-                    </label>
-
-                    {{ evaluation_form.evaluation_start_at }}
-
-                    {% for error in evaluation_form.evaluation_start_at.errors %}
-                        <div class="text-danger small">
-                            {{ error }}
-                        </div>
-                    {% endfor %}
-                </div>
-
-
-                <div class="col-md-6 mb-3">
-                    <label
-                        for="{{ evaluation_form.evaluation_end_at.id_for_label }}"
-                        class="form-label"
-                    >
-                        평가 종료 일시
-                    </label>
-
-                    {{ evaluation_form.evaluation_end_at }}
-
-                    {% for error in evaluation_form.evaluation_end_at.errors %}
-                        <div class="text-danger small">
-                            {{ error }}
-                        </div>
-                    {% endfor %}
-                </div>
-
-            </div>
-
-
-            <!-- ================================= -->
-            <!-- 목표 팀 수 -->
-            <!-- ================================= -->
-
-            <div class="mb-3">
-                <label
-                    for="{{ evaluation_form.target_team_count.id_for_label }}"
-                    class="form-label"
-                >
-                    목표 팀 수
-                </label>
-
-                {{ evaluation_form.target_team_count }}
-
-                {% for error in evaluation_form.target_team_count.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            </div>
-
-
-            <!-- ================================= -->
-            <!-- 점수 반영 비율 -->
-            <!-- ================================= -->
-
-            <div class="mb-3">
-
-                <label class="form-label fw-semibold">
-                    점수 반영 비율
-                </label>
-
-                <div class="ax-weight-group" id="axWeightGroup">
-
-                    <!-- 팀 평가 -->
-                    <div class="ax-weight-row">
-
-                        <div class="ax-weight-row-head">
-
-                            <span class="ax-weight-row-label">
-                                <i class="ax-dot ax-dot-team"></i>
-                                팀 평가 비율
-                            </span>
-
-                            <span class="ax-weight-row-right">
-
-                                <span
-                                    class="ax-weight-row-value"
-                                    id="axWeightValue-team"
-                                >
-                                    0%
-                                </span>
-
-                                <label
-                                    class="ax-weight-lock"
-                                    title="비율 고정"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        id="axWeightLock-team"
-                                        data-key="team"
-                                    >
-                                    <i class="bi bi-unlock"></i>
-                                </label>
-
-                            </span>
-
-                        </div>
-
-
-                        <div
-                            class="ax-weight-slider"
-                            id="axWeightSlider-team"
-                            data-key="team"
-                        >
-
-                            <div class="ax-weight-slider-track">
-                                <div
-                                    class="ax-weight-slider-fill ax-fill-team"
-                                    id="axWeightFill-team"
-                                ></div>
-                            </div>
-
-                            <div
-                                class="ax-weight-ticks"
-                                id="axWeightTicks-team"
-                            ></div>
-
-                            <div
-                                class="ax-weight-handle ax-handle-team"
-                                id="axWeightHandle-team"
-                                tabindex="0"
-                                role="slider"
-                                aria-label="팀 평가 비율"
-                                aria-valuemin="0"
-                                aria-valuemax="100"
-                                aria-valuenow="0"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- 개인 평가 -->
-                    <div class="ax-weight-row">
-
-                        <div class="ax-weight-row-head">
-
-                            <span class="ax-weight-row-label">
-                                <i class="ax-dot ax-dot-personal"></i>
-                                개인 평가 비율
-                            </span>
-
-                            <span class="ax-weight-row-right">
-
-                                <span
-                                    class="ax-weight-row-value"
-                                    id="axWeightValue-personal"
-                                >
-                                    0%
-                                </span>
-
-                                <label
-                                    class="ax-weight-lock"
-                                    title="비율 고정"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        id="axWeightLock-personal"
-                                        data-key="personal"
-                                    >
-                                    <i class="bi bi-unlock"></i>
-                                </label>
-
-                            </span>
-
-                        </div>
-
-
-                        <div
-                            class="ax-weight-slider"
-                            id="axWeightSlider-personal"
-                            data-key="personal"
-                        >
-
-                            <div class="ax-weight-slider-track">
-
-                                <div
-                                    class="ax-weight-slider-fill ax-fill-personal"
-                                    id="axWeightFill-personal"
-                                ></div>
-
-                            </div>
-
-                            <div
-                                class="ax-weight-ticks"
-                                id="axWeightTicks-personal"
-                            ></div>
-
-                            <div
-                                class="ax-weight-handle ax-handle-personal"
-                                id="axWeightHandle-personal"
-                                tabindex="0"
-                                role="slider"
-                                aria-label="개인 평가 비율"
-                                aria-valuemin="0"
-                                aria-valuemax="100"
-                                aria-valuenow="0"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- 튜터 평가 -->
-                    <div class="ax-weight-row">
-
-                        <div class="ax-weight-row-head">
-
-                            <span class="ax-weight-row-label">
-                                <i class="ax-dot ax-dot-tutor"></i>
-                                튜터 평가 비율
-                            </span>
-
-                            <span class="ax-weight-row-right">
-
-                                <span
-                                    class="ax-weight-row-value"
-                                    id="axWeightValue-tutor"
-                                >
-                                    0%
-                                </span>
-
-                                <label
-                                    class="ax-weight-lock"
-                                    title="비율 고정"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        id="axWeightLock-tutor"
-                                        data-key="tutor"
-                                    >
-                                    <i class="bi bi-unlock"></i>
-                                </label>
-
-                            </span>
-
-                        </div>
-
-
-                        <div
-                            class="ax-weight-slider"
-                            id="axWeightSlider-tutor"
-                            data-key="tutor"
-                        >
-
-                            <div class="ax-weight-slider-track">
-
-                                <div
-                                    class="ax-weight-slider-fill ax-fill-tutor"
-                                    id="axWeightFill-tutor"
-                                ></div>
-
-                            </div>
-
-                            <div
-                                class="ax-weight-ticks"
-                                id="axWeightTicks-tutor"
-                            ></div>
-
-                            <div
-                                class="ax-weight-handle ax-handle-tutor"
-                                id="axWeightHandle-tutor"
-                                tabindex="0"
-                                role="slider"
-                                aria-label="튜터 평가 비율"
-                                aria-valuemin="0"
-                                aria-valuemax="100"
-                                aria-valuenow="0"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="form-text">
-                    슬라이더를 움직여 10% 단위로 비율을 조정합니다.
-                    하나의 비율을 변경하면 나머지 비율이 자동으로 조정되어
-                    합계가 항상 100%가 되도록 유지됩니다.
-                    자물쇠를 체크하면 해당 비율이 고정됩니다.
-                </div>
-
-
-                <!-- 실제 Django form field -->
-                <div class="ax-weight-hidden-fields">
-                    {{ evaluation_form.team_score_weight }}
-                    {{ evaluation_form.personal_score_weight }}
-                    {{ evaluation_form.tutor_score_weight }}
-                </div>
-
-
-                {% for error in evaluation_form.team_score_weight.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-
-                {% for error in evaluation_form.personal_score_weight.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-
-                {% for error in evaluation_form.tutor_score_weight.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-
-            </div>
-
-
-            <!-- ================================= -->
-            <!-- 팀 평가 템플릿 -->
-            <!-- ================================= -->
-
-            <div class="mb-3">
-
-                <label
-                    for="{{ evaluation_form.team_template.id_for_label }}"
-                    class="form-label"
-                >
-                    팀 평가 템플릿
-                </label>
-
-                <div class="input-group">
-
-                    {{ evaluation_form.team_template }}
-
-                    <button
-                        type="button"
-                        class="btn btn-ax-secondary"
-                        disabled
-                    >
-                        <i class="bi bi-eye me-1"></i>
-                        미리보기
-                    </button>
-
-                </div>
-
-                {% for error in evaluation_form.team_template.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-
-            </div>
-
-
-            <!-- ================================= -->
-            <!-- 개인 평가 템플릿 -->
-            <!-- ================================= -->
-
-            <div class="mb-3">
-
-                <label
-                    for="{{ evaluation_form.peer_template.id_for_label }}"
-                    class="form-label"
-                >
-                    개인 평가 템플릿
-                </label>
-
-                <div class="input-group">
-
-                    {{ evaluation_form.peer_template }}
-
-                    <button
-                        type="button"
-                        class="btn btn-ax-secondary"
-                        disabled
-                    >
-                        <i class="bi bi-eye me-1"></i>
-                        미리보기
-                    </button>
-
-                </div>
-
-                {% for error in evaluation_form.peer_template.errors %}
-                    <div class="text-danger small">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-
-            </div>
-
-
-            <!-- 참가자 안내 -->
-
-            <div class="alert alert-light border mb-0">
-                <i class="bi bi-people me-1"></i>
-                참가 수강생은 승인된 활성 수강생을 기준으로 자동 관리됩니다.
-            </div>
-
+      </div>
+      <div class="p-3">
+        {% if evaluation_form.non_field_errors %}
+          <div class="alert alert-danger">{{ evaluation_form.non_field_errors }}</div>
+        {% endif %}
+        <div class="mb-3">
+          <label for="{{ evaluation_form.title.id_for_label }}" class="form-label">평가 회차명</label>
+          {{ evaluation_form.title }}
+          {% for error in evaluation_form.title.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
         </div>
+        <div class="mb-3">
+          <label for="{{ evaluation_form.description.id_for_label }}"
+                 class="form-label">평가 설명</label>
+          {{ evaluation_form.description }}
+          {% for error in evaluation_form.description.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="{{ evaluation_form.evaluation_start_at.id_for_label }}"
+                   class="form-label">평가 시작 일시</label>
+            {{ evaluation_form.evaluation_start_at }}
+            {% for error in evaluation_form.evaluation_start_at.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="{{ evaluation_form.evaluation_end_at.id_for_label }}"
+                   class="form-label">평가 종료 일시</label>
+            {{ evaluation_form.evaluation_end_at }}
+            {% for error in evaluation_form.evaluation_end_at.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        <!-- ================================= -->
+        <!-- 목표 팀 수 -->
+        <!-- ================================= -->
+        <div class="mb-3">
+          <label for="{{ evaluation_form.target_team_count.id_for_label }}"
+                 class="form-label">목표 팀 수</label>
+          {{ evaluation_form.target_team_count }}
+          {% for error in evaluation_form.target_team_count.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <!-- ================================= -->
+        <!-- 점수 반영 비율 -->
+        <!-- ================================= -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">점수 반영 비율</label>
+          <div class="ax-weight-group" id="axWeightGroup">
+            <!-- 팀 평가 -->
+            <div class="ax-weight-row">
+              <div class="ax-weight-row-head">
+                <span class="ax-weight-row-label">
+                  <i class="ax-dot ax-dot-team"></i>
+                  팀 평가 비율
+                </span>
+                <span class="ax-weight-row-right">
+                  <span class="ax-weight-row-value" id="axWeightValue-team">0%</span>
+                  <label class="ax-weight-lock" title="비율 고정">
+                    <input type="checkbox" id="axWeightLock-team" data-key="team">
+                    <i class="bi bi-unlock"></i>
+                  </label>
+                </span>
+              </div>
+              <div class="ax-weight-slider" id="axWeightSlider-team" data-key="team">
+                <div class="ax-weight-slider-track">
+                  <div class="ax-weight-slider-fill ax-fill-team" id="axWeightFill-team"></div>
+                </div>
+                <div class="ax-weight-ticks" id="axWeightTicks-team"></div>
+                <div class="ax-weight-handle ax-handle-team"
+                     id="axWeightHandle-team"
+                     tabindex="0"
+                     role="slider"
+                     aria-label="팀 평가 비율"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-valuenow="0"></div>
+              </div>
+            </div>
+            <!-- 개인 평가 -->
+            <div class="ax-weight-row">
+              <div class="ax-weight-row-head">
+                <span class="ax-weight-row-label">
+                  <i class="ax-dot ax-dot-personal"></i>
+                  개인 평가 비율
+                </span>
+                <span class="ax-weight-row-right">
+                  <span class="ax-weight-row-value" id="axWeightValue-personal">0%</span>
+                  <label class="ax-weight-lock" title="비율 고정">
+                    <input type="checkbox" id="axWeightLock-personal" data-key="personal">
+                    <i class="bi bi-unlock"></i>
+                  </label>
+                </span>
+              </div>
+              <div class="ax-weight-slider"
+                   id="axWeightSlider-personal"
+                   data-key="personal">
+                <div class="ax-weight-slider-track">
+                  <div class="ax-weight-slider-fill ax-fill-personal"
+                       id="axWeightFill-personal"></div>
+                </div>
+                <div class="ax-weight-ticks" id="axWeightTicks-personal"></div>
+                <div class="ax-weight-handle ax-handle-personal"
+                     id="axWeightHandle-personal"
+                     tabindex="0"
+                     role="slider"
+                     aria-label="개인 평가 비율"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-valuenow="0"></div>
+              </div>
+            </div>
+            <!-- 튜터 평가 -->
+            <div class="ax-weight-row">
+              <div class="ax-weight-row-head">
+                <span class="ax-weight-row-label">
+                  <i class="ax-dot ax-dot-tutor"></i>
+                  튜터 평가 비율
+                </span>
+                <span class="ax-weight-row-right">
+                  <span class="ax-weight-row-value" id="axWeightValue-tutor">0%</span>
+                  <label class="ax-weight-lock" title="비율 고정">
+                    <input type="checkbox" id="axWeightLock-tutor" data-key="tutor">
+                    <i class="bi bi-unlock"></i>
+                  </label>
+                </span>
+              </div>
+              <div class="ax-weight-slider" id="axWeightSlider-tutor" data-key="tutor">
+                <div class="ax-weight-slider-track">
+                  <div class="ax-weight-slider-fill ax-fill-tutor" id="axWeightFill-tutor"></div>
+                </div>
+                <div class="ax-weight-ticks" id="axWeightTicks-tutor"></div>
+                <div class="ax-weight-handle ax-handle-tutor"
+                     id="axWeightHandle-tutor"
+                     tabindex="0"
+                     role="slider"
+                     aria-label="튜터 평가 비율"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-valuenow="0"></div>
+              </div>
+            </div>
+          </div>
+          <div class="form-text">
+            슬라이더를 움직여 10% 단위로 비율을 조정합니다.
+            하나의 비율을 변경하면 나머지 비율이 자동으로 조정되어
+            합계가 항상 100%가 되도록 유지됩니다.
+            자물쇠를 체크하면 해당 비율이 고정됩니다.
+          </div>
+          <!-- 실제 Django form field -->
+          <div class="ax-weight-hidden-fields">
+            {{ evaluation_form.team_score_weight }}
+            {{ evaluation_form.personal_score_weight }}
+            {{ evaluation_form.tutor_score_weight }}
+          </div>
+          {% for error in evaluation_form.team_score_weight.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+          {% for error in evaluation_form.personal_score_weight.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+          {% for error in evaluation_form.tutor_score_weight.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <!-- ================================= -->
+        <!-- 팀 평가 템플릿 -->
+        <!-- ================================= -->
+        <div class="mb-3">
+          <label for="{{ evaluation_form.team_template.id_for_label }}"
+                 class="form-label">팀 평가 템플릿</label>
+          <div class="input-group">
+            {{ evaluation_form.team_template }}
+            <button type="button" class="btn btn-ax-secondary" disabled>
+              <i class="bi bi-eye me-1"></i>
+              미리보기
+            </button>
+          </div>
+          {% for error in evaluation_form.team_template.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <!-- ================================= -->
+        <!-- 개인 평가 템플릿 -->
+        <!-- ================================= -->
+        <div class="mb-3">
+          <label for="{{ evaluation_form.peer_template.id_for_label }}"
+                 class="form-label">개인 평가 템플릿</label>
+          <div class="input-group">
+            {{ evaluation_form.peer_template }}
+            <button type="button" class="btn btn-ax-secondary" disabled>
+              <i class="bi bi-eye me-1"></i>
+              미리보기
+            </button>
+          </div>
+          {% for error in evaluation_form.peer_template.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <!-- 참가자 안내 -->
+        <div class="alert alert-light border mb-0">
+          <i class="bi bi-people me-1"></i>
+          참가 수강생은 승인된 활성 수강생을 기준으로 자동 관리됩니다.
+        </div>
+      </div>
     </section>
-
-
     <!-- ================================= -->
     <!-- 버튼 -->
     <!-- ================================= -->
-
     <div class="d-flex gap-2 mb-4">
-
-        <button
-            type="submit"
-            class="btn btn-primary"
-        >
-            프로젝트 및 평가 회차 생성
-        </button>
-
-        <a
-            href="{% url 'rounds:project-list' %}"
-            class="btn btn-ax-secondary"
-        >
-            취소
-        </a>
-
+      <button type="submit" class="btn btn-primary">프로젝트 및 평가 회차 생성</button>
+      <a href="{% url 'rounds:project-list' %}" class="btn btn-ax-secondary">취소</a>
     </div>
-
-</form>
-
+  </form>
 {% endblock %}
-
-
 {% block extra_js %}
-
-<script>
+  <script>
 (() => {
     const group = document.getElementById("axWeightGroup");
 
@@ -1092,6 +723,5 @@
     KEYS.forEach(bindSlider);
 
 })();
-</script>
-
+  </script>
 {% endblock %}

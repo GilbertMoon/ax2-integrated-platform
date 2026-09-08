@@ -26,11 +26,13 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      DJANGO_FACE_SERVICE_URL: http://face-service:5001
     depends_on:
       face-service:
         condition: service_started
     volumes:
-      - media_data:/app/media
+      - media_data:/app/media  
 
   face-service:
     build: ./face-recognition-service

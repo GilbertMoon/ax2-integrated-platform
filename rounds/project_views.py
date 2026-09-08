@@ -36,10 +36,7 @@ def _project_rows():
             """
         )
 
-        columns = [
-            column[0]
-            for column in cursor.description
-        ]
+        columns = [column[0] for column in cursor.description]
 
         return [
             dict(
@@ -56,53 +53,33 @@ def _project_rows():
 def _get_project_info(project_id):
     """project_info에서 프로젝트 회차 하나를 조회한다."""
     project_info = next(
-        (
-            row
-            for row in _project_rows()
-            if row["id"] == project_id
-        ),
+        (row for row in _project_rows() if row["id"] == project_id),
         None,
     )
 
     if project_info is None:
-        raise Http404(
-            f"프로젝트 회차 {project_id}를 찾을 수 없습니다."
-        )
+        raise Http404(f"프로젝트 회차 {project_id}를 찾을 수 없습니다.")
 
     return project_info
 
 
 def _get_evaluation_round(project_info):
     """프로젝트에 연결된 평가 회차를 조회한다."""
-    evaluationround_id = project_info.get(
-        "evaluationround_id"
-    )
+    evaluationround_id = project_info.get("evaluationround_id")
 
     if not evaluationround_id:
         return None
 
-    return (
-        EvaluationRound.objects
-        .filter(pk=evaluationround_id)
-        .first()
-    )
+    return EvaluationRound.objects.filter(pk=evaluationround_id).first()
 
 
 def _build_project(project_info):
     """프로젝트 화면용 객체를 생성한다."""
-    evaluation_round = _get_evaluation_round(
-        project_info
-    )
+    evaluation_round = _get_evaluation_round(project_info)
 
-    project_name = (
-        project_info.get("name")
-        or f"프로젝트 회차 {project_info['id']}"
-    )
+    project_name = project_info.get("name") or f"프로젝트 회차 {project_info['id']}"
 
-    project_description = (
-        project_info.get("description")
-        or ""
-    )
+    project_description = project_info.get("description") or ""
 
     team_count = 0
 
@@ -112,9 +89,7 @@ def _build_project(project_info):
     participant_count = 0
 
     if evaluation_round:
-        participant_count = (
-            evaluation_round.participants.count()
-        )
+        participant_count = evaluation_round.participants.count()
 
     return {
         "pk": project_info["id"],
@@ -123,36 +98,16 @@ def _build_project(project_info):
         "name": project_name,
         "title": project_name,
         "description": project_description,
-        "project_start": project_info.get(
-            "team_start"
-        ),
-        "project_end": project_info.get(
-            "team_end"
-        ),
-        "evaluationround_id": project_info.get(
-            "evaluationround_id"
-        ),
+        "project_start": project_info.get("team_start"),
+        "project_end": project_info.get("team_end"),
+        "evaluationround_id": project_info.get("evaluationround_id"),
         "evaluation_round": evaluation_round,
-        "status": (
-            evaluation_round.status
-            if evaluation_round
-            else None
-        ),
+        "status": (evaluation_round.status if evaluation_round else None),
         "status_display": (
-            evaluation_round.get_status_display()
-            if evaluation_round
-            else "평가 회차 미연결"
+            evaluation_round.get_status_display() if evaluation_round else "평가 회차 미연결"
         ),
-        "evaluation_start_at": (
-            evaluation_round.evaluation_start_at
-            if evaluation_round
-            else None
-        ),
-        "evaluation_end_at": (
-            evaluation_round.evaluation_end_at
-            if evaluation_round
-            else None
-        ),
+        "evaluation_start_at": (evaluation_round.evaluation_start_at if evaluation_round else None),
+        "evaluation_end_at": (evaluation_round.evaluation_end_at if evaluation_round else None),
         "team_count": team_count,
         "participant_count": participant_count,
     }
@@ -165,19 +120,12 @@ def _save_round_participants(
     """평가 회차 참가자와 snapshot 정보를 저장한다."""
     selected_users = list(users)
 
-    selected_ids = {
-        user.pk
-        for user in selected_users
-    }
+    selected_ids = {user.pk for user in selected_users}
 
-    evaluation_round.participants.exclude(
-        user_id__in=selected_ids
-    ).delete()
+    evaluation_round.participants.exclude(user_id__in=selected_ids).delete()
 
     existing = {
-        participant.user_id: participant
-        for participant
-        in evaluation_round.participants.all()
+        participant.user_id: participant for participant in evaluation_round.participants.all()
     }
 
     for user in selected_users:
@@ -193,11 +141,7 @@ def _save_round_participants(
                     value,
                 )
 
-            participant.save(
-                update_fields=tuple(
-                    values.keys()
-                )
-            )
+            participant.save(update_fields=tuple(values.keys()))
         else:
             RoundParticipant.objects.create(
                 round=evaluation_round,
@@ -252,37 +196,22 @@ def project_create(request):
             prefix="evaluation",
         )
 
-        if (
-            project_form.is_valid()
-            and evaluation_form.is_valid()
-        ):
-            project_cleaned = (
-                project_form.cleaned_data
-            )
-            evaluation_cleaned = (
-                evaluation_form.cleaned_data
-            )
+        if project_form.is_valid() and evaluation_form.is_valid():
+            project_cleaned = project_form.cleaned_data
+            evaluation_cleaned = evaluation_form.cleaned_data
 
             try:
                 with transaction.atomic():
                     # ---------------------------------
                     # 1. 평가 회차 생성
                     # ---------------------------------
-                    evaluation_round = (
-                        evaluation_form.save(
-                            commit=False
-                        )
-                    )
+                    evaluation_round = evaluation_form.save(commit=False)
 
                     # 신규 프로젝트에 연결되는 평가 회차는
                     # 항상 준비 중(DRAFT) 상태로 생성한다.
-                    evaluation_round.status = (
-                        EvaluationRound.Status.DRAFT
-                    )
+                    evaluation_round.status = EvaluationRound.Status.DRAFT
 
-                    evaluation_round.created_by = (
-                        request.user
-                    )
+                    evaluation_round.created_by = request.user
 
                     evaluation_round.full_clean()
                     evaluation_round.save()
@@ -290,12 +219,7 @@ def project_create(request):
                     # ---------------------------------
                     # 2. 참가자 저장
                     # ---------------------------------
-                    participants = (
-                        evaluation_cleaned.get(
-                            "participants"
-                        )
-                        or []
-                    )
+                    participants = evaluation_cleaned.get("participants") or []
 
                     _save_round_participants(
                         evaluation_round,
@@ -326,22 +250,14 @@ def project_create(request):
                             """,
                             [
                                 project_cleaned["name"],
-                                project_cleaned[
-                                    "description"
-                                ],
-                                project_cleaned[
-                                    "team_start"
-                                ],
-                                project_cleaned[
-                                    "team_end"
-                                ],
+                                project_cleaned["description"],
+                                project_cleaned["team_start"],
+                                project_cleaned["team_end"],
                                 evaluation_round.pk,
                             ],
                         )
 
-                        project_id = (
-                            cursor.fetchone()[0]
-                        )
+                        project_id = cursor.fetchone()[0]
 
             except (
                 DatabaseError,
@@ -362,10 +278,8 @@ def project_create(request):
             prefix="project",
         )
 
-        evaluation_form = (
-            ProjectEvaluationRoundForm(
-                prefix="evaluation",
-            )
+        evaluation_form = ProjectEvaluationRoundForm(
+            prefix="evaluation",
         )
 
     return render(
@@ -385,10 +299,7 @@ def project_list(request):
 
     project_infos = _project_rows()
 
-    projects = [
-        _build_project(project_info)
-        for project_info in project_infos
-    ]
+    projects = [_build_project(project_info) for project_info in project_infos]
 
     return render(
         request,
@@ -404,15 +315,11 @@ def project_detail(request, project_id):
     """프로젝트 회차 상세."""
     _require_operations(request.user)
 
-    project_info = _get_project_info(
-        project_id
-    )
+    project_info = _get_project_info(project_id)
 
     project = _build_project(project_info)
 
-    evaluation_round = project[
-        "evaluation_round"
-    ]
+    evaluation_round = project["evaluation_round"]
 
     return render(
         request,
@@ -421,12 +328,8 @@ def project_detail(request, project_id):
             "project": project,
             "project_info": project_info,
             "evaluation_round": evaluation_round,
-            "participant_count": project[
-                "participant_count"
-            ],
-            "team_count": project[
-                "team_count"
-            ],
+            "participant_count": project["participant_count"],
+            "team_count": project["team_count"],
         },
     )
 
@@ -436,26 +339,16 @@ def project_edit(request, project_id):
     """프로젝트 회차와 연결된 평가 회차 설정을 수정한다."""
     _require_operations(request.user)
 
-    project_info = _get_project_info(
-        project_id
-    )
+    project_info = _get_project_info(project_id)
 
-    evaluation_round = _get_evaluation_round(
-        project_info
-    )
+    evaluation_round = _get_evaluation_round(project_info)
 
     if evaluation_round is None:
-        raise Http404(
-            "프로젝트에 연결된 평가 회차를 "
-            "찾을 수 없습니다."
-        )
+        raise Http404("프로젝트에 연결된 평가 회차를 찾을 수 없습니다.")
 
     # 시작된 평가 회차는 기존 lifecycle 규칙에 따라
     # 프로젝트 설정 화면에서도 수정하지 않는다.
-    if (
-        evaluation_round.status
-        != EvaluationRound.Status.DRAFT
-    ):
+    if evaluation_round.status != EvaluationRound.Status.DRAFT:
         return render(
             request,
             "rounds/project_edit.html",
@@ -475,40 +368,25 @@ def project_edit(request, project_id):
             prefix="project",
         )
 
-        evaluation_form = (
-            ProjectEvaluationRoundForm(
-                request.POST,
-                instance=evaluation_round,
-                prefix="evaluation",
-            )
+        evaluation_form = ProjectEvaluationRoundForm(
+            request.POST,
+            instance=evaluation_round,
+            prefix="evaluation",
         )
 
-        if (
-            project_form.is_valid()
-            and evaluation_form.is_valid()
-        ):
-            project_cleaned = (
-                project_form.cleaned_data
-            )
-            evaluation_cleaned = (
-                evaluation_form.cleaned_data
-            )
+        if project_form.is_valid() and evaluation_form.is_valid():
+            project_cleaned = project_form.cleaned_data
+            evaluation_cleaned = evaluation_form.cleaned_data
 
             try:
                 with transaction.atomic():
                     # ---------------------------------
                     # 1. 평가 회차 설정 수정
                     # ---------------------------------
-                    evaluation_round = (
-                        evaluation_form.save(
-                            commit=False
-                        )
-                    )
+                    evaluation_round = evaluation_form.save(commit=False)
 
                     # status는 변경하지 않는다.
-                    evaluation_round.status = (
-                        EvaluationRound.Status.DRAFT
-                    )
+                    evaluation_round.status = EvaluationRound.Status.DRAFT
 
                     evaluation_round.full_clean()
                     evaluation_round.save()
@@ -516,12 +394,7 @@ def project_edit(request, project_id):
                     # ---------------------------------
                     # 2. 참가자 저장
                     # ---------------------------------
-                    participants = (
-                        evaluation_cleaned.get(
-                            "participants"
-                        )
-                        or []
-                    )
+                    participants = evaluation_cleaned.get("participants") or []
 
                     _save_round_participants(
                         evaluation_round,
@@ -534,9 +407,7 @@ def project_edit(request, project_id):
                     _save_project_info(
                         project_id=project_id,
                         project_cleaned=project_cleaned,
-                        evaluation_round_id=(
-                            evaluation_round.pk
-                        ),
+                        evaluation_round_id=(evaluation_round.pk),
                     )
 
             except (
@@ -557,33 +428,21 @@ def project_edit(request, project_id):
         project_form = ProjectInfoForm(
             initial={
                 "name": project_info["name"],
-                "description": project_info[
-                    "description"
-                ],
-                "team_start": project_info[
-                    "team_start"
-                ],
-                "team_end": project_info[
-                    "team_end"
-                ],
+                "description": project_info["description"],
+                "team_start": project_info["team_start"],
+                "team_end": project_info["team_end"],
             },
             prefix="project",
         )
 
-        evaluation_form = (
-            ProjectEvaluationRoundForm(
-                instance=evaluation_round,
-                prefix="evaluation",
-            )
+        evaluation_form = ProjectEvaluationRoundForm(
+            instance=evaluation_round,
+            prefix="evaluation",
         )
 
-        evaluation_form.fields[
-            "participants"
-        ].initial = (
-            evaluation_round.participants.values_list(
-                "user_id",
-                flat=True,
-            )
+        evaluation_form.fields["participants"].initial = evaluation_round.participants.values_list(
+            "user_id",
+            flat=True,
         )
 
     return render(

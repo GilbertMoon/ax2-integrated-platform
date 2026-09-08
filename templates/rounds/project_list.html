@@ -189,12 +189,14 @@
                   프로젝트 상세
                 </a>
 
+                {% if project.evaluationround_id %}
                 <a
-                  href="{% url 'rounds:teams' project.project_id %}"
+                  href="{% url 'rounds:teams' project.evaluationround_id %}"
                   class="btn btn-sm btn-primary"
                 >
                   팀 관리
                 </a>
+                {% endif %}
 
               </div>
 

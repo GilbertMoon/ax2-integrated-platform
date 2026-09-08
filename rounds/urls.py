@@ -15,7 +15,6 @@ urlpatterns = [
     path("templates/<int:template_id>/delete/", views.template_delete, name="template-delete"),
     path("templates/<int:template_id>/archive/", views.template_archive, name="template-archive"),
     path("templates/<int:template_id>/restore/", views.template_restore, name="template-restore"),
-
     # Project-round management: /manage/rounds/
     path("rounds/", project_views.project_list, name="project-list"),
     path(
@@ -25,7 +24,6 @@ urlpatterns = [
     ),
     path("rounds/<int:project_id>/", project_views.project_detail, name="project-detail"),
     path("rounds/<int:round_id>/teams/", team_views.management_team_page, name="teams"),
-
     # Evaluation-round management: /manage/evaluation-rounds/
     path("evaluation-rounds/", views.round_list, name="list"),
     path("evaluation-rounds/new/", views.round_edit, name="create"),
@@ -87,13 +85,11 @@ urlpatterns = [
         result_views.publish_all,
         name="publish-all-results",
     ),
-
     path(
         "rounds/<int:project_id>/edit/",
         project_views.project_edit,
         name="project-edit",
     ),
-
     path("results/", views.results_entry, name="results-entry"),
     path("publish/", views.publish_entry, name="publish-entry"),
     path("tutor-evaluation/", views.tutor_evaluation_entry, name="tutor-evaluation-entry"),

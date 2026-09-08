@@ -15,14 +15,11 @@ from rounds.models import (
 
 def _student_queryset():
     """승인된 활성 수강생 목록."""
-    return (
-        User.objects.filter(
-            role=User.Role.STUDENT,
-            approval_status=User.ApprovalStatus.APPROVED,
-            is_active=True,
-        )
-        .order_by("student_number", "first_name", "email")
-    )
+    return User.objects.filter(
+        role=User.Role.STUDENT,
+        approval_status=User.ApprovalStatus.APPROVED,
+        is_active=True,
+    ).order_by("student_number", "first_name", "email")
 
 
 class EvaluationRoundForm(forms.ModelForm):
@@ -44,7 +41,7 @@ class EvaluationRoundForm(forms.ModelForm):
         required=False,
         min_value=2,
     )
-    
+
     team_score_weight = forms.IntegerField(
         label="팀 점수 비율",
         min_value=0,
@@ -82,12 +79,8 @@ class EvaluationRoundForm(forms.ModelForm):
             "participants",
         ]
         widgets = {
-            "evaluation_start_at": forms.DateTimeInput(
-                attrs={"type": "datetime-local"}
-            ),
-            "evaluation_end_at": forms.DateTimeInput(
-                attrs={"type": "datetime-local"}
-            ),
+            "evaluation_start_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "evaluation_end_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "target_team_count": forms.HiddenInput(),
         }
 
@@ -109,15 +102,9 @@ class EvaluationRoundForm(forms.ModelForm):
 
         # 기본 가중치
         if not self.is_bound:
-            self.fields["team_score_weight"].initial = (
-                self.instance.team_score_weight
-            )
-            self.fields["personal_score_weight"].initial = (
-                self.instance.personal_score_weight
-            )
-            self.fields["tutor_score_weight"].initial = (
-                self.instance.tutor_score_weight
-            )
+            self.fields["team_score_weight"].initial = self.instance.team_score_weight
+            self.fields["personal_score_weight"].initial = self.instance.personal_score_weight
+            self.fields["tutor_score_weight"].initial = self.instance.tutor_score_weight
 
         # 목표 팀 수는 시스템에서 관리하되 화면에서는 표시하지 않는다.
         self.fields["target_team_count"].widget = forms.HiddenInput()
@@ -128,9 +115,9 @@ class EvaluationRoundForm(forms.ModelForm):
 
         if self.instance.pk:
             existing_participant_ids = set(
-                RoundParticipant.objects.filter(
-                    round=self.instance
-                ).values_list("user_id", flat=True)
+                RoundParticipant.objects.filter(round=self.instance).values_list(
+                    "user_id", flat=True
+                )
             )
 
         # 기존 참가자가 현재 비활성 상태가 되어도
@@ -156,13 +143,9 @@ class EvaluationRoundForm(forms.ModelForm):
 
         if not self.is_bound:
             if self.instance.pk:
-                self.initial["participants"] = list(
-                    existing_participant_ids
-                )
+                self.initial["participants"] = list(existing_participant_ids)
             else:
-                self.initial["participants"] = list(
-                    eligible_queryset.values_list("pk", flat=True)
-                )
+                self.initial["participants"] = list(eligible_queryset.values_list("pk", flat=True))
 
         # 신규 회차에서는 archived 템플릿을 제외한다.
         # 기존 회차에서는 현재 사용 중인 템플릿이 archived 되었더라도 유지한다.
@@ -179,19 +162,13 @@ class EvaluationRoundForm(forms.ModelForm):
         if current_peer_template_id:
             peer_filter |= Q(pk=current_peer_template_id)
 
-        self.fields["team_template"].queryset = (
-            QuestionTemplate.objects.filter(
-                Q(category=QuestionTemplate.Category.TEAM)
-                & team_filter
-            ).order_by("name")
-        )
+        self.fields["team_template"].queryset = QuestionTemplate.objects.filter(
+            Q(category=QuestionTemplate.Category.TEAM) & team_filter
+        ).order_by("name")
 
-        self.fields["peer_template"].queryset = (
-            QuestionTemplate.objects.filter(
-                Q(category=QuestionTemplate.Category.PEER)
-                & peer_filter
-            ).order_by("name")
-        )
+        self.fields["peer_template"].queryset = QuestionTemplate.objects.filter(
+            Q(category=QuestionTemplate.Category.PEER) & peer_filter
+        ).order_by("name")
 
         # datetime-local 입력값을 명시적으로 처리한다.
         self.fields["evaluation_start_at"].input_formats = [
@@ -238,28 +215,24 @@ class EvaluationRoundForm(forms.ModelForm):
                 "팀·개인·튜터 점수 비율의 합은 100%여야 합니다.",
             )
 
-
         # 참가 수강생은 화면에서 직접 선택하지 않고 자동 결정한다.
-        eligible_ids = set(
-            _student_queryset().values_list("pk", flat=True)
-        )
+        eligible_ids = set(_student_queryset().values_list("pk", flat=True))
 
         if self.instance.pk:
             existing_ids = set(
-                RoundParticipant.objects.filter(
-                    round=self.instance
-                ).values_list("user_id", flat=True)
+                RoundParticipant.objects.filter(round=self.instance).values_list(
+                    "user_id", flat=True
+                )
             )
 
             participant_ids = existing_ids | eligible_ids
         else:
             participant_ids = eligible_ids
 
-        cleaned_data["participants"] = User.objects.filter(
-            pk__in=participant_ids
-        )
+        cleaned_data["participants"] = User.objects.filter(pk__in=participant_ids)
 
         return cleaned_data
+
 
 class ProjectInfoForm(forms.Form):
     """프로젝트 회차 기본 정보 폼."""
@@ -357,9 +330,7 @@ class ProjectEvaluationRoundForm(forms.ModelForm):
             "peer_template",
         ]
         widgets = {
-            "title": forms.TextInput(
-                attrs={"class": "form-control"}
-            ),
+            "title": forms.TextInput(attrs={"class": "form-control"}),
             "description": forms.Textarea(
                 attrs={
                     "class": "form-control",
@@ -407,12 +378,8 @@ class ProjectEvaluationRoundForm(forms.ModelForm):
                     "max": 100,
                 }
             ),
-            "team_template": forms.Select(
-                attrs={"class": "form-select"}
-            ),
-            "peer_template": forms.Select(
-                attrs={"class": "form-select"}
-            ),
+            "team_template": forms.Select(attrs={"class": "form-select"}),
+            "peer_template": forms.Select(attrs={"class": "form-select"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -421,48 +388,35 @@ class ProjectEvaluationRoundForm(forms.ModelForm):
         student_queryset = _student_queryset()
 
         if self.instance and self.instance.pk:
-            existing_participant_ids = (
-                self.instance.participants.values_list(
-                    "user_id",
-                    flat=True,
-                )
+            existing_participant_ids = self.instance.participants.values_list(
+                "user_id",
+                flat=True,
             )
 
-            student_queryset = (
-                User.objects.filter(
-                    Q(
-                        role=User.Role.STUDENT,
-                        approval_status=User.ApprovalStatus.APPROVED,
-                        is_active=True,
-                    )
-                    | Q(pk__in=existing_participant_ids)
+            student_queryset = User.objects.filter(
+                Q(
+                    role=User.Role.STUDENT,
+                    approval_status=User.ApprovalStatus.APPROVED,
+                    is_active=True,
                 )
-                .order_by(
-                    "student_number",
-                    "first_name",
-                    "email",
-                )
+                | Q(pk__in=existing_participant_ids)
+            ).order_by(
+                "student_number",
+                "first_name",
+                "email",
             )
 
         self.fields["participants"].queryset = student_queryset
 
-        self.fields["team_template"].queryset = (
-            QuestionTemplate.objects
-            .filter(
-                category=QuestionTemplate.Category.TEAM,
-                is_archived=False,
-            )
-            .order_by("name")
-        )
+        self.fields["team_template"].queryset = QuestionTemplate.objects.filter(
+            category=QuestionTemplate.Category.TEAM,
+            is_archived=False,
+        ).order_by("name")
 
-        self.fields["peer_template"].queryset = (
-            QuestionTemplate.objects
-            .filter(
-                category=QuestionTemplate.Category.PEER,
-                is_archived=False,
-            )
-            .order_by("name")
-        )
+        self.fields["peer_template"].queryset = QuestionTemplate.objects.filter(
+            category=QuestionTemplate.Category.PEER,
+            is_archived=False,
+        ).order_by("name")
 
         self.fields["evaluation_start_at"].input_formats = [
             "%Y-%m-%dT%H:%M",
@@ -515,6 +469,7 @@ class ProjectEvaluationRoundForm(forms.ModelForm):
 
         return cleaned_data
 
+
 class QuestionTemplateForm(forms.ModelForm):
     """문항 템플릿 기본 정보 폼."""
 
@@ -547,9 +502,7 @@ class QuestionTemplateForm(forms.ModelForm):
                     "rows": 2,
                 }
             ),
-            "category": forms.Select(
-                attrs={"class": "form-select"}
-            ),
+            "category": forms.Select(attrs={"class": "form-select"}),
         }
         labels = {
             "name": "템플릿 이름",
@@ -571,14 +524,10 @@ class TemplateQuestionForm(forms.ModelForm):
         ] + list(TemplateQuestion.Competency.choices)
 
         if not self.instance.pk:
-            self.fields[
-                "response_type"
-            ].initial = TemplateQuestion.ResponseType.RATING_5
+            self.fields["response_type"].initial = TemplateQuestion.ResponseType.RATING_5
 
     def _post_clean(self):
-        if not (
-            self.cleaned_data.get("prompt") or ""
-        ).strip():
+        if not (self.cleaned_data.get("prompt") or "").strip():
             return
 
         super()._post_clean()
@@ -598,15 +547,9 @@ class TemplateQuestionForm(forms.ModelForm):
                     "placeholder": "예: 결과물의 완성도는 충분한가요?",
                 }
             ),
-            "response_type": forms.Select(
-                attrs={"class": "form-select"}
-            ),
-            "competency": forms.Select(
-                attrs={"class": "form-select"}
-            ),
-            "is_required": forms.CheckboxInput(
-                attrs={"class": "form-check-input"}
-            ),
+            "response_type": forms.Select(attrs={"class": "form-select"}),
+            "competency": forms.Select(attrs={"class": "form-select"}),
+            "is_required": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
         labels = {
             "prompt": "문항",
@@ -632,9 +575,7 @@ class BaseTemplateQuestionFormSet(forms.BaseInlineFormSet):
         ]
 
         if not filled:
-            raise forms.ValidationError(
-                "문항을 한 개 이상 입력해 주세요."
-            )
+            raise forms.ValidationError("문항을 한 개 이상 입력해 주세요.")
 
 
 TemplateQuestionFormSet = forms.inlineformset_factory(

@@ -101,10 +101,7 @@ class Migration(migrations.Migration):
                     model_name="projectinfo",
                     constraint=models.CheckConstraint(
                         check=(
-                            (
-                                models.Q(team_start__isnull=True)
-                                & models.Q(team_end__isnull=True)
-                            )
+                            (models.Q(team_start__isnull=True) & models.Q(team_end__isnull=True))
                             | (
                                 models.Q(team_start__isnull=False)
                                 & models.Q(team_end__isnull=False)

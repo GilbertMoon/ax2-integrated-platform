@@ -95,11 +95,13 @@ def embed():
             antispoof_score = face.get("antispoof_score")
 
             if not is_real:
-                return jsonify({
-                    "error": "spoof_detected",
-                    "message": "실제 사람이 아닌 것으로 판단되었습니다. 사진이나 화면이 아닌 실제 얼굴로 다시 촬영해주세요.",
-                    "antispoof_score": antispoof_score,
-                }), 403
+                return jsonify(
+                    {
+                        "error": "spoof_detected",
+                        "message": "실제 사람이 아닌 것으로 판단되었습니다. 사진이나 화면이 아닌 실제 얼굴로 다시 촬영해주세요.",
+                        "antispoof_score": antispoof_score,
+                    }
+                ), 403
 
         result = DeepFace.represent(
             img_path=image_path,
@@ -148,16 +150,20 @@ def compare():
             model_name="Facenet",
             enforce_detection=False,
         )
-        return jsonify({
-            "same_person": result["distance"] <= MATCH_THRESHOLD,
-            "distance": result["distance"],
-        })
+        return jsonify(
+            {
+                "same_person": result["distance"] <= MATCH_THRESHOLD,
+                "distance": result["distance"],
+            }
+        )
     except Exception as error:
         # [임시 디버깅용] 원인 파악 후 다시 간단한 메시지로 되돌릴 예정
-        return jsonify({
-            "error": _describe_error(error),
-            "traceback": traceback.format_exc(),
-        }), 500
+        return jsonify(
+            {
+                "error": _describe_error(error),
+                "traceback": traceback.format_exc(),
+            }
+        ), 500
     finally:
         _safe_delete(path1)
         _safe_delete(path2)

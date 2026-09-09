@@ -120,6 +120,14 @@
         </li>
       </ul>
     {% endif %}
+    {% if user.role == 'student' or user.role == 'tutor' %}
+      <div class="nav-section-title">학습</div>
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+          <a href="{% url 'lms:student:home' %}" class="sidebar-nav-link"><i class="bi bi-book"></i><span class="nav-text">LMS 강의·과제</span></a>
+        </li>
+      </ul>
+    {% endif %}
     <div class="nav-section-title">계정</div>
     <ul class="sidebar-nav">
       <li class="sidebar-nav-item">

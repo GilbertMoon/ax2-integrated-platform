@@ -38,8 +38,14 @@ class EvaluationRoundForm(forms.ModelForm):
         )
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
-            "evaluation_start_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "evaluation_end_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "evaluation_start_at": forms.DateTimeInput(
+                format="%Y-%m-%dT%H:%M:%S",
+                attrs={"type": "datetime-local", "step": "1"},
+            ),
+            "evaluation_end_at": forms.DateTimeInput(
+                format="%Y-%m-%dT%H:%M:%S",
+                attrs={"type": "datetime-local", "step": "1"},
+            ),
             "team_score_weight": forms.NumberInput(attrs={"min": 0, "max": 100}),
             "personal_score_weight": forms.NumberInput(attrs={"min": 0, "max": 100}),
             "tutor_score_weight": forms.NumberInput(attrs={"min": 0, "max": 100}),

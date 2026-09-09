@@ -310,6 +310,7 @@ def _announce_results_published(run):
     )
 
 
+@transaction.atomic
 def toggle_publication(*, round_id, item_key, actor, partial_confirmed=False):
     field = PUBLICATION_FIELDS.get(item_key)
     if not field:

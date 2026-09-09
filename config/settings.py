@@ -7,6 +7,8 @@ from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+# Keep existing LMS imports working from the grouped app directory.
+sys.path.insert(0, str(BASE_DIR / "2team_lms"))
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -74,6 +76,13 @@ INSTALLED_APPS = [
     "notifications.apps.NotificationsConfig",
     "lms.apps.LmsConfig",
     "lms_client.apps.LmsClientConfig",
+    "widget_tweaks",
+    "lms_modules.core",
+    "lms_modules.accounts_client",
+    "lms_modules.common",
+    "lms_modules.student",
+    "lms_modules.tutor",
+    "lms_modules.github_sync",
 ]
 
 MIDDLEWARE = [
@@ -103,6 +112,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "lms_modules.common.context_processors.nav",
             ],
         },
     }
@@ -319,3 +329,25 @@ LOGGING = {
         "accounts.security": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
 }
+
+# LMS uses the existing domain database; Core authentication stays unchanged.
+LMS_DATABASE_WRITE_ENABLED = env_bool("LMS_DATABASE_WRITE_ENABLED", False)
+if LMS_DATABASE_WRITE_ENABLED:
+    DATABASES["assignment_lms"]["OPTIONS"].pop("options", None)
+AX_ROUND_ID = os.getenv("AX_ROUND_ID") or None
+DEV_SKIP_AUTH = False
+LMS_MEDIA_ROOT = Path(os.getenv("LMS_MEDIA_ROOT") or BASE_DIR / "media_lms")
+LMS_MEDIA_URL = "/lms-media/"
+STORAGES["lms"] = {
+    "BACKEND": "django.core.files.storage.FileSystemStorage",
+    "OPTIONS": {"location": LMS_MEDIA_ROOT, "base_url": LMS_MEDIA_URL},
+}
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+GEMINI_FALLBACK_MODELS = env_list("GEMINI_FALLBACK_MODELS", ["gemini-flash-latest"])
+GITHUB_OAUTH_CLIENT_ID = os.getenv("GITHUB_OAUTH_CLIENT_ID")
+GITHUB_OAUTH_CLIENT_SECRET = os.getenv("GITHUB_OAUTH_CLIENT_SECRET")
+GITHUB_TOKEN_ENC_KEY = os.getenv("GITHUB_TOKEN_ENC_KEY")
+GITHUB_SUBMISSION_REPO_NAME = os.getenv("GITHUB_SUBMISSION_REPO_NAME", "lms-assignments")
+GITHUB_API_TOKEN = os.getenv("GITHUB_API_TOKEN")
+SLACK_NOTIFY_SYNC = env_bool("SLACK_NOTIFY_SYNC", False)

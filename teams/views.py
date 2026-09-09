@@ -1,4 +1,7 @@
 import json
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.utils import timezone
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -253,12 +256,18 @@ def management_team_page(request: HttpRequest, round_id: int) -> HttpResponse:
         view = get_teams_backend().get_management_team(round_id)
     except LookupError:
         return _error_response("not_found", "회차가 없습니다.", 404)
+    from teams.models import TeamFormationSnapshot
+    team_data = management_team_response(view)
+    snapshot = TeamFormationSnapshot.objects.filter(round_id=round_id, version=team_data['lock_version']).first()
+    if snapshot is not None:
+        team_data['formation_evidence'] = snapshot.evidence
+        team_data['seed_scores'] = snapshot.evidence['seed_scores']
     return render(
         request,
         "teams/workspace.html",
         {
             "role": "tutor",
-            "team_data": management_team_response(view),
+            "team_data": team_data,
             "my_participant_id": None,
             "auto_url": f"/teams/manage/rounds/{round_id}/teams/auto/",
             "save_url": f"/teams/manage/rounds/{round_id}/teams/save/",
@@ -301,9 +310,18 @@ def auto_assignment_view(request: HttpRequest, round_id: int) -> JsonResponse:
     if permission_error is not None:
         return permission_error
     try:
-        request_data = AutoAssignmentRequest.from_payload(_json_payload(request))
+        payload = _json_payload(request)
+        request_data = AutoAssignmentRequest.from_payload(payload)
+        if 'lms_selection' in payload:
+            from teams.lms_formation import preview
+            result, token, evidence = preview(round_id, request_data, payload['lms_selection'], request.user.id, scores_only=payload.get('scores_only') is True)
+            body = auto_team_board_response(result) if result is not None else {}
+            body.update(formation_token=token, formation_evidence=evidence)
+            return JsonResponse(body)
         result = get_teams_backend().create_auto_assignment(round_id, request_data)
         return JsonResponse(auto_team_board_response(result))
+    except ValidationError as error:
+        return _error_response('invalid_request', ' '.join(error.messages), 400)
     except (TeamContractError, AssignmentValidationError) as error:
         return _error_response("invalid_request", str(error), 400)
     except TeamVersionConflictError as error:
@@ -320,14 +338,24 @@ def save_team_view(request: HttpRequest, round_id: int) -> JsonResponse:
     if permission_error is not None:
         return permission_error
     try:
-        request_data = TeamSaveRequest.from_payload(round_id, _json_payload(request))
-        board = get_teams_backend().save_team_configuration(
-            round_id,
-            request.user.id,
-            request_data,
-        )
+        payload = _json_payload(request)
+        request_data = TeamSaveRequest.from_payload(round_id, payload)
+        evidence = None
+        if payload.get('formation_token'):
+            from teams.lms_formation import decode
+            evidence = decode(payload['formation_token'], round_id, request_data.board.lock_version, request.user.id)
+        if payload.get('formation_required') and evidence is None:
+            raise ValidationError('점수 계산 또는 자동 배치를 실행해 계산 근거를 먼저 확인해 주세요.')
+        with transaction.atomic():
+            board = get_teams_backend().save_team_configuration(round_id, request.user.id, request_data)
+            if evidence is not None:
+                from teams.models import TeamFormationSnapshot
+                evidence['saved_teams'] = [{'team_number': t.team_number, 'participant_ids': list(t.participant_ids)} for t in board.teams]
+                TeamFormationSnapshot.objects.create(round_id=round_id, actor_id=request.user.id, version=board.lock_version, evidence=evidence)
         _notify_team_assignments(board)
         return JsonResponse(saved_team_board_response(board))
+    except ValidationError as error:
+        return _error_response('invalid_request', ' '.join(error.messages), 400)
     except ImbalanceConfirmationRequired as error:
         return _error_response("imbalance_confirmation_required", str(error), 409)
     except UnassignedParticipantsConfirmationRequired as error:
@@ -419,3 +447,37 @@ def send_team_announcement_view(request: HttpRequest, team_id: int) -> HttpRespo
 
     messages.success(request, f"'{team.name}' 팀원에게 공지 메일 {sent_count}건을 발송했습니다.")
     return redirect(request.META.get("HTTP_REFERER", "/manage/"))
+
+
+@require_GET
+def lms_formation_catalog(request, round_id):
+    permission_error = _permission_error(request, allowed_roles={'tutor'})
+    if permission_error is not None:
+        return permission_error
+    from django.core.paginator import Paginator
+    from rounds.models import EvaluationRound
+    from lms_modules.core.models import Assignment
+    from teams.models import TeamFormationSnapshot
+    if not EvaluationRound.objects.filter(pk=round_id).exists():
+        return _error_response('not_found', '회차가 없습니다.', 404)
+    qs = Assignment.objects.filter(due_at__lt=timezone.now()).order_by('-due_at', '-pk')
+    source_id = request.GET.get('source_round', '')
+    if source_id:
+        if not source_id.isdigit():
+            return _error_response('invalid_request', '회차를 확인해 주세요.', 400)
+        from teams.lms_formation import round_assignment_ids
+        try:
+            ids = round_assignment_ids(int(source_id))
+        except ValidationError as error:
+            return _error_response('invalid_request', '; '.join(error.messages), 400)
+        qs = qs.filter(pk__in=ids)
+    if request.GET.get('q'):
+        qs = qs.filter(title__icontains=request.GET['q'])
+    if request.GET.get('all_ids') == '1':
+        return JsonResponse({'ids':list(qs.values_list('pk', flat=True))})
+    page = Paginator(qs, 30).get_page(request.GET.get('page'))
+    latest = TeamFormationSnapshot.objects.filter(round_id=round_id).first()
+    return JsonResponse({'items':list(page.object_list.values('id','title','is_team','due_at')),
+        'page':page.number,'pages':page.paginator.num_pages,'total':page.paginator.count,
+        'rounds':list(EvaluationRound.objects.order_by('-created_at').values('id','title')),
+        'saved':latest.evidence if latest else None})

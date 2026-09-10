@@ -85,6 +85,7 @@ urlpatterns = [
         result_views.publish_all,
         name="publish-all-results",
     ),
+    path("rounds/<int:project_id>/delete/", project_views.project_delete, name="project-delete"),
     path(
         "rounds/<int:project_id>/edit/",
         project_views.project_edit,

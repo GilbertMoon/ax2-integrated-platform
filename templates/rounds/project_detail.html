@@ -13,6 +13,13 @@
          class="btn btn-primary">프로젝트 정보 수정</a>
       <!-- 목록 -->
       <a href="{% url 'rounds:project-list' %}" class="btn btn-ax-secondary">목록</a>
+      <form method="post"
+            action="{% url 'rounds:project-delete' project.project_info_id %}"
+            class="d-inline"
+            onsubmit="return confirm('이 프로젝트 회차를 삭제하시겠습니까? 연결된 평가 회차와 관련 데이터도 함께 삭제됩니다.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">프로젝트 삭제</button>
+      </form>
     </div>
   </div>
   <!-- 프로젝트 기본 정보 -->

@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import DatabaseError, connection, transaction
 from django.http import Http404
@@ -10,8 +11,7 @@ from rounds.forms import (
     ProjectInfoForm,
 )
 from rounds.models import EvaluationRound, RoundParticipant
-from rounds.services import participant_snapshot_values
-
+from rounds.services import delete_round, participant_snapshot_values
 
 def _require_operations(user):
     """운영 담당자만 프로젝트 회차를 관리할 수 있도록 제한한다."""
@@ -333,6 +333,34 @@ def project_detail(request, project_id):
         },
     )
 
+@login_required
+@require_POST
+def project_delete(request, project_id):
+    """프로젝트 회차와 연결된 평가 회차를 삭제한다."""
+    _require_operations(request.user)
+
+    project_info = _get_project_info(project_id)
+    evaluation_round = _get_evaluation_round(project_info)
+
+    if evaluation_round is None:
+        raise Http404("프로젝트에 연결된 평가 회차를 찾을 수 없습니다.")
+
+    try:
+        delete_round(
+            round_id=evaluation_round.pk,
+            actor=request.user,
+            confirm_title=request.POST.get("confirm_title", ""),
+        )
+    except ValidationError as error:
+        from django.contrib import messages
+
+        messages.error(request, error.message)
+        return redirect("rounds:project-detail", project_id=project_id)
+
+    from django.contrib import messages
+
+    messages.success(request, "프로젝트 회차를 삭제했습니다.")
+    return redirect("rounds:project-list")
 
 @login_required
 def project_edit(request, project_id):

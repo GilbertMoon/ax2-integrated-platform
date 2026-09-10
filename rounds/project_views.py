@@ -1,9 +1,9 @@
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import DatabaseError, connection, transaction
 from django.http import Http404
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from accounts.permissions import is_operations_user
 from rounds.forms import (
@@ -12,6 +12,7 @@ from rounds.forms import (
 )
 from rounds.models import EvaluationRound, RoundParticipant
 from rounds.services import delete_round, participant_snapshot_values
+
 
 def _require_operations(user):
     """운영 담당자만 프로젝트 회차를 관리할 수 있도록 제한한다."""
@@ -333,6 +334,7 @@ def project_detail(request, project_id):
         },
     )
 
+
 @login_required
 @require_POST
 def project_delete(request, project_id):
@@ -361,6 +363,7 @@ def project_delete(request, project_id):
 
     messages.success(request, "프로젝트 회차를 삭제했습니다.")
     return redirect("rounds:project-list")
+
 
 @login_required
 def project_edit(request, project_id):

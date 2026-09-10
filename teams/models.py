@@ -42,12 +42,22 @@ class TeamMembership(models.Model):
 
 class TeamFormationSnapshot(models.Model):
     """Immutable evidence for the scores used when saving a team arrangement."""
-    round = models.ForeignKey('rounds.EvaluationRound', on_delete=models.PROTECT, related_name='formation_snapshots')
-    actor = models.ForeignKey('accounts.User', on_delete=models.PROTECT)
+
+    round = models.ForeignKey(
+        "rounds.EvaluationRound", on_delete=models.PROTECT, related_name="formation_snapshots"
+    )
+    actor = models.ForeignKey("accounts.User", on_delete=models.PROTECT)
     version = models.PositiveIntegerField()
     evidence = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=('round', 'version'), name='teams_formation_round_version_unique')]
-        ordering = ('-created_at',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=("round", "version"), name="teams_formation_round_version_unique"
+            )
+        ]
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"Round {self.round_id} / version {self.version}"

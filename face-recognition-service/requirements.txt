@@ -1,0 +1,6 @@
+deepface
+flask
+flask-cors
+tf-keras
+opencv-python==4.10.0.84
+torch

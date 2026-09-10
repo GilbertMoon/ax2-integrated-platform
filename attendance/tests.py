@@ -1,9 +1,19 @@
+from datetime import time as time_cls
+from io import BytesIO
+from unittest.mock import patch
+
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
-from attendance.models import AttendanceRecord
-from attendance.services import approved_students, attendance_board_rows, save_attendance_board
+from attendance.models import AttendanceRecord, FaceEmbedding
+from attendance.services import (
+    approved_students,
+    attendance_board_rows,
+    save_attendance_board,
+    save_face_checkin,
+)
 
 
 def _make_tutor(email="tutor@ax.com", **extra):
@@ -341,3 +351,199 @@ class UpdateAttendanceViewTests(TestCase):
         response = self._post_json({"user_id": 999999, "date": "2026-09-01", "status": "present"})
 
         self.assertEqual(response.status_code, 404)
+
+
+class SaveFaceCheckinServiceTests(TestCase):
+    """save_face_checkin: 얼굴인식 전용 저장(플래그 True), 유효성 방어."""
+
+    def setUp(self):
+        self.day = "2026-09-01"
+        self.student = _make_student("face-save-student@example.com")
+
+    def test_records_status_with_face_flag_true(self):
+        saved = save_face_checkin(self.day, self.student.id, "present")
+
+        self.assertTrue(saved)
+        record = AttendanceRecord.objects.get(user=self.student, date=self.day)
+        self.assertEqual(record.status, "present")
+        self.assertTrue(record.checked_by_face_recognition)
+
+    def test_overwrites_existing_manual_record_and_sets_flag(self):
+        AttendanceRecord.objects.create(
+            user=self.student,
+            date=self.day,
+            status=AttendanceRecord.Status.ABSENT,
+            checked_by_face_recognition=False,
+        )
+
+        saved = save_face_checkin(self.day, self.student.id, "late")
+
+        self.assertTrue(saved)
+        record = AttendanceRecord.objects.get(user=self.student, date=self.day)
+        self.assertEqual(record.status, "late")
+        self.assertTrue(record.checked_by_face_recognition)
+
+    def test_unknown_user_id_returns_false(self):
+        saved = save_face_checkin(self.day, 999999, "present")
+
+        self.assertFalse(saved)
+        self.assertEqual(AttendanceRecord.objects.count(), 0)
+
+    def test_non_approved_student_returns_false(self):
+        pending = _make_student(
+            "face-pending@example.com", approval_status=User.ApprovalStatus.PENDING
+        )
+
+        saved = save_face_checkin(self.day, pending.id, "present")
+
+        self.assertFalse(saved)
+        self.assertFalse(AttendanceRecord.objects.filter(user=pending).exists())
+
+    def test_invalid_status_returns_false(self):
+        saved = save_face_checkin(self.day, self.student.id, "on_vacation")
+
+        self.assertFalse(saved)
+        self.assertFalse(AttendanceRecord.objects.filter(user=self.student).exists())
+
+
+class RecordFaceCheckinServiceTests(TestCase):
+    """record_face_checkin: 얼굴인식 서버 응답을 목(mock)으로 대체하고 매칭·기록 로직만 검증."""
+
+    def setUp(self):
+        self.student = _make_student("face-a@example.com", first_name="가나다")
+        self.other = _make_student("face-b@example.com", first_name="라마바")
+        FaceEmbedding.objects.create(user=self.student, vector=[1.0, 0.0, 0.0])
+        FaceEmbedding.objects.create(user=self.other, vector=[0.0, 1.0, 0.0])
+
+    @staticmethod
+    def _fake_image():
+        return BytesIO(b"fake-jpeg-bytes")
+
+    def _run(self, embed_return, deadline=time_cls(23, 59)):
+        from attendance import face_services
+
+        with (
+            patch.object(face_services, "_request_embedding", return_value=embed_return),
+            patch.object(face_services, "ATTENDANCE_DEADLINE", deadline),
+        ):
+            return face_services.record_face_checkin(self._fake_image())
+
+    def test_matches_nearest_student_and_marks_present(self):
+        result = self._run(([1.0, 0.0, 0.0], None))
+
+        self.assertTrue(result["matched"])
+        self.assertEqual(result["user_id"], self.student.id)
+        self.assertEqual(result["status"], "present")
+        record = AttendanceRecord.objects.get(user=self.student)
+        self.assertEqual(record.status, "present")
+        self.assertTrue(record.checked_by_face_recognition)
+
+    def test_after_deadline_marks_late(self):
+        result = self._run(([1.0, 0.0, 0.0], None), deadline=time_cls(0, 0))
+
+        self.assertTrue(result["matched"])
+        self.assertEqual(result["status"], "late")
+
+    def test_liveness_error_is_passed_through(self):
+        result = self._run((None, "실제 얼굴로 다시 촬영해주세요."))
+
+        self.assertFalse(result["matched"])
+        self.assertEqual(result["message"], "실제 얼굴로 다시 촬영해주세요.")
+        self.assertEqual(AttendanceRecord.objects.count(), 0)
+
+    def test_no_registered_embeddings_returns_message(self):
+        FaceEmbedding.objects.all().delete()
+
+        result = self._run(([1.0, 0.0, 0.0], None))
+
+        self.assertFalse(result["matched"])
+        self.assertIn("등록된 학생 얼굴", result["message"])
+
+    def test_no_close_match_returns_not_matched(self):
+        result = self._run(([-1.0, 0.0, 0.0], None))
+
+        self.assertFalse(result["matched"])
+        self.assertIn("일치하는 학생", result["message"])
+        self.assertEqual(AttendanceRecord.objects.count(), 0)
+
+
+class KioskPageViewTests(TestCase):
+    """/attendance/kiosk/: 튜터·관리자만 접근 가능한 키오스크 화면."""
+
+    def setUp(self):
+        self.tutor = _make_tutor()
+        self.student = _make_student("kiosk-student@example.com")
+
+    def test_tutor_can_open_kiosk(self):
+        self.client.force_login(self.tutor)
+
+        response = self.client.get(reverse("attendance:kiosk"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "출석 체크")
+
+    def test_student_is_denied(self):
+        self.client.force_login(self.student)
+
+        response = self.client.get(reverse("attendance:kiosk"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_anonymous_user_is_redirected_to_login(self):
+        response = self.client.get(reverse("attendance:kiosk"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/accounts/login/", response["Location"])
+
+
+class FaceCheckinViewTests(TestCase):
+    """/attendance/face-checkin/: 튜터·관리자 전용 POST, 서비스 호출은 위임만 확인."""
+
+    def setUp(self):
+        self.tutor = _make_tutor()
+        self.student = _make_student("facecheckin-student@example.com")
+        self.url = reverse("attendance:face-checkin")
+
+    def _image(self):
+        return SimpleUploadedFile("checkin.jpg", b"fake-bytes", content_type="image/jpeg")
+
+    def test_get_is_not_allowed(self):
+        self.client.force_login(self.tutor)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_student_is_denied(self):
+        self.client.force_login(self.student)
+
+        response = self.client.post(self.url, {"image": self._image()})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()["error"]["code"], "permission_denied")
+
+    def test_anonymous_user_is_denied(self):
+        response = self.client.post(self.url, {"image": self._image()})
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_missing_image_returns_400(self):
+        self.client.force_login(self.tutor)
+
+        response = self.client.post(self.url, {})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"]["code"], "invalid_request")
+
+    def test_valid_image_is_delegated_to_service(self):
+        self.client.force_login(self.tutor)
+        fake_result = {"matched": True, "user_id": self.student.id, "status": "present"}
+
+        with patch(
+            "attendance.face_services.record_face_checkin", return_value=fake_result
+        ) as mocked:
+            response = self.client.post(self.url, {"image": self._image()})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), fake_result)
+        mocked.assert_called_once()

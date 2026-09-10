@@ -6,7 +6,9 @@ from teams import views
 app_name = "teams"
 
 urlpatterns = [
-    path("manage/rounds/<int:round_id>/lms-catalog/", views.lms_formation_catalog, name="lms-catalog"),
+    path(
+        "manage/rounds/<int:round_id>/lms-catalog/", views.lms_formation_catalog, name="lms-catalog"
+    ),
     path("student/", views.student_team_page, name="student-page"),
     path("student/team/", views.student_team_view, name="student-team"),
     path(

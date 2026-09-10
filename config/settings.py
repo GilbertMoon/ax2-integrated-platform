@@ -297,6 +297,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT") or BASE_DIR / "media")
 PROFILE_IMAGE_MAX_BYTES = 2 * 1024 * 1024
+
+# 얼굴인식(출석 키오스크)이 호출하는 임베딩/라이브니스 서비스.
+# 로컬에서는 기본값을 쓰고, 운영 환경은 DJANGO_FACE_SERVICE_URL로 실제 호스트를 지정한다.
+FACE_SERVICE_URL = os.getenv("DJANGO_FACE_SERVICE_URL", "http://127.0.0.1:5001").strip().rstrip("/")
+FACE_SERVICE_TIMEOUT = env_int("DJANGO_FACE_SERVICE_TIMEOUT", 15)
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {

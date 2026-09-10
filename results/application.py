@@ -6,6 +6,7 @@ from django.db import transaction
 from django.db.models import Max
 from django.urls import reverse
 from django.utils import timezone
+from lms_client.services import get_normalized_scores
 
 from accounts.models import User
 from audit.services import record_event
@@ -78,7 +79,7 @@ def _tutor_team_answer_sets(round_obj):
     """팀 ID -> 이 회차에 받은 튜터 팀평가 제출별 평점 목록 (_tutor_answer_sets의 팀 버전).
 
     team_score는 이미 '받은 모든 평가를 동일 가중치로 평균'하는 구조라(calculate_team_score),
-    튜터의 팀평가도 학생 팀평가와 같은 리스트에 한 건 더 추가하는 방식으로 섞는다.
+    튜터의 팀평가도 학생들이 낸 팀 평가와 같은 리스트에 한 건 더 추가하는 방식으로 섞는다.
     """
     rows = TutorTeamReviewAnswer.objects.filter(
         review__round=round_obj, rating_value__isnull=False
@@ -107,6 +108,7 @@ def _build_result_rows(round_obj):
     team_weight = Decimal(round_obj.team_score_weight) / 100
     personal_weight = Decimal(round_obj.personal_score_weight) / 100
     tutor_weight = Decimal(round_obj.tutor_score_weight) / 100
+    lms_weight = Decimal(round_obj.lms_score_weight) / 100
     team_submissions = defaultdict(list)
     peer_submissions = defaultdict(list)
     for submission in submissions:
@@ -117,6 +119,13 @@ def _build_result_rows(round_obj):
 
     participant_count = round_obj.participants.count()
     teams = list(round_obj.teams.prefetch_related("memberships__participant"))
+    student_ids = [
+        membership.participant.user_id for team in teams for membership in team.memberships.all()
+    ]
+    lms_scores_by_student = (
+        get_normalized_scores(round_obj.pk, student_ids) if round_obj.lms_score_weight > 0 else {}
+    )
+
     team_rows = []
     team_score_by_id = {}
     for team in teams:
@@ -144,6 +153,7 @@ def _build_result_rows(round_obj):
     _rank_rows(team_rows, "team_score_raw", "primary_rank")
 
     individual_rows = []
+    lms_digest_values = []
     for team in teams:
         team_score = team_score_by_id[team.pk]
         team_size = team.memberships.count()
@@ -153,13 +163,17 @@ def _build_result_rows(round_obj):
             valid_sets = [values for values in _rating_sets(received) if values]
             peer_score = calculate_peer_score(valid_sets)
             tutor_score = calculate_peer_score(tutor_sets_by_participant[participant.pk])
+            lms_value = lms_scores_by_student.get(participant.user_id)
+            lms_score = Decimal(str(lms_value)) if lms_value is not None else None
             final_score = calculate_final_score(
                 team_score,
                 peer_score,
                 tutor_score,
+                lms_score,
                 team_weight=team_weight,
                 peer_weight=personal_weight,
                 tutor_weight=tutor_weight,
+                lms_weight=lms_weight,
             )
             expected = max(team_size - 1, 0)
             individual_rows.append(
@@ -169,6 +183,7 @@ def _build_result_rows(round_obj):
                     "team_score_raw": team_score,
                     "peer_score_raw": peer_score,
                     "tutor_score_raw": tutor_score,
+                    "lms_score_raw": lms_score,
                     "final_score_raw": final_score,
                     "display_score": (
                         round_to_display(final_score) if final_score is not None else None
@@ -181,6 +196,10 @@ def _build_result_rows(round_obj):
                     "data_status": determine_data_status(expected, len(valid_sets)),
                 }
             )
+            if round_obj.lms_score_weight > 0:
+                lms_digest_values.append(
+                    (-participant.user_id, f"lms:{lms_value if lms_value is not None else 'N/A'}")
+                )
     _rank_rows(individual_rows, "final_score_raw", "primary_rank")
     _rank_rows(individual_rows, "peer_score_raw", "peer_rank")
     digest_values = []
@@ -188,6 +207,7 @@ def _build_result_rows(round_obj):
         values = _rating_sets([submission])[0]
         if values:
             digest_values.append((submission.pk, ",".join(str(value) for value in values)))
+    digest_values.extend(lms_digest_values)
     return team_rows + individual_rows, compute_input_digest(digest_values)
 
 
@@ -286,6 +306,7 @@ def _announce_results_published(run):
     )
 
 
+@transaction.atomic
 def toggle_publication(*, round_id, item_key, actor, partial_confirmed=False):
     field = PUBLICATION_FIELDS.get(item_key)
     if not field:

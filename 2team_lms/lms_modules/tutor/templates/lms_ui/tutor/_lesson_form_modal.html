@@ -1,0 +1,54 @@
+{% comment %} 차시 등록/수정 모달 — lecture_manage.html 에서 include {% endcomment %}
+<div id="lesson-modal" class="modal-backdrop" onclick="handleBackdropClick(event, 'lesson-modal')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modal-title">새 차시 등록</h3>
+      <button class="modal-close" onclick="closeModal('lesson-modal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="edit-lesson-id">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">강의 일자<span class="req">*</span></label>
+          <input type="date" id="form-date" class="form-control" value="2026-09-05">
+        </div>
+        <div class="form-group">
+          <label class="form-label">강의 제목<span class="req">*</span></label>
+          <input type="text" id="form-title" class="form-control" placeholder="예: LangChain을 활용한 RAG 에이전트 구축">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+          <label class="form-label">유튜브 다시보기 영상 (LessonVideo)</label>
+          <button type="button" class="btn btn-outline btn-sm" onclick="addVideoRow()">+ 영상 추가</button>
+        </div>
+        <span class="form-hint">URL 입력 시 썸네일이 자동 감지되고 학생 화면에 임베드 영상이 공개됩니다.</span>
+
+        <div class="material-builder" id="video-builder-list">
+          <!-- Dynamic Video Rows -->
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+          <label class="form-label">수업 교안 및 실습 파일 (LessonMaterial)</label>
+          <button type="button" class="btn btn-outline btn-sm" onclick="addMaterialRow()">+ 자료 추가</button>
+        </div>
+
+        <div class="material-builder" id="material-builder-list">
+          <!-- Dynamic Material Rows -->
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('lesson-modal')">취소</button>
+      <button class="btn btn-primary" onclick="saveLesson()">저장하기</button>
+    </div>
+  </div>
+</div>

@@ -71,6 +71,7 @@
         </div>
       </div>
     {% endif %}
+    {% include "teams/_lms_formation.html" %}
     <section id="toolbar" class="teams-toolbar" hidden>
       <label for="teamCount">
         팀 수
@@ -112,5 +113,6 @@
   {{ team_data|json_script:"teams-initial-data" }}
   {% comment %}CSRF 쿠키가 HttpOnly라 스크립트가 읽을 수 없으므로 토큰을 페이지로 내려준다.{% endcomment %}
   <script>window.TEAMS_PAGE={role:"{{ role }}",myParticipantId:{{ my_participant_id|default_if_none:"null" }},autoUrl:"{{ auto_url|default:'' }}",saveUrl:"{{ save_url|default:'' }}",nextUrl:"{{ next_url|default:'' }}",previewMode:{{ preview_mode|yesno:"true,false" }},csrfToken:"{{ csrf_token }}"};</script>
-  <script src="{% static 'teams/js/workspace.js' %}"></script>
+  <script src="{% static 'teams/js/lms_formation.js' %}?v=lms-formation-2"></script>
+  <script src="{% static 'teams/js/workspace.js' %}?v=lms-formation-2"></script>
 {% endblock %}

@@ -12,11 +12,9 @@ real 0.00 score. N/A propagates through FinalScore, is excluded from ranking, an
 from Seed history - it is never averaged in as 0. This supersedes this project's earlier
 ADR-0001 ("missing evaluation data scores as 0"), which predates this refined spec.
 
-Scale and precision (RES-005, docs/DATABASE-DESIGN.md 5.11): every stored score stays on the
-same 1~5 scale as the rating answers. Calculations keep six decimal places through the chain -
-submission score -> team/peer score -> final score -> seed. Only ``round_to_display`` rounds to
-2 decimal places (``ROUND_HALF_UP``) when a value is shown. Rounding every intermediate result
-to 2dp would compound rounding error.
+Scale and precision (RES-005, docs/DATABASE-DESIGN.md 5.11): 4조 평가 입력은 1~5점 척도이고,
+LMS 점수는 0~100을 0~5로 정규화해 같은 계산식에 넣는다. 계산은 소수 6자리까지 유지하고
+``round_to_display``에서만 2자리로 반올림한다.
 """
 
 import hashlib
@@ -28,16 +26,13 @@ PEER_WEIGHT = Decimal("0.6")
 
 # 튜터 평가를 반영하는 회차의 대체 비율 (구축제안서 슬라이드 10 "튜터 평가 반영 시 제안
 # 기본값"). 아직 팀 협의 사항으로 미확정이라(제안서 슬라이드 22, 협의 필요 항목 #2) 값이
-# 바뀔 수 있어 상수로 분리해뒀다. 튜터 평가 "입력"은 구현되어 있지만(reviews.TutorReview)
-# 비율이 확정되기 전까지 채점에는 연결하지 않는다 - calculate_round는 tutor_score를 넘기지
-# 않으므로 지금은 항상 팀 40% + 개인 60%로 계산된다.
+# 바뀔 수 있어 상수로 분리해뒀다.
 TEAM_WEIGHT_WITH_TUTOR = Decimal("0.3")
 PEER_WEIGHT_WITH_TUTOR = Decimal("0.4")
 TUTOR_WEIGHT = Decimal("0.3")
 
-# results_calculation_run.formula_version - 계산 실행마다 어떤 버전의 공식으로 채점했는지
-# 남긴다 (docs/DATABASE-DESIGN.md 5.10). 계산 공식이 바뀌면 이 문자열도 올린다.
-FORMULA_VERSION = "score-v1"
+# results_calculation_run.formula_version - LMS 가중치 연동을 포함한 공식 버전.
+FORMULA_VERSION = "score-v2-lms"
 
 # 오래된 순 20% / 30% / 50%. 3개 미만이면 뒤(최근)부터 잘라 재정규화한다: 2개면 30%+50%,
 # 1개면 50%를 100%로. docs/REFINED-REQUIREMENTS.md AC-10(과거 4.0, 최신 5.0 ->
@@ -86,37 +81,43 @@ def calculate_final_score(
     team_score: Decimal | None,
     peer_score: Decimal | None,
     tutor_score: Decimal | None = None,
+    lms_score: Decimal | None = None,
     *,
     team_weight: Decimal | None = None,
     peer_weight: Decimal | None = None,
     tutor_weight: Decimal | None = None,
+    lms_weight: Decimal | None = None,
 ) -> Decimal | None:
     """개인 최종점수 (raw 정밀도).
 
-    ``tutor_score``를 안 주면(기본값) 팀 점수 40% + 개인 점수 60% (RES-004). 이 회차가
-    튜터 평가를 반영하는 회차라 ``tutor_score``가 주어지면 팀 30% + 개인 40% + 튜터 30%로
-    바뀐다 - 정확한 비율은 이 모듈의 기본 상수(TEAM_WEIGHT_WITH_TUTOR 등)다.
+    회차에서 LMS 비율이 0%면 기존 계산식을 그대로 사용한다. LMS 비율이 0%보다 큰 회차는
+    2조 LMS의 회차 마감 스냅샷이 있어야 하며, 특정 학생의 LMS 점수가 없으면 최종점수도
+    N/A로 둔다. LMS 점수는 호출부에서 이미 0~5 척도로 정규화돼 전달된다.
 
-    ``team_weight``/``peer_weight``/``tutor_weight``는 회차별로 튜터가 설정한 비율
-    (rounds.EvaluationRound.team_score_weight 등을 100으로 나눈 값)을 넘길 때 쓴다 - 아무도
-    넘기지 않으면(기존 호출부는 전부 그렇다) 이 모듈의 기본 상수를 그대로 쓰므로 기존 동작은
-    바뀌지 않는다.
-
-    구성 점수 중 하나라도 N/A(``None``)면 최종점수도 N/A다. ``tutor_score``는 다른
-    구성요소와 달리 "이 회차가 튜터 평가를 반영하는지" 자체를 결정하는 파라미터라, None이면
-    2요소 산식으로 그냥 폴백한다 - 튜터 평가를 반영하는 회차인데 특정 학생만 튜터 점수가
-    빠졌을 때도 N/A로 처리해야 하는지는 아직 확정되지 않았다.
+    ``team_weight``/``peer_weight``/``tutor_weight``/``lms_weight``는 회차별 설정값을
+    100으로 나눈 Decimal이다. LMS 인자를 전달하지 않는 기존 호출은 lms_weight=0으로
+    동작해 기존 결과와 호환된다.
     """
     if team_score is None or peer_score is None:
         return None
+
+    lw = lms_weight if lms_weight is not None else Decimal("0")
+    if lw > 0 and lms_score is None:
+        return None
+
     if tutor_score is None:
         tw = team_weight if team_weight is not None else TEAM_WEIGHT
         pw = peer_weight if peer_weight is not None else PEER_WEIGHT
-        return round_to_raw(team_score * tw + peer_score * pw)
-    tw = team_weight if team_weight is not None else TEAM_WEIGHT_WITH_TUTOR
-    pw = peer_weight if peer_weight is not None else PEER_WEIGHT_WITH_TUTOR
-    tuw = tutor_weight if tutor_weight is not None else TUTOR_WEIGHT
-    return round_to_raw(team_score * tw + peer_score * pw + tutor_score * tuw)
+        total = team_score * tw + peer_score * pw
+    else:
+        tw = team_weight if team_weight is not None else TEAM_WEIGHT_WITH_TUTOR
+        pw = peer_weight if peer_weight is not None else PEER_WEIGHT_WITH_TUTOR
+        tuw = tutor_weight if tutor_weight is not None else TUTOR_WEIGHT
+        total = team_score * tw + peer_score * pw + tutor_score * tuw
+
+    if lw > 0:
+        total += lms_score * lw
+    return round_to_raw(total)
 
 
 def determine_data_status(expected_count: int, valid_count: int) -> str:

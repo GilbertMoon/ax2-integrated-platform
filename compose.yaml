@@ -9,7 +9,7 @@ services:
     ports:
       - "127.0.0.1:5433:5432"
 
-  
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -32,7 +32,7 @@ services:
       face-service:
         condition: service_started
     volumes:
-      - media_data:/app/media  
+      - media_data:/app/media
 
   face-service:
     build: ./face-recognition-service

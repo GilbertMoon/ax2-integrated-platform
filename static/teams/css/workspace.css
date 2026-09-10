@@ -414,3 +414,17 @@
 body.teams-dragging .teams-waiting {
   border-color: #1769e0;
 }
+
+/* Match the Core theme without changing the light-mode team layout. */
+[data-bs-theme="dark"] .teams-workspace {
+  --teams-line: #364152;
+  --teams-muted: #a8b4c5;
+  color: #e5eaf2;
+}
+[data-bs-theme="dark"] .teams-workspace :is(.teams-board, .team-card header) { background: #182230; }
+[data-bs-theme="dark"] .teams-workspace :is(.team-card, .member, .teams-toolbar, .teams-empty, .teams-result-tile, .teams-chip) { background: #202c3c; border-color: var(--teams-line); }
+[data-bs-theme="dark"] .teams-workspace :is(.member.me, .teams-result-tile.mine, .member.search-hit, .teams-chip.search-hit) { background: #253b5b; border-color: #6c9fff; }
+[data-bs-theme="dark"] .teams-workspace .team-card.mine { border-color: #6c9fff; }
+[data-bs-theme="dark"] .teams-workspace .member-initial { background: #344156; }
+[data-bs-theme="dark"] .teams-workspace :is(.mine-label, .teams-status) { color: #b9d2ff; background: #263e60; }
+[data-bs-theme="dark"] .teams-workspace .me-tag { color: #9fc0ff; }

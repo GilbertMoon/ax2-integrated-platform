@@ -1,7 +1,7 @@
 [tool.ruff]
 line-length = 100
 indent-width = 4
-extend-exclude = ["docs"]
+extend-exclude = ["docs", "2team_lms"]
 
 [tool.ruff.lint]
 select = [
@@ -20,6 +20,7 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.djlint]
+exclude = "2team_lms"
 profile = "django"
 indent = 2
 use_gitignore = true

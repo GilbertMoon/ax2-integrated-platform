@@ -1,0 +1,175 @@
+{% extends "lms_ui/base.html" %}
+{% load static %}
+{% block title %}{{ assignment.title }} 미리보기 | AX 과제 시스템{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'lms_ui/student/css/assignments.css' %}">
+<style>
+  .app-topbar .crumb { display:none; }
+  .app-topbar .utils { margin-left:auto; }
+  .student-card .preview-panel { margin-bottom:12px; }
+  .student-card .preview-panel:last-child { margin-bottom:0; }
+  .student-preview-details > summary { display:flex; align-items:center; gap:8px; padding:10px 12px; list-style:none; color:var(--color-text-muted); background:var(--color-surface-subtle); font-size:12px; font-weight:700; cursor:pointer; }
+  .student-preview-details > summary::-webkit-details-marker { display:none; }
+  .student-preview-details > summary::before { content:"▸"; color:var(--color-text-muted); font-size:10px; }
+  .student-preview-details[open] > summary { border-bottom:1px solid var(--color-outline); }
+  .student-preview-details[open] > summary::before { content:"▾"; }
+  .student-preview-details .preview-hint { margin-left:auto; color:var(--color-primary); font-weight:600; }
+  .student-preview-details .preview-hint::after { content:"펼치기"; }
+  .student-preview-details[open] .preview-hint::after { content:"접기"; }
+  .student-preview-scroll { max-height:420px; overflow:auto; overscroll-behavior:contain; scrollbar-gutter:stable; }
+  .student-preview-scroll .code-preview,
+  .student-preview-scroll .text-preview { max-height:none; }
+  .student-submission-image { display:block; max-width:100%; max-height:640px; margin:0 auto; border-radius:10px; object-fit:contain; }
+  .student-card .text-preview { max-height:420px; overflow:auto; overscroll-behavior:contain; scrollbar-gutter:stable; }
+  .student-csv-preview { white-space:pre; }
+  .student-card .file-meta { align-items:center; flex-wrap:wrap; }
+  .submission-info-header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+  .submission-info-header .student-section-title { margin-bottom:0; }
+  .submission-file-actions { display:flex; align-items:center; gap:12px; margin-left:auto; }
+  .submission-download-button { display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }
+  .submission-link-preview { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px; }
+  .submission-link-url { min-width:0; overflow:hidden; color:var(--color-text-muted); font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
+</style>
+{% endblock %}
+{% block page_header %}
+<div class="page-header">
+  <a class="student-back-link" href="{% url 'lms:student:assignment-list' %}">‹ 과제 목록으로 돌아가기</a>
+  <p class="student-eyebrow mt-3 mb-1">AX 프로젝트 평가 · 내 제출물</p>
+  <h1 class="student-page-title">{{ assignment.title }}</h1>
+  <p class="text-muted mb-0">
+    {% if assignment.is_team %}최종 수정{% else %}제출{% endif %} 시각: {{ submission.submitted_at|date:"Y.m.d (D) H:i" }}
+    {% if last_editor %} · 수정자: {{ last_editor.name }}{% endif %}
+  </p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="student-form-stack">
+  {% include "lms_ui/student/_assignment_materials.html" %}
+  <section class="student-card">
+    <h2 class="student-section-title">📝 내가 작성한 설명</h2>
+    <div class="description-view">{{ submission.description|default:"작성한 설명이 없습니다."|linebreaksbr }}</div>
+  </section>
+  <section class="student-card">
+    <div class="submission-info-header">
+      <h2 class="student-section-title">📄 내 제출 정보</h2>
+      {% if previews|length == 1 and not previews.0.is_link %}
+        <a class="submission-download-button btn btn-outline-primary btn-sm" href="{% url 'lms:student:submission-file-download' previews.0.file.id %}" download aria-label="{{ previews.0.file.file_name }} 다운로드">다운로드</a>
+      {% endif %}
+    </div>
+    {% for preview in previews %}
+      <div class="file-meta">
+        {% if preview.is_link %}
+          <a class="fw-semibold text-decoration-none text-truncate" href="{{ preview.file.file_url }}" target="_blank" rel="noopener noreferrer">🔗 {{ preview.file.file_name }}</a>
+        {% else %}
+          <a class="fw-semibold text-decoration-none" href="{% url 'lms:student:submission-file-download' preview.file.id %}" download>{{ preview.file.file_name }}</a>
+        {% endif %}
+        <div class="submission-file-actions">
+          {% if preview.is_link %}
+            <a class="btn btn-outline-primary btn-sm" href="{{ preview.file.file_url }}" target="_blank" rel="noopener noreferrer">링크 열기</a>
+          {% else %}
+            <span>{{ preview.file.file_size|filesizeformat }}</span>
+            {% if previews|length > 1 %}<a class="btn btn-outline-primary btn-sm" href="{% url 'lms:student:submission-file-download' preview.file.id %}" download>다운로드</a>{% endif %}
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+    {% if github_enabled and not assignment.is_team %}
+      <div class="file-meta">
+        <span class="text-muted">GitHub 백업</span>
+        {% if github_push.state == "SYNCED" %}
+          {% if github_push.commit_url %}
+            <a class="text-success text-decoration-none" href="{{ github_push.commit_url }}" target="_blank" rel="noopener">동기화됨 ✓</a>
+          {% else %}<span class="text-success">동기화됨 ✓</span>{% endif %}
+        {% elif github_push.state == "FAILED" %}
+          {% if previews.0.is_link %}
+            <span class="text-danger fw-semibold">파일 중 링크는 GitHub 백업 대상이 아닙니다</span>
+          {% else %}
+            <span class="text-danger">동기화 실패 — 재제출하거나 잠시 후 다시 시도됩니다</span>
+          {% endif %}
+        {% elif github_push.state == "NO_ACCOUNT" or not github_push %}
+          <a class="text-decoration-none" href="{% url 'github_sync:connect' %}">GitHub 미연결 — 연결하기</a>
+        {% elif previews.0.is_link %}
+          <span class="text-danger fw-semibold">파일 중 링크는 GitHub 백업 대상이 아닙니다</span>
+        {% else %}
+          <span class="text-muted">동기화 대기 중…</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </section>
+  <section class="student-card">
+    <h2 class="student-section-title">🔍 제출 자료 미리보기</h2>
+    <div>
+      {% for preview in previews %}
+        <div class="preview-panel">
+          <div class="preview-file-name">{{ preview.file.file_name }}</div>
+          <details class="student-preview-details">
+            <summary>
+              {% if preview.is_link %}🔗 링크 미리보기
+              {% elif preview.is_image %}🖼️ 이미지 미리보기
+              {% elif preview.kind == "IPYNB" and preview.cells %}📓 노트북 미리보기 · {{ preview.cells|length }}개 셀
+              {% else %}📄 파일 미리보기{% endif %}
+              <span class="preview-hint"></span>
+            </summary>
+            <div class="student-preview-scroll">
+              {% if preview.is_link %}
+                <div class="submission-link-preview">
+                  <span class="submission-link-url">{{ preview.file.file_url }}</span>
+                  <a class="btn btn-outline-primary btn-sm" href="{{ preview.file.file_url }}" target="_blank" rel="noopener noreferrer">링크 열기</a>
+                </div>
+              {% elif preview.is_image %}
+                <img class="student-submission-image" src="{% url 'lms:student:submission-file-image' preview.file.id %}" alt="{{ preview.file.file_name }} 미리보기" loading="lazy">
+              {% elif preview.kind == "PY" %}
+                {% if preview.error %}<p class="preview-message">{{ preview.error }}</p>{% else %}<pre class="code-preview"><code>{{ preview.highlighted }}</code></pre>{% endif %}
+              {% elif preview.kind == "IPYNB" %}
+                {% if preview.error %}<p class="preview-message">{{ preview.error }}</p>{% endif %}
+                {% if preview.cells %}
+                <div class="notebook-preview">
+                  {% for cell in preview.cells %}
+                    <article class="notebook-cell">
+                      <div class="cell-label">{{ cell.type|upper }} CELL</div>
+                      <pre class="{% if cell.type == 'code' %}code-preview{% else %}text-preview{% endif %}"><code>{{ cell.source }}</code></pre>
+                      {% for output in cell.outputs %}<div class="cell-output"><span>Output</span><pre>{{ output }}</pre></div>{% endfor %}
+                    </article>
+                  {% empty %}<p class="text-muted mb-0">노트북에 표시할 셀이 없습니다.</p>{% endfor %}
+                </div>
+                {% elif preview.raw_text %}<pre class="text-preview">{{ preview.raw_text }}</pre>{% endif %}
+              {% elif preview.raw_text %}
+                <pre class="text-preview{% if preview.is_csv %} student-csv-preview{% endif %}"><code>{{ preview.raw_text }}</code></pre>
+                {% if preview.truncated %}<p class="preview-message">파일이 커서 앞 1MB만 표시합니다.</p>{% endif %}
+              {% else %}<div class="preview-message">📁 이 파일은 미리보기를 지원하지 않습니다. 위 파일명을 눌러 다운로드할 수 있습니다.</div>{% endif %}
+            </div>
+          </details>
+        </div>
+      {% empty %}<div class="empty-state">첨부된 자료가 없습니다.</div>{% endfor %}
+    </div>
+  </section>
+  {% if is_past %}
+    <section class="student-card">
+      <h2 class="student-section-title">🏆 튜터 평가</h2>
+      {% if evaluation %}
+        <div class="result-score">{{ evaluation.score }}<span>/100</span></div>
+        <div class="result-feedback">{{ evaluation.feedback|default:"등록된 피드백이 없습니다."|linebreaksbr }}</div>
+      {% else %}
+        <div class="result-pending">평가 대기 중입니다. 튜터 평가가 등록되면 결과가 표시됩니다.</div>
+      {% endif %}
+    </section>
+    <section class="student-card">
+      <h2 class="student-section-title">🤖 AI 평가</h2>
+      {% if ai_evaluation %}
+        <div class="result-score result-score-ai">{{ ai_evaluation.score }}<span>/100</span></div>
+        <div class="result-feedback result-feedback-ai">{{ ai_evaluation.comment|default:"등록된 AI 코멘트가 없습니다."|linebreaksbr }}</div>
+      {% else %}
+        <div class="result-pending">아직 AI 평가가 등록되지 않았습니다.</div>
+      {% endif %}
+    </section>
+  {% endif %}
+  {% if can_resubmit %}
+    {% if assignment.is_team %}
+      <div class="alert alert-warning mb-0">⚠️ 팀 공유 제출물입니다. 재제출하면 <strong>모든 팀원의 제출물</strong>이 새 파일로 교체됩니다.</div>
+    {% endif %}
+    <div class="d-flex justify-content-end">
+      <a class="btn btn-primary" href="{% url 'lms:student:submission-resubmit' submission.id %}">재제출하기</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

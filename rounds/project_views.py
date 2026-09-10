@@ -334,6 +334,7 @@ def project_detail(request, project_id):
         },
     )
 
+
 @login_required
 @require_POST
 def project_delete(request, project_id):
@@ -362,6 +363,7 @@ def project_delete(request, project_id):
 
     messages.success(request, "프로젝트 회차를 삭제했습니다.")
     return redirect("rounds:project-list")
+
 
 @login_required
 def project_edit(request, project_id):

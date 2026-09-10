@@ -6,10 +6,10 @@ from django.db import transaction
 from django.db.models import Max
 from django.urls import reverse
 from django.utils import timezone
+from lms_client.services import get_normalized_scores
 
 from accounts.models import User
 from audit.services import record_event
-from lms_client.services import get_normalized_scores
 from notifications.models import Notification
 from notifications.services import announce
 from results.models import CalculationRun, EvaluationResult, TutorNote
@@ -120,14 +120,10 @@ def _build_result_rows(round_obj):
     participant_count = round_obj.participants.count()
     teams = list(round_obj.teams.prefetch_related("memberships__participant"))
     student_ids = [
-        membership.participant.user_id
-        for team in teams
-        for membership in team.memberships.all()
+        membership.participant.user_id for team in teams for membership in team.memberships.all()
     ]
     lms_scores_by_student = (
-        get_normalized_scores(round_obj.pk, student_ids)
-        if round_obj.lms_score_weight > 0
-        else {}
+        get_normalized_scores(round_obj.pk, student_ids) if round_obj.lms_score_weight > 0 else {}
     )
 
     team_rows = []

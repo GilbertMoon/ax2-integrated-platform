@@ -6,27 +6,47 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('rounds', '0007_evaluationround_lms_score_weight'),
-        ('teams', '0002_alter_team_options_alter_teammembership_options'),
+        ("rounds", "0007_evaluationround_lms_score_weight"),
+        ("teams", "0002_alter_team_options_alter_teammembership_options"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TeamFormationSnapshot',
+            name="TeamFormationSnapshot",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('version', models.PositiveIntegerField()),
-                ('evidence', models.JSONField(default=dict)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('actor', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
-                ('round', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='formation_snapshots', to='rounds.evaluationround')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("version", models.PositiveIntegerField()),
+                ("evidence", models.JSONField(default=dict)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "actor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+                (
+                    "round",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="formation_snapshots",
+                        to="rounds.evaluationround",
+                    ),
+                ),
             ],
             options={
-                'ordering': ('-created_at',),
-                'constraints': [models.UniqueConstraint(fields=('round', 'version'), name='teams_formation_round_version_unique')],
+                "ordering": ("-created_at",),
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("round", "version"), name="teams_formation_round_version_unique"
+                    )
+                ],
             },
         ),
     ]

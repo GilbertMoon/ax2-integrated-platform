@@ -277,3 +277,49 @@ class RoundParticipant(models.Model):
 
     def __str__(self):
         return f"{self.round} / {self.display_name_snapshot}"
+
+
+class ProjectInfo(models.Model):
+    """project_info 테이블에 대응하는 모델.
+
+    이 테이블은 rounds/project_views.py의 raw SQL(_project_rows,
+    _save_project_info, project_create의 INSERT)로 먼저 도입되어
+    공유 Postgres에 이미 존재한다. 이 모델은 해당 스키마를 Django
+    마이그레이션 이력에 편입하기 위한 것으로, project_views.py는
+    당분간 계속 raw SQL로 이 테이블에 접근한다(리팩터링은 후속 작업).
+    """
+
+    # name/description은 기존 project_info 테이블에서 NULL을 허용하는
+    # 컬럼이라 모델도 실제 스키마와 동일하게 null=True를 유지한다
+    # (Django 컨벤션상 문자열 필드에 null=True를 피하라는 DJ001 규칙과는
+    # 어긋나지만, 이미 존재하는 외부 테이블을 그대로 반영하는 것이 목적이다).
+    name = models.CharField(max_length=200, null=True, blank=True)  # noqa: DJ001
+    description = models.TextField(null=True, blank=True)  # noqa: DJ001
+    team_start = models.DateField(null=True, blank=True)
+    team_end = models.DateField(null=True, blank=True)
+    evaluationround = models.ForeignKey(
+        EvaluationRound,
+        on_delete=models.CASCADE,
+        related_name="project_infos",
+    )
+
+    class Meta:
+        db_table = "project_info"
+        verbose_name = "프로젝트 회차"
+        verbose_name_plural = "프로젝트 회차 목록"
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    (models.Q(team_start__isnull=True) & models.Q(team_end__isnull=True))
+                    | (
+                        models.Q(team_start__isnull=False)
+                        & models.Q(team_end__isnull=False)
+                        & models.Q(team_start__lt=models.F("team_end"))
+                    )
+                ),
+                name="teams_info_team_window_valid",
+            ),
+        ]
+
+    def __str__(self):
+        return self.name or f"프로젝트 회차 {self.pk}"

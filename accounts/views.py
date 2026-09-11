@@ -976,12 +976,15 @@ def auth_me_view(request):
         return JsonResponse(
             {"error": {"code": "unauthorized", "message": "login required"}}, status=401
         )
+
     user = request.user
+
     return JsonResponse(
         {
             "id": user.id,
             "display_name": user.first_name or user.email,
             "role": user.role,
             "email": user.email,
+            "profile_image": user.profile_image.url if user.profile_image else None,
         }
     )

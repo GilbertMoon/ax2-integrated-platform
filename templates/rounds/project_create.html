@@ -200,6 +200,35 @@
                      aria-valuenow="0"></div>
               </div>
             </div>
+            <div class="ax-weight-row">
+              <div class="ax-weight-row-head">
+                <span class="ax-weight-row-label">
+                  <i class="ax-dot ax-dot-tutor"></i>
+                  LMS 평가 비율
+                </span>
+                <span class="ax-weight-row-right">
+                  <span class="ax-weight-row-value" id="axWeightValue-lms">0%</span>
+                  <label class="ax-weight-lock" title="비율 고정">
+                    <input type="checkbox" id="axWeightLock-lms" data-key="lms">
+                    <i class="bi bi-unlock"></i>
+                  </label>
+                </span>
+              </div>
+              <div class="ax-weight-slider" id="axWeightSlider-lms" data-key="lms">
+                <div class="ax-weight-slider-track">
+                  <div class="ax-weight-slider-fill ax-fill-tutor" id="axWeightFill-lms"></div>
+                </div>
+                <div class="ax-weight-ticks" id="axWeightTicks-lms"></div>
+                <div class="ax-weight-handle ax-handle-tutor"
+                     id="axWeightHandle-lms"
+                     tabindex="0"
+                     role="slider"
+                     aria-label="LMS 평가 비율"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-valuenow="0"></div>
+              </div>
+            </div>
           </div>
           <div class="form-text">
             슬라이더를 움직여 10% 단위로 비율을 조정합니다.
@@ -212,6 +241,7 @@
             {{ evaluation_form.team_score_weight }}
             {{ evaluation_form.personal_score_weight }}
             {{ evaluation_form.tutor_score_weight }}
+            {{ evaluation_form.lms_score_weight }}
           </div>
           {% for error in evaluation_form.team_score_weight.errors %}
             <div class="text-danger small">{{ error }}</div>
@@ -222,6 +252,7 @@
           {% for error in evaluation_form.tutor_score_weight.errors %}
             <div class="text-danger small">{{ error }}</div>
           {% endfor %}
+          {% for error in evaluation_form.lms_score_weight.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
         </div>
         <!-- ================================= -->
         <!-- 팀 평가 템플릿 -->
@@ -278,7 +309,7 @@
         return;
     }
 
-    const KEYS = ["team", "personal", "tutor"];
+    const KEYS = ["team", "personal", "tutor", "lms"];
     const STEP = 10;
 
     const snap = (value) =>
@@ -290,7 +321,6 @@
             )
         );
 
-
     const hiddenInputs = {
         team: document.getElementById(
             "{{ evaluation_form.team_score_weight.id_for_label }}"
@@ -301,8 +331,8 @@
         tutor: document.getElementById(
             "{{ evaluation_form.tutor_score_weight.id_for_label }}"
         ),
+        lms: document.getElementById("{{ evaluation_form.lms_score_weight.id_for_label }}"),
     };
-
 
     const sliders = {};
     const fills = {};
@@ -310,7 +340,6 @@
     const valueLabels = {};
     const lockInputs = {};
     const lockIcons = {};
-
 
     KEYS.forEach((key) => {
 
@@ -336,11 +365,9 @@
 
         lockIcons[key] = lockInputs[key].nextElementSibling;
 
-
         const ticksLayer = document.getElementById(
             `axWeightTicks-${key}`
         );
-
 
         for (
             let pct = 0;
@@ -359,28 +386,13 @@
 
     });
 
-
-    const state = {
-        team: snap(
-            Number(hiddenInputs.team.value) || 40
-        ),
-
-        personal: snap(
-            Number(hiddenInputs.personal.value) || 60
-        ),
-
-        tutor: snap(
-            Number(hiddenInputs.tutor.value) || 0
-        ),
-    };
-
-
-    const locked = {
-        team: false,
-        personal: false,
-        tutor: false,
-    };
-
+    // Preserve saved values, including zero and non-10-percent values.
+    const defaults = { team: 40, personal: 60, tutor: 0, lms: 0 };
+    const state = Object.fromEntries(KEYS.map((key) => {
+        const raw = hiddenInputs[key].value;
+        return [key, raw === "" ? defaults[key] : Number(raw)];
+    }));
+    const locked = { team: false, personal: false, tutor: false, lms: false };
 
     const renderAll = () => {
 
@@ -422,9 +434,7 @@
 
     };
 
-
     renderAll();
-
 
     const setValue = (
         changedKey,
@@ -435,26 +445,21 @@
             return;
         }
 
-
         let newValue = snap(rawValue);
-
 
         const others = KEYS.filter(
             (key) => key !== changedKey
         );
-
 
         const lockedOthers =
             others.filter(
                 (key) => locked[key]
             );
 
-
         const unlockedOthers =
             others.filter(
                 (key) => !locked[key]
             );
-
 
         const lockedSum =
             lockedOthers.reduce(
@@ -462,7 +467,6 @@
                     sum + state[key],
                 0
             );
-
 
         if (unlockedOthers.length === 0) {
 
@@ -474,7 +478,6 @@
             return;
         }
 
-
         const cap = 100 - lockedSum;
 
         newValue =
@@ -483,60 +486,28 @@
                 cap
             );
 
-
         const remaining =
             cap - newValue;
 
-
-        if (unlockedOthers.length === 1) {
-
-            state[changedKey] =
-                newValue;
-
-            state[unlockedOthers[0]] =
-                remaining;
-
-        } else {
-
-            const [a, b] =
-                unlockedOthers;
-
-            const oldSum =
-                state[a] + state[b];
-
-
-            let first =
-                oldSum === 0
-                    ? snap(remaining / 2)
-                    : snap(
-                        (state[a] * remaining)
-                        / oldSum
-                    );
-
-
-            first =
-                Math.min(
-                    first,
-                    remaining
-                );
-
-
-            state[changedKey] =
-                newValue;
-
-            state[a] =
-                first;
-
-            state[b] =
-                remaining - first;
-
-        }
-
+        state[changedKey] = newValue;
+        const oldSum = unlockedOthers.reduce((sum, key) => sum + state[key], 0);
+        let allocated = 0;
+        unlockedOthers.forEach((key, index) => {
+            if (index === unlockedOthers.length - 1) {
+                state[key] = remaining - allocated;
+                return;
+            }
+            const rawShare = oldSum === 0
+                ? remaining / unlockedOthers.length
+                : state[key] * remaining / oldSum;
+            const value = Math.min(snap(rawShare), remaining - allocated);
+            state[key] = value;
+            allocated += value;
+        });
 
         renderAll();
 
     };
-
 
     KEYS.forEach((key) => {
 
@@ -554,7 +525,6 @@
 
     });
 
-
     const bindSlider = (key) => {
 
         const moveTo = (clientX) => {
@@ -562,13 +532,11 @@
             const rect =
                 sliders[key].getBoundingClientRect();
 
-
             const pct =
                 (
                     (clientX - rect.left)
                     / rect.width
                 ) * 100;
-
 
             setValue(
                 key,
@@ -577,11 +545,9 @@
 
         };
 
-
         const onMouseMove = (event) => {
             moveTo(event.clientX);
         };
-
 
         const onTouchMove = (event) => {
 
@@ -592,7 +558,6 @@
             event.preventDefault();
 
         };
-
 
         const stopDrag = () => {
 
@@ -618,7 +583,6 @@
 
         };
 
-
         handles[key].addEventListener(
             "mousedown",
             (event) => {
@@ -642,7 +606,6 @@
             }
         );
 
-
         handles[key].addEventListener(
             "touchstart",
             () => {
@@ -665,7 +628,6 @@
             }
         );
 
-
         sliders[key].addEventListener(
             "mousedown",
             (event) => {
@@ -682,7 +644,6 @@
             }
         );
 
-
         handles[key].addEventListener(
             "keydown",
             (event) => {
@@ -691,7 +652,6 @@
                     return;
                 }
 
-
                 if (
                     event.key !== "ArrowLeft"
                     && event.key !== "ArrowRight"
@@ -699,18 +659,15 @@
                     return;
                 }
 
-
                 const delta =
                     event.key === "ArrowLeft"
                         ? -STEP
                         : STEP;
 
-
                 setValue(
                     key,
                     state[key] + delta
                 );
-
 
                 event.preventDefault();
 
@@ -718,7 +675,6 @@
         );
 
     };
-
 
     KEYS.forEach(bindSlider);
 

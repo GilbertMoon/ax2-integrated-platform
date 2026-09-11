@@ -63,6 +63,13 @@ class EvaluationRoundForm(forms.ModelForm):
         required=False,
     )
 
+    lms_score_weight = forms.IntegerField(
+        label="LMS 점수 비율",
+        min_value=0,
+        max_value=100,
+        required=False,
+    )
+
     class Meta:
         model = EvaluationRound
         fields = [
@@ -74,13 +81,20 @@ class EvaluationRoundForm(forms.ModelForm):
             "team_score_weight",
             "personal_score_weight",
             "tutor_score_weight",
+            "lms_score_weight",
             "team_template",
             "peer_template",
             "participants",
         ]
         widgets = {
-            "evaluation_start_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "evaluation_end_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "evaluation_start_at": forms.DateTimeInput(
+                attrs={"type": "datetime-local", "step": "1"},
+                format="%Y-%m-%dT%H:%M:%S",
+            ),
+            "evaluation_end_at": forms.DateTimeInput(
+                attrs={"type": "datetime-local", "step": "1"},
+                format="%Y-%m-%dT%H:%M:%S",
+            ),
             "target_team_count": forms.HiddenInput(),
         }
 
@@ -105,6 +119,7 @@ class EvaluationRoundForm(forms.ModelForm):
             self.fields["team_score_weight"].initial = self.instance.team_score_weight
             self.fields["personal_score_weight"].initial = self.instance.personal_score_weight
             self.fields["tutor_score_weight"].initial = self.instance.tutor_score_weight
+            self.fields["lms_score_weight"].initial = self.instance.lms_score_weight
 
         # 목표 팀 수는 시스템에서 관리하되 화면에서는 표시하지 않는다.
         self.fields["target_team_count"].widget = forms.HiddenInput()
@@ -173,10 +188,12 @@ class EvaluationRoundForm(forms.ModelForm):
         # datetime-local 입력값을 명시적으로 처리한다.
         self.fields["evaluation_start_at"].input_formats = [
             "%Y-%m-%dT%H:%M",
+            "%Y-%m-%dT%H:%M:%S",
         ]
 
         self.fields["evaluation_end_at"].input_formats = [
             "%Y-%m-%dT%H:%M",
+            "%Y-%m-%dT%H:%M:%S",
         ]
 
     def clean(self):
@@ -191,28 +208,36 @@ class EvaluationRoundForm(forms.ModelForm):
                 "평가 종료 일시는 시작 일시보다 늦어야 합니다.",
             )
 
-        # 가중치가 POST되지 않은 경우 기본값을 사용한다.
+        # 비율 필드가 이전 요청에서 누락된 경우 기존 값 또는 모델 기본값을 사용한다.
+        for weight_field in (
+            "team_score_weight",
+            "personal_score_weight",
+            "tutor_score_weight",
+            "lms_score_weight",
+        ):
+            if cleaned_data.get(weight_field) is None:
+                default = (
+                    getattr(self.instance, weight_field)
+                    if self.instance.pk
+                    else EvaluationRound._meta.get_field(weight_field).default
+                )
+                cleaned_data[weight_field] = default
+
         team_weight = cleaned_data.get("team_score_weight")
         personal_weight = cleaned_data.get("personal_score_weight")
         tutor_weight = cleaned_data.get("tutor_score_weight")
+        lms_weight = cleaned_data.get("lms_score_weight")
 
-        if team_weight is None:
-            team_weight = 40
-
-        if personal_weight is None:
-            personal_weight = 60
-
-        if tutor_weight is None:
-            tutor_weight = 0
-
-        cleaned_data["team_score_weight"] = team_weight
-        cleaned_data["personal_score_weight"] = personal_weight
-        cleaned_data["tutor_score_weight"] = tutor_weight
-
-        if team_weight + personal_weight + tutor_weight != 100:
+        if (
+            team_weight is not None
+            and personal_weight is not None
+            and tutor_weight is not None
+            and lms_weight is not None
+            and team_weight + personal_weight + tutor_weight + lms_weight != 100
+        ):
             self.add_error(
                 "team_score_weight",
-                "팀·개인·튜터 점수 비율의 합은 100%여야 합니다.",
+                "팀·개인·튜터·LMS 점수 비율의 합은 100%여야 합니다.",
             )
 
         # 참가 수강생은 화면에서 직접 선택하지 않고 자동 결정한다.
@@ -326,6 +351,7 @@ class ProjectEvaluationRoundForm(forms.ModelForm):
             "team_score_weight",
             "personal_score_weight",
             "tutor_score_weight",
+            "lms_score_weight",
             "team_template",
             "peer_template",
         ]
@@ -341,15 +367,17 @@ class ProjectEvaluationRoundForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "type": "datetime-local",
+                    "step": "1",
                 },
-                format="%Y-%m-%dT%H:%M",
+                format="%Y-%m-%dT%H:%M:%S",
             ),
             "evaluation_end_at": forms.DateTimeInput(
                 attrs={
                     "class": "form-control",
                     "type": "datetime-local",
+                    "step": "1",
                 },
-                format="%Y-%m-%dT%H:%M",
+                format="%Y-%m-%dT%H:%M:%S",
             ),
             "target_team_count": forms.NumberInput(
                 attrs={
@@ -378,8 +406,30 @@ class ProjectEvaluationRoundForm(forms.ModelForm):
                     "max": 100,
                 }
             ),
+            "lms_score_weight": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 0,
+                    "max": 100,
+                }
+            ),
             "team_template": forms.Select(attrs={"class": "form-select"}),
             "peer_template": forms.Select(attrs={"class": "form-select"}),
+        }
+        labels = {
+            "title": "회차 제목",
+            "description": "설명",
+            "evaluation_start_at": "평가 시작",
+            "evaluation_end_at": "평가 종료",
+            "team_template": "팀 평가 템플릿",
+            "peer_template": "개인 평가 템플릿",
+            "team_score_weight": "팀 점수 비율(%)",
+            "personal_score_weight": "개인 점수 비율(%)",
+            "tutor_score_weight": "튜터 점수 비율(%)",
+            "lms_score_weight": "LMS 점수 비율(%)",
+        }
+        help_texts = {
+            "lms_score_weight": "0%면 LMS 점수를 반영하지 않습니다. 네 비율의 합은 100%여야 합니다.",
         }
 
     def __init__(self, *args, **kwargs):
@@ -408,23 +458,47 @@ class ProjectEvaluationRoundForm(forms.ModelForm):
 
         self.fields["participants"].queryset = student_queryset
 
+        # 신규 회차에서는 archived 템플릿을 제외한다.
+        # 기존 회차에서는 현재 사용 중인 템플릿이 archived 되었더라도 유지한다.
+        current_team_template_id = self.instance.team_template_id
+        current_peer_template_id = self.instance.peer_template_id
+
+        team_filter = Q(is_archived=False)
+
+        if current_team_template_id:
+            team_filter |= Q(pk=current_team_template_id)
+
+        peer_filter = Q(is_archived=False)
+
+        if current_peer_template_id:
+            peer_filter |= Q(pk=current_peer_template_id)
+
         self.fields["team_template"].queryset = QuestionTemplate.objects.filter(
-            category=QuestionTemplate.Category.TEAM,
-            is_archived=False,
+            Q(category=QuestionTemplate.Category.TEAM) & team_filter
         ).order_by("name")
 
         self.fields["peer_template"].queryset = QuestionTemplate.objects.filter(
-            category=QuestionTemplate.Category.PEER,
-            is_archived=False,
+            Q(category=QuestionTemplate.Category.PEER) & peer_filter
         ).order_by("name")
 
         self.fields["evaluation_start_at"].input_formats = [
             "%Y-%m-%dT%H:%M",
+            "%Y-%m-%dT%H:%M:%S",
         ]
 
         self.fields["evaluation_end_at"].input_formats = [
             "%Y-%m-%dT%H:%M",
+            "%Y-%m-%dT%H:%M:%S",
         ]
+
+        # 이전 폼/요청에서 비율 값이 누락되어도 기존 동작을 유지한다.
+        for weight_field in (
+            "team_score_weight",
+            "personal_score_weight",
+            "tutor_score_weight",
+            "lms_score_weight",
+        ):
+            self.fields[weight_field].required = False
 
         if not self.instance.pk:
             now = timezone.localtime()
@@ -452,19 +526,36 @@ class ProjectEvaluationRoundForm(forms.ModelForm):
                 "종료 시각은 시작 시각보다 늦어야 합니다.",
             )
 
+        # 비율 필드가 이전 요청에서 누락된 경우 기존 값 또는 모델 기본값을 사용한다.
+        for weight_field in (
+            "team_score_weight",
+            "personal_score_weight",
+            "tutor_score_weight",
+            "lms_score_weight",
+        ):
+            if cleaned_data.get(weight_field) is None:
+                default = (
+                    getattr(self.instance, weight_field)
+                    if self.instance.pk
+                    else EvaluationRound._meta.get_field(weight_field).default
+                )
+                cleaned_data[weight_field] = default
+
         team_weight = cleaned_data.get("team_score_weight")
         personal_weight = cleaned_data.get("personal_score_weight")
         tutor_weight = cleaned_data.get("tutor_score_weight")
+        lms_weight = cleaned_data.get("lms_score_weight")
 
         if (
             team_weight is not None
             and personal_weight is not None
             and tutor_weight is not None
-            and team_weight + personal_weight + tutor_weight != 100
+            and lms_weight is not None
+            and team_weight + personal_weight + tutor_weight + lms_weight != 100
         ):
             self.add_error(
                 "team_score_weight",
-                "팀·개인·튜터 점수 비율의 합은 100%여야 합니다.",
+                "팀·개인·튜터·LMS 점수 비율의 합은 100%여야 합니다.",
             )
 
         return cleaned_data

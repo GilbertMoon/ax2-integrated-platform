@@ -1,0 +1,23 @@
+{% comment %}
+apps/common/templates/includes/messages.html — 공통 담당 전담
+Django messages → Bootstrap alert.
+- message.tags 에 "safe" 가 포함되면 본문을 |safe 로 렌더링한다
+  (tutor 삭제 뷰의 '실행취소' 링크 등 format_html 메시지용 — LAYOUT.md §20 규약).
+{% endcomment %}
+{% if messages %}
+  <div class="messages mb-3">
+    {% for message in messages %}
+      {% if "error" in message.tags %}{% with cls="danger" %}
+        <div class="alert alert-{{ cls }} alert-dismissible fade show" role="alert">
+          {% if "safe" in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="닫기"></button>
+        </div>
+      {% endwith %}{% else %}
+        <div class="alert alert-{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+          {% if "safe" in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="닫기"></button>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}

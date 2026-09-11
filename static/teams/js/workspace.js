@@ -5,6 +5,7 @@
   let data = structuredClone(initial);
   let saved = structuredClone(initial);
   let isDirty = false;
+  let formationToken = null, formationSelection = null;
   // 저장 직후에는 저장 버튼이 다음 단계로 이동하는 버튼으로 바뀐다 - 편집을 다시
   // 시작하면(isDirty) 원래 저장 버튼으로 되돌린다.
   let justSaved = false;
@@ -405,10 +406,12 @@
     }
 
     const people = allParticipants();
+    const chosen = window.TEAM_LMS ? window.TEAM_LMS.selection() : null;
     const result = await post(config.autoUrl, {
       team_count: teamCount,
       lock_version: data.lock_version,
       excluded_participant_ids: excludedIds,
+      ...(window.TEAM_LMS ? {lms_selection:chosen} : {}),
     });
     data.teams = result.teams.map((team) => ({
       ...team,
@@ -428,6 +431,9 @@
       (person) => !assignedIds.has(person.participant_id),
     );
     data.seed_scores = result.seed_scores || {};
+    formationToken = result.formation_token || null;
+    formationSelection = chosen ? JSON.stringify(chosen) : null;
+    if (result.formation_evidence) window.TEAM_LMS.showEvidence(result.formation_evidence);
     byId("seedMetric").textContent = `유효 시드 ${result.quality.seeded_participant_count}명`;
     const initialDeviation = result.quality.initial_standard_deviation ?? "N/A";
     const finalDeviation = result.quality.final_standard_deviation ?? "N/A";
@@ -437,9 +443,29 @@
     renderTutorBoard();
   }
 
+  if (byId("teamLmsCalculate")) byId("teamLmsCalculate").addEventListener("click", async () => {
+    byId("teamLmsCalculate").disabled = true;
+    byId("teamLmsMessage").textContent = "점수를 계산하고 있습니다.";
+    try {
+      const chosen = window.TEAM_LMS.selection();
+      const result = await post(config.autoUrl, {team_count:Number(byId("teamCount").value),lock_version:data.lock_version,lms_selection:chosen,scores_only:true});
+      formationToken=result.formation_token;formationSelection=JSON.stringify(chosen);
+      data.seed_scores=result.formation_evidence.seed_scores;
+      window.TEAM_LMS.showEvidence(result.formation_evidence);
+      byId("teamLmsMessage").textContent = "점수 계산 완료. 팀 배치는 유지되었습니다. 확인 후 저장하세요.";
+      isDirty=true;renderTutorBoard();
+    } catch(e) { byId("teamLmsMessage").textContent=e.message; showRequestError(e); }
+    finally { byId("teamLmsCalculate").disabled = false; }
+  });
+
   function savePayload(imbalanceConfirmed, unassignedConfirmed) {
+    if (window.TEAM_LMS && (!formationToken || formationSelection !== JSON.stringify(window.TEAM_LMS.selection()))) {
+      throw new Error("점수 선택이 변경되었습니다. 점수 계산 또는 자동 배치를 다시 실행한 후 저장해 주세요.");
+    }
     return {
       lock_version: data.lock_version,
+      formation_token: formationToken,
+      formation_required: Boolean(window.TEAM_LMS),
       imbalance_confirmed: imbalanceConfirmed,
       unassigned_confirmed: unassignedConfirmed,
       teams: data.teams.map((team) => ({
@@ -464,6 +490,8 @@
         savePayload(imbalanceConfirmed, unassignedConfirmed),
       );
       data.lock_version = result.lock_version;
+      formationToken = null;
+      formationSelection = null;
       saved = structuredClone(data);
       isDirty = false;
       justSaved = true;

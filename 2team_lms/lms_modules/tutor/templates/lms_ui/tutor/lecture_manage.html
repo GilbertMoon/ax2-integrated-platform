@@ -1,0 +1,89 @@
+{% extends 'lms_ui/base.html' %}
+{% load static %}
+
+{% block title %}강의 및 교안 관리{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'lms_ui/tutor/css/lecture_manage.css' %}">
+{% endblock %}
+
+{% block page_header %}
+<div class="wrap">
+  <div class="page-head">
+    <div class="page-head-text">
+
+      <div class="title-row">
+        <h1 class="page-title">강의 및 교안 관리</h1>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <a href="{% url 'lms:tutor:assignment-list' %}" class="btn" style="background:var(--surface);border:1px solid var(--border-strong);display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:0 12px;border-radius:12px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        과제 관리로 이동
+      </a>
+      <button class="btn btn-primary" onclick="openCreateModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        새 차시 등록
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+
+  <!-- Main Content Card -->
+  <div class="card">
+
+    <!-- Toolbar: Search & Filter Tabs -->
+    <div class="toolbar">
+      <div class="search-input-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="search-input" class="search-input" placeholder="차시 제목 또는 날짜 검색" oninput="filterLessons()">
+      </div>
+
+      <div class="filter-tabs">
+        <button class="tab-btn active" onclick="setTab('all', this)">전체 일정</button>
+        <button class="tab-btn" onclick="setTab('video-ok', this)" id="tab-btn-ok">영상 완료</button>
+        <button class="tab-btn" onclick="setTab('video-wait', this)" id="tab-btn-wait">영상 대기/미등록</button>
+      </div>
+    </div>
+
+    <!-- Lesson Table -->
+    <div class="table-responsive">
+      <table class="lesson-table">
+        <thead>
+          <tr>
+            <th style="width: 120px;">강의 일자</th>
+            <th>강의 제목</th>
+            <th style="width: 100px;">교안 자료</th>
+            <th style="width: 200px;">유튜브 영상</th>
+            <th style="width: 155px; text-align: right;">관리 액션</th>
+          </tr>
+        </thead>
+        <tbody id="lesson-table-body">
+          <!-- Rendered via JS -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+{% include "lms_ui/tutor/_lesson_form_modal.html" %}
+{% include "lms_ui/tutor/_quick_video_modal.html" %}
+
+<!-- Toast Notification -->
+<div id="toast" class="toast">
+  <span id="toast-text">저장되었습니다.</span>
+  <button id="toast-undo" class="toast-undo-btn" style="display:none;" onclick="undoDelete()">실행취소</button>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+{{ lessons|json_script:"lecture-lessons-data" }}
+{{ revision|json_script:"lecture-revision-data" }}
+{{ csrf_token|stringformat:"s"|json_script:"csrf-token-data" }}
+<script src="{% static 'lms_ui/tutor/js/lecture_manage.js' %}?v=10" defer></script>
+{% endblock %}

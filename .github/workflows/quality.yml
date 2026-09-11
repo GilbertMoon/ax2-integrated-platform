@@ -72,7 +72,7 @@ jobs:
         run: python manage.py makemigrations --check --dry-run
 
       - name: Run tests
-        run: python manage.py test
+        run: python manage.py test --settings=config.lms_test_settings
 
       - name: Validate production Compose configuration
         env:

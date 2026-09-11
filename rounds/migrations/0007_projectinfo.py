@@ -46,6 +46,45 @@ CREATE TABLE IF NOT EXISTS public.project_info (
 DROP_PROJECT_INFO_SQL = "DROP TABLE IF EXISTS public.project_info;"
 
 
+# SQLite is used only by the isolated QA configuration.
+CREATE_PROJECT_INFO_SQLITE_SQL = """
+CREATE TABLE IF NOT EXISTS project_info (
+    id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+    team_start date NULL,
+    team_end date NULL,
+    evaluationround_id bigint NOT NULL,
+    name varchar(200) NULL,
+    description text NULL,
+    CONSTRAINT teams_info_team_window_valid CHECK (
+        (team_start IS NULL AND team_end IS NULL)
+        OR (team_start IS NOT NULL AND team_end IS NOT NULL AND team_start < team_end)
+    ),
+    CONSTRAINT teams_info_evaluationround_fk FOREIGN KEY (evaluationround_id)
+        REFERENCES rounds_evaluationround(id) ON DELETE CASCADE
+);
+"""
+
+
+def create_project_info(apps, schema_editor):
+    vendor = schema_editor.connection.vendor
+    if vendor == "postgresql":
+        schema_editor.execute(CREATE_PROJECT_INFO_SQL)
+    elif vendor == "sqlite":
+        schema_editor.execute(CREATE_PROJECT_INFO_SQLITE_SQL)
+    else:
+        raise NotImplementedError(f"Unsupported database vendor: {vendor}")
+
+
+def drop_project_info(apps, schema_editor):
+    vendor = schema_editor.connection.vendor
+    if vendor == "postgresql":
+        schema_editor.execute(DROP_PROJECT_INFO_SQL)
+    elif vendor == "sqlite":
+        schema_editor.execute("DROP TABLE IF EXISTS project_info;")
+    else:
+        raise NotImplementedError(f"Unsupported database vendor: {vendor}")
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("rounds", "0006_alter_evaluationround_options_and_more"),
@@ -113,10 +152,7 @@ class Migration(migrations.Migration):
                 ),
             ],
             database_operations=[
-                migrations.RunSQL(
-                    sql=CREATE_PROJECT_INFO_SQL,
-                    reverse_sql=DROP_PROJECT_INFO_SQL,
-                ),
+                migrations.RunPython(create_project_info, drop_project_info),
             ],
         ),
     ]

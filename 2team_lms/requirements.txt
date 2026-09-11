@@ -1,0 +1,5 @@
+# Install alongside requirements.txt; keep Core Django 5.2.
+django-widget-tweaks==1.5.1
+google-genai==2.20.0
+cryptography==50.0.1
+Pygments==2.21.0

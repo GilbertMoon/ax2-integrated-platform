@@ -41,3 +41,38 @@ class AttendanceRecord(models.Model):
     def __str__(self):
         name = self.user.first_name if self.user.first_name else self.user.email
         return f"{name} / {self.date} / {self.get_status_display()}"
+
+
+class FaceEmbedding(models.Model):
+    """
+    학생 profile_image로부터 미리 계산해둔 "얼굴 특징 벡터"를 저장한다.
+    출석 체크할 때마다 매번 DeepFace로 새로 계산하지 않고,
+    이미 계산된 값을 재사용해서 속도를 크게 높인다.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="face_embedding",
+        verbose_name=_("사용자"),
+    )
+    vector = models.JSONField(
+        _("특징 벡터"), help_text=_("숫자 목록 형태로 저장 (예: [0.12, -0.4, ...])")
+    )
+    source_image_name = models.CharField(
+        _("계산에 사용한 사진 파일명"),
+        max_length=255,
+        blank=True,
+        default="",
+        help_text=_("profile_image가 바뀌었는지 확인용"),
+    )
+    created_at = models.DateTimeField(_("계산 일시"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("갱신 일시"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("얼굴 특징 벡터")
+        verbose_name_plural = _("얼굴 특징 벡터 목록")
+
+    def __str__(self):
+        name = self.user.first_name or self.user.email
+        return f"{name}의 얼굴 벡터"

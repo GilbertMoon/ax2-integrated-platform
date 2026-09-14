@@ -10,6 +10,7 @@ WORKDIR /app
 RUN addgroup --system app && adduser --system --ingroup app app
 
 COPY requirements.txt ./
+COPY 2team_lms/requirements.txt ./2team_lms/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=app:app . .

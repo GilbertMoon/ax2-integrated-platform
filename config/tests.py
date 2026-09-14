@@ -149,7 +149,8 @@ class ProductionEnvironmentRenderTests(SimpleTestCase):
             self.assertIn(
                 f"KAKAO_OAUTH_CLIENT_SECRET={secrets['KAKAO_OAUTH_CLIENT_SECRET']}", rendered
             )
-            self.assertEqual(output_path.stat().st_mode & 0o777, 0o600)
+            if os.name != "nt":
+                self.assertEqual(output_path.stat().st_mode & 0o777, 0o600)
 
     def test_rejects_oauth_secret_with_newline(self):
         secrets = {

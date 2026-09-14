@@ -1,0 +1,46 @@
+{% extends "lms_ui/base.html" %}
+{% load static %}
+{% block title %}피드백 확인 | AX 과제 시스템{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'lms_ui/student/css/assignments.css' %}">
+<style>.app-topbar .crumb{display:none}.app-topbar .utils{margin-left:auto}</style>
+{% endblock %}
+{% block page_header %}
+<div class="page-header">
+  <p class="student-eyebrow mb-1">AX 프로젝트 평가</p>
+  <h1 class="student-page-title">피드백 확인</h1>
+  <p class="text-muted mb-0">전체 과제의 피드백 상태와 튜터 피드백을 확인하세요.</p>
+</div>
+{% endblock %}
+{% block content %}
+<section class="student-card" aria-labelledby="result-list-heading">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <span aria-hidden="true">🏆</span>
+    <h2 id="result-list-heading" class="student-section-title mb-0">전체 과제</h2>
+    <span class="text-muted small">{{ rows|length }}개</span>
+  </div>
+  <div class="assignment-list">
+    {% for row in rows %}
+      <article class="assignment-row{% if row.is_past %} is-past{% endif %}">
+        <div class="flex-grow-1 min-width-0">
+          <h3 class="assignment-title">{{ row.assignment.title }}</h3>
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="badge-soft {% if row.assignment.is_required %}badge-required{% else %}badge-optional{% endif %}">{% if row.assignment.is_required %}필수{% else %}선택{% endif %}</span>
+            <span class="badge-soft {% if row.assignment.is_team %}badge-team{% else %}badge-personal{% endif %}">{% if row.assignment.is_team %}팀 과제{% else %}개인 과제{% endif %}</span>
+            <span class="assignment-due">{{ row.assignment.due_at|date:"Y.m.d (D) H:i" }}</span>
+          </div>
+        </div>
+        <span class="status-pill status-{{ row.status_class }}">{% if row.evaluation %}{{ row.evaluation.score }}점 · {% endif %}{{ row.status }}</span>
+        {% if row.submission and row.is_past %}
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'lms:student:submission-result' row.submission.id %}">피드백 보기</a>
+        {% endif %}
+      </article>
+    {% empty %}
+      <div class="empty-state">
+        <p class="mb-1">등록된 과제가 없습니다.</p>
+        <span class="small">과제가 등록되면 이곳에 피드백 상태가 표시됩니다.</span>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

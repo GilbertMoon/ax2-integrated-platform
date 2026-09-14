@@ -1,8 +1,8 @@
 from decimal import Decimal
 
 from django.test import SimpleTestCase
-
 from lms_client.services import normalize_score
+
 from results.services import calculate_final_score
 
 

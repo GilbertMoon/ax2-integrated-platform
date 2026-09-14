@@ -7,3 +7,4 @@ psycopg[binary]>=3.2,<4
 python-dotenv>=1.0,<2
 whitenoise>=6.8,<7
 requests
+-r 2team_lms/requirements.txt

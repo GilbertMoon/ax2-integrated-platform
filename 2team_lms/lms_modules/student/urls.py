@@ -1,0 +1,24 @@
+from django.urls import path
+
+from . import views_dashboard, views_lecture, views_result, views_submit
+
+app_name = "student"
+
+urlpatterns = [
+    # "" → 역할 라우터: 튜터면 튜터 화면, 학생이면 학생 대시보드로 리다이렉트
+    path("", views_dashboard.home, name="home"),
+    path("dashboard/", views_dashboard.dashboard, name="dashboard"),
+    path("todos/add/", views_dashboard.todo_add, name="todo-add"),
+    path("todos/<int:pk>/toggle/", views_dashboard.todo_toggle, name="todo-toggle"),
+    path("todos/<int:pk>/delete/", views_dashboard.todo_delete, name="todo-delete"),
+    path("lecture/", views_lecture.student_lecture_list_view, name="lecture-list"),
+    path("lecture/<int:lesson_id>/", views_lecture.student_lecture_detail_view, name="lecture-detail"),
+    path("assignments/", views_submit.assignment_list, name="assignment-list"),
+    path("assignments/<int:assignment_id>/submit/", views_submit.assignment_submit, name="assignment-submit"),
+    path("assignments/<int:assignment_id>/preview/", views_submit.assignment_preview, name="assignment-preview"),
+    path("submission-files/<int:file_id>/download/", views_submit.submission_file_download, name="submission-file-download"),
+    path("submission-files/<int:file_id>/image/", views_submit.submission_file_image, name="submission-file-image"),
+    path("results/", views_result.result_list, name="result-list"),
+    path("submissions/<int:submission_id>/resubmit/", views_result.resubmit, name="submission-resubmit"),
+    path("submissions/<int:submission_id>/result/", views_result.result, name="submission-result"),
+]

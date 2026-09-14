@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import timedelta
+from decimal import Decimal
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -83,6 +84,13 @@ INSTALLED_APPS = [
     "lms_modules.student",
     "lms_modules.tutor",
     "lms_modules.github_sync",
+    # 3조 Idea Developer 도메인. 인증은 기존 accounts.User를 그대로 사용한다.
+    "apps.common",
+    "apps.integration",
+    "apps.jobs",
+    "apps.brainstorm",
+    "apps.prds",
+    "apps.ai",
 ]
 
 MIDDLEWARE = [
@@ -356,3 +364,70 @@ GITHUB_TOKEN_ENC_KEY = os.getenv("GITHUB_TOKEN_ENC_KEY")
 GITHUB_SUBMISSION_REPO_NAME = os.getenv("GITHUB_SUBMISSION_REPO_NAME", "lms-assignments")
 GITHUB_API_TOKEN = os.getenv("GITHUB_API_TOKEN")
 SLACK_NOTIFY_SYNC = env_bool("SLACK_NOTIFY_SYNC", False)
+
+# 3조 Idea Developer 연동 설정. 공용 사용자/회차/팀 VIEW는 같은 DB에서 읽는다.
+INTEGRATION_DB_ALIAS = "default"
+INTEGRATION_ACTIVE_ROUND_STATUSES = frozenset(
+    env_list("INTEGRATION_ACTIVE_ROUND_STATUSES", ["IN_PROGRESS"])
+)
+INTEGRATION_APPROVED_USER_STATUS = os.getenv("INTEGRATION_APPROVED_USER_STATUS", "approved")
+INTEGRATION_CONTEXT_RESOLVER_CLASS = "apps.integration.context.StandaloneSessionContextResolver"
+PARENT_ROLE_PARTICIPANT_MAP = {
+    "student": "editor",
+    "tutor": "tutor",
+    "admin": "owner",
+}
+PARENT_STAFF_PARTICIPANT_ROLE = "tutor"
+PARENT_SUPERUSER_PARTICIPANT_ROLE = "owner"
+
+API_VERSION = "v1"
+POLLING_INTERVAL_MS = env_int("POLLING_INTERVAL_MS", 2000)
+POLLING_MIN_INTERVAL_MS = env_int("POLLING_MIN_INTERVAL_MS", 2000)
+POLLING_MAX_INTERVAL_MS = env_int("POLLING_MAX_INTERVAL_MS", 5000)
+HOME_PAGE_SIZE = env_int("HOME_PAGE_SIZE", 12)
+HOME_MAX_PAGE_SIZE = env_int("HOME_MAX_PAGE_SIZE", 50)
+PRD_DETAIL_PAGE_SIZE = env_int("PRD_DETAIL_PAGE_SIZE", 20)
+PRD_DETAIL_MAX_PAGE_SIZE = env_int("PRD_DETAIL_MAX_PAGE_SIZE", 100)
+USER_SEARCH_MIN_LENGTH = env_int("USER_SEARCH_MIN_LENGTH", 2)
+USER_SEARCH_PAGE_SIZE = env_int("USER_SEARCH_PAGE_SIZE", 20)
+USER_SEARCH_MAX_PAGE_SIZE = env_int("USER_SEARCH_MAX_PAGE_SIZE", 100)
+
+JOB_WORKER_POLL_SECONDS = float(os.getenv("JOB_WORKER_POLL_SECONDS", "5"))
+JOB_RUNNER_CLASS = "apps.ai.worker.AiJobRunner"
+AI_PROVIDER_CLASS = "apps.ai.gemini.GeminiAiProvider"
+AI_RESULT_PROCESSOR_CLASS = "apps.ai.brainstorm.BrainstormAiResultRouter"
+AI_EVALUATION_DEMO_CACHE = env_bool("AI_EVALUATION_DEMO_CACHE", False)
+AI_JOB_TIMEOUT_SECONDS = env_int("AI_JOB_TIMEOUT_SECONDS", 30)
+AI_JOB_MAX_ATTEMPTS = env_int("AI_JOB_MAX_ATTEMPTS", 3)
+AI_JOB_RETRY_BASE_SECONDS = env_int("AI_JOB_RETRY_BASE_SECONDS", 5)
+AI_DAILY_REQUEST_LIMIT = env_int("AI_DAILY_REQUEST_LIMIT", 50)
+AI_DAILY_TOKEN_LIMIT = env_int("AI_DAILY_TOKEN_LIMIT", 200000)
+AI_DAILY_COST_LIMIT_USD = Decimal(os.getenv("AI_DAILY_COST_LIMIT_USD", "20.00"))
+AI_DUPLICATE_WINDOW_SECONDS = env_int("AI_DUPLICATE_WINDOW_SECONDS", 10)
+AI_CHAT_MESSAGE_MAX_LENGTH = env_int("AI_CHAT_MESSAGE_MAX_LENGTH", 4000)
+AI_CONTEXT_MAX_CHARS = env_int("AI_CONTEXT_MAX_CHARS", 20000)
+AI_RESPONSE_MAX_LENGTH = env_int("AI_RESPONSE_MAX_LENGTH", 12000)
+AI_DRAFT_MAX_LENGTH = env_int("AI_DRAFT_MAX_LENGTH", 12000)
+AI_CHAT_RECENT_TURNS = env_int("AI_CHAT_RECENT_TURNS", 3)
+AI_TTL_DELETE_BATCH_SIZE = env_int("AI_TTL_DELETE_BATCH_SIZE", 500)
+AI_PREVIEW_RETENTION_DAYS = env_int("AI_PREVIEW_RETENTION_DAYS", 7)
+AI_CHAT_PAYLOAD_RETENTION_DAYS = env_int("AI_CHAT_PAYLOAD_RETENTION_DAYS", 30)
+AI_BRAINSTORM_MAX_NODES = env_int("AI_BRAINSTORM_MAX_NODES", 500)
+AI_BRAINSTORM_MAX_CHARS = env_int("AI_BRAINSTORM_MAX_CHARS", 50000)
+AI_CONTRIBUTION_MAX_COMMENTS = env_int("AI_CONTRIBUTION_MAX_COMMENTS", 500)
+AI_CONTRIBUTION_MAX_CHARS = env_int("AI_CONTRIBUTION_MAX_CHARS", 50000)
+BRAINSTORM_NOTE_MAX_LENGTH = env_int("BRAINSTORM_NOTE_MAX_LENGTH", 4000)
+BRAINSTORM_ALLOWED_COLORS = tuple(
+    env_list(
+        "BRAINSTORM_ALLOWED_COLORS",
+        ["yellow", "blue", "gray", "green", "pink", "purple", "orange"],
+    )
+)
+BRAINSTORM_DELETE_RETENTION_DAYS = env_int("BRAINSTORM_DELETE_RETENTION_DAYS", 30)
+PRD_TRASH_RETENTION_DAYS = env_int("PRD_TRASH_RETENTION_DAYS", 30)
+BACKGROUND_CLEANUP_BATCH_SIZE = env_int("BACKGROUND_CLEANUP_BATCH_SIZE", 500)
+REACT_VERSION = "18.3.1"
+REACT_CDN_URL = f"https://cdn.jsdelivr.net/npm/react@{REACT_VERSION}/umd/react.production.min.js"
+REACT_DOM_CDN_URL = (
+    f"https://cdn.jsdelivr.net/npm/react-dom@{REACT_VERSION}/umd/react-dom.production.min.js"
+)

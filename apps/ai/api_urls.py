@@ -1,0 +1,34 @@
+from django.urls import path
+
+from . import views
+
+app_name = "ai_api"
+
+urlpatterns = [
+    path("conversation/", views.conversation, name="conversation"),
+    path("chat/", views.request_chat, name="request-chat"),
+    path("drafts/", views.request_draft, name="request-draft"),
+    path("evaluation/", views.latest_evaluation, name="latest-evaluation"),
+    path("evaluation/run/", views.request_evaluation, name="request-evaluation"),
+    path(
+        "evaluation/synthesis/run/",
+        views.request_evaluation_synthesis,
+        name="request-evaluation-synthesis",
+    ),
+    path(
+        "perspective-draft/run/",
+        views.request_perspective_draft,
+        name="request-perspective-draft",
+    ),
+    path(
+        "perspective-draft/<uuid:job_id>/apply/",
+        views.apply_perspective_draft,
+        name="apply-perspective-draft",
+    ),
+    path("drafts/<uuid:job_id>/apply/", views.apply_draft, name="apply-draft"),
+    path("chat/<uuid:job_id>/apply/", views.apply_chat_proposal, name="apply-chat-proposal"),
+    path("chat/<uuid:job_id>/decline/", views.decline_chat_proposal, name="decline-chat-proposal"),
+    path("jobs/<uuid:job_id>/", views.job_status, name="job-status"),
+    path("jobs/<uuid:job_id>/cancel/", views.cancel_job, name="cancel-job"),
+    path("jobs/<uuid:job_id>/retry/", views.retry_job, name="retry-job"),
+]

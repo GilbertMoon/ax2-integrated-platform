@@ -14,6 +14,16 @@ select = [
   "DJ",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# Imported legacy models predate the repository-wide Ruff rules. Database VIEW
+# fields must preserve their nullable schema, and model method reordering is
+# intentionally deferred to avoid behavior changes in this integration PR.
+"apps/accounts/models.py" = ["DJ008"]
+"apps/ai/models.py" = ["DJ008"]
+"apps/brainstorm/models.py" = ["DJ001", "DJ008", "DJ012"]
+"apps/integration/models.py" = ["DJ001", "DJ008"]
+"apps/prds/models.py" = ["DJ008"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"

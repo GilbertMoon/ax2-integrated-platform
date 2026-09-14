@@ -1,9 +1,10 @@
-{% extends "idea/base.html" %}
+{% extends "idea/integrated_base.html" %}
 {% load static %}
 
 {% block title %}PRD 홈 | 아이디어 디벨로퍼{% endblock %}
 
 {% block extra_head %}
+  {{ block.super }}
   <link href="{% static 'prds/css/home.css' %}?v=20260907-3" rel="stylesheet">
 {% endblock %}
 
@@ -150,4 +151,4 @@
   </div>
 {% endblock %}
 
-{% block extra_js %}<script src="{% static 'prds/js/home.js' %}?v=20260907-4"></script>{% endblock %}
+{% block extra_js %}{{ block.super }}<script src="{% static 'prds/js/home.js' %}?v=20260907-4"></script>{% endblock %}

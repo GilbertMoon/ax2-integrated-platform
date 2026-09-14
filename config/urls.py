@@ -5,6 +5,8 @@ from django.urls import include, path
 
 from accounts import oauth
 from accounts import views as account_views
+from apps.ai import views as idea_ai_views
+from apps.brainstorm import views as idea_brainstorm_views
 from teams import views as team_views
 
 urlpatterns = [
@@ -34,6 +36,24 @@ urlpatterns = [
     path("notifications/", include("notifications.urls")),
     path("lms/", include("lms.urls")),
     path("github/", include("lms_modules.github_sync.urls")),
+    path("ideas/", include("apps.common.ideas_urls")),
+    path("api/v1/prds/", include("apps.prds.api_urls")),
+    path("api/v1/home/", include("apps.prds.home_urls")),
+    path("api/v1/prds/<int:prd_id>/ai/", include("apps.ai.api_urls")),
+    path(
+        "api/v1/prds/<int:prd_id>/brainstorm/",
+        include("apps.brainstorm.api_urls"),
+    ),
+    path(
+        "ideas/prds/<int:prd_id>/write/",
+        idea_ai_views.prd_write_page,
+        name="idea-prd-write",
+    ),
+    path(
+        "ideas/prds/<int:prd_id>/brainstorm/",
+        idea_brainstorm_views.brainstorm_page,
+        name="idea-brainstorm",
+    ),
     path("", account_views.home_view, name="home"),
 ]
 

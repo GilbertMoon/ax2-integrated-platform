@@ -108,12 +108,14 @@ class ProductionCheckTests(SimpleTestCase):
 
 
 class ProductionEnvironmentRenderTests(SimpleTestCase):
-    def test_renders_google_oauth_secrets_without_logging_them(self):
+    def test_renders_production_secrets_without_logging_them(self):
         template = "\n".join(
             (
                 "DJANGO_SECRET_KEY=placeholder",
                 "POSTGRES_PASSWORD=placeholder",
                 "DJANGO_EMAIL_HOST_PASSWORD=placeholder",
+                "GEMINI_API_KEY=placeholder",
+                "PRD_GEMINI_API_KEY=placeholder",
                 "GOOGLE_OAUTH_CLIENT_ID=",
                 "GOOGLE_OAUTH_CLIENT_SECRET=",
                 "KAKAO_OAUTH_CLIENT_ID=",
@@ -124,6 +126,8 @@ class ProductionEnvironmentRenderTests(SimpleTestCase):
             "DJANGO_SECRET_KEY": "d" * 64,
             "POSTGRES_PASSWORD": "p" * 48,
             "DJANGO_EMAIL_HOST_PASSWORD": "e" * 32,
+            "GEMINI_API_KEY": "g" * 32,
+            "PRD_GEMINI_API_KEY": "r" * 32,
             "GOOGLE_OAUTH_CLIENT_ID": f"{'1' * 24}.apps.googleusercontent.com",
             "GOOGLE_OAUTH_CLIENT_SECRET": "oauth-secret-with_symbols-123",
             "KAKAO_OAUTH_CLIENT_ID": "a" * 32,
@@ -149,6 +153,8 @@ class ProductionEnvironmentRenderTests(SimpleTestCase):
             self.assertIn(
                 f"KAKAO_OAUTH_CLIENT_SECRET={secrets['KAKAO_OAUTH_CLIENT_SECRET']}", rendered
             )
+            self.assertIn(f"GEMINI_API_KEY={secrets['GEMINI_API_KEY']}", rendered)
+            self.assertIn(f"PRD_GEMINI_API_KEY={secrets['PRD_GEMINI_API_KEY']}", rendered)
             if os.name != "nt":
                 self.assertEqual(output_path.stat().st_mode & 0o777, 0o600)
 
@@ -157,6 +163,8 @@ class ProductionEnvironmentRenderTests(SimpleTestCase):
             "DJANGO_SECRET_KEY": "d" * 64,
             "POSTGRES_PASSWORD": "p" * 48,
             "DJANGO_EMAIL_HOST_PASSWORD": "e" * 32,
+            "GEMINI_API_KEY": "g" * 32,
+            "PRD_GEMINI_API_KEY": "r" * 32,
             "GOOGLE_OAUTH_CLIENT_ID": f"{'1' * 24}.apps.googleusercontent.com",
             "GOOGLE_OAUTH_CLIENT_SECRET": "valid-prefix-with-newline\nINJECTED=True",
             "KAKAO_OAUTH_CLIENT_ID": "a" * 32,

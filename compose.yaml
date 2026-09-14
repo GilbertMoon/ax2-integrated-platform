@@ -34,6 +34,16 @@ services:
     volumes:
       - media_data:/app/media
 
+  prd-worker:
+    build: .
+    restart: unless-stopped
+    command: ["python", "manage.py", "run_job_worker"]
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
   face-service:
     build: ./face-recognition-service
     restart: unless-stopped

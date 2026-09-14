@@ -1,0 +1,116 @@
+/* Team 3 pages live inside the AX Console shell. Size full-screen workspaces
+   from the content area, not from the browser viewport behind the sidebar. */
+body:has(#prd-home-app, #prd-write-app, #brainstorm-root) #content-area {
+  container-name: idea-content;
+  container-type: inline-size;
+}
+
+@media (min-width: 992px) {
+  body:has(#prd-write-app) #content-area > main,
+  body:has(#brainstorm-root) #content-area > main {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
+  body:has(#prd-write-app) #content-area > main #prd-write-app {
+    height: calc(100dvh - var(--topbar-height));
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  body:has(#prd-write-app) #prd-write-app .write-workspace {
+    min-height: 0;
+  }
+}
+
+body:has(#brainstorm-root) #content-area > main {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
+body:has(#brainstorm-root) #content-area > main #brainstorm-root {
+  height: calc(100dvh - var(--topbar-height));
+  min-height: 0;
+}
+
+@container idea-content (max-width: 1040px) {
+  .home-content-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .home-activity-sidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tutor-student-filter {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .write-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .write-toolbar-meta {
+    display: none;
+  }
+
+  .write-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .brain-counts,
+  .brain-filter {
+    display: none;
+  }
+
+  .brain-toolbar {
+    overflow-x: auto;
+  }
+}
+
+/* A 1024px laptop still has only about 780px after the desktop sidebar.
+   Stack the editor at the actual content width instead of squeezing two panes. */
+@container idea-content (max-width: 900px) {
+  body:has(#prd-write-app) #content-area > main {
+    padding: 12px;
+    overflow: visible;
+  }
+
+  body:has(#prd-write-app) #content-area > main #prd-write-app {
+    height: auto;
+    min-height: calc(100dvh - var(--topbar-height) - 24px);
+    overflow: visible;
+    border: 1px solid #e2e6ef;
+    border-radius: 14px;
+  }
+
+  #prd-write-app .write-workspace {
+    display: block;
+    height: auto;
+  }
+
+  #prd-write-app .write-structure {
+    min-height: min(650px, calc(100dvh - var(--topbar-height) - 160px));
+    border-right: 0;
+  }
+
+  #prd-write-app .write-evaluation {
+    overflow: visible;
+    border-top: 1px solid #e4e7ed;
+    border-left: 0;
+  }
+}
+
+@container idea-content (max-width: 720px) {
+  .home-activity-sidebar {
+    grid-template-columns: 1fr;
+  }
+}

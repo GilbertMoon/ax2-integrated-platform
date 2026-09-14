@@ -100,7 +100,7 @@ def _send(*, user_ids: tuple[int, ...], title: str, message: str, url: str) -> N
 
 
 def _prd_url(prd_id: int) -> str:
-    path = reverse("prd-write-page", kwargs={"prd_id": prd_id})
+    path = reverse("idea-prd-write", kwargs={"prd_id": prd_id})
     base_url = getattr(settings, "SITE_URL", "").strip()
     if not base_url:
         return path

@@ -29,6 +29,7 @@ GITHUB_OAUTH_CLIENT_ID = None
 GITHUB_OAUTH_CLIENT_SECRET = None
 GITHUB_TOKEN_ENC_KEY = None
 GEMINI_API_KEY = None
+PRD_GEMINI_API_KEY = ""
 SLACK_NOTIFY_SYNC = True
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},

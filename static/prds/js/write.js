@@ -299,7 +299,6 @@
     document.getElementById("write-deadline-label").textContent = data.prd.deadline || "마감일 없음";
     renderDeadlineState(data.prd);
     document.getElementById("active-section-count").textContent = data.sections.length + "개 활성 섹션";
-    document.getElementById("complete-prd").classList.toggle("d-none", !data.permissions.can_complete || data.prd.status === "completed");
     document.getElementById("reopen-prd").classList.toggle("d-none", !data.permissions.can_reopen || data.prd.status !== "completed");
     document.getElementById("contribution-toggle").classList.toggle("d-none", !data.permissions.can_view_contributions);
     canManageParticipants = Boolean(data.permissions.can_manage_participants) && data.prd.status !== "completed";
@@ -1502,26 +1501,6 @@
       }
     } finally {
       deadlineInput.disabled = !detail.permissions.can_edit_deadline;
-    }
-  });
-
-  document.getElementById("complete-prd").addEventListener("click", async function (event) {
-    const button = event.currentTarget;
-    if (!window.confirm("PRD를 완료하면 일반 편집이 잠깁니다. 완료하시겠습니까?")) return;
-    button.disabled = true;
-    try {
-      await api(detailApi + "complete/", {method: "POST", body: JSON.stringify({confirm_incomplete: false})});
-      renderDetail(await api(detailApi));
-      showAlert("PRD를 완료했습니다.", "success");
-    } catch (error) {
-      const needsConfirmation = error.details && error.details.confirm_incomplete;
-      if (needsConfirmation && window.confirm("아직 답변하지 않은 질문이 있습니다. 그래도 완료하시겠습니까?")) {
-        await api(detailApi + "complete/", {method: "POST", body: JSON.stringify({confirm_incomplete: true})});
-        renderDetail(await api(detailApi));
-        showAlert("미완성 질문을 확인하고 PRD를 완료했습니다.", "success");
-      } else if (!needsConfirmation) showAlert(error.message);
-    } finally {
-      button.disabled = false;
     }
   });
 

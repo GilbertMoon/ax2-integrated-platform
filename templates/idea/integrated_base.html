@@ -1,15 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}아이디어 개발 | AX Console{% endblock %}
 {% block breadcrumb %}아이디어 개발{% endblock %}
-
 {% block extra_head %}
   {{ block.super }}
   <meta name="csrf-token" content="{{ csrf_token }}">
   <link href="{% static 'idea/css/base.css' %}?v=20260914-2" rel="stylesheet">
 {% endblock %}
-
 {% block extra_js %}
   {{ block.super }}
   <script src="{% static 'idea/js/controls.js' %}?v=20260904-1"></script>

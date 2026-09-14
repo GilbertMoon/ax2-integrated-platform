@@ -1,6 +1,5 @@
 from django.db import migrations
 
-
 TEMPLATES = {
     "new_product": {
         "name": "신규 프로젝트 PRD 템플릿",

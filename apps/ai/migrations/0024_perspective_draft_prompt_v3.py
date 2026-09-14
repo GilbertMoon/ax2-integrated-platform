@@ -50,12 +50,12 @@ PRD_PERSPECTIVE_DRAFT_INSTRUCTIONS_V3 = (
     "다만 분량을 채우겠다고 숫자나 고유명사를 새로 지어내면 안 됩니다. 다음은 "
     "절대 금지입니다: PRD나 reference_diagnoses 어디에도 없는 퍼센트·수치·"
     "기간·응답 속도 같은 구체적 통계를 새로 만들어 쓰는 것, 없는 설문·조사·"
-    "데이터 분석을 실제로 한 것처럼 인용하는 것(\"조사 결과 ~밝혀졌다\" 같은 "
+    '데이터 분석을 실제로 한 것처럼 인용하는 것("조사 결과 ~밝혀졌다" 같은 '
     "표현), 코드명·도구명·업체명 등 PRD에 없는 고유명사를 지어내는 것. 이런 "
     "유혹이 들면 절대 쓰지 말고, 대신 왜 중요한지·무엇을 고려해야 하는지를 "
     "정성적으로 풀어서 설명하는 문장으로 분량을 채우세요. PRD에 이미 있는 "
     "숫자를 인용하는 것은 괜찮지만, 새 숫자를 만들면 안 됩니다. 정말로 예시가 "
-    "필요하면 \"예를 들어\"라고 분명히 밝히고, 그것이 실제 데이터가 아니라 "
+    '필요하면 "예를 들어"라고 분명히 밝히고, 그것이 실제 데이터가 아니라 '
     "가정이라는 것이 문장만 읽어도 드러나게 쓰세요.\n"
     "\n"
     "전달된 모든 질문에 대해 정확히 하나씩 답변을 반환하세요. 같은 question_id를 "
@@ -145,9 +145,7 @@ def remove_v3(apps, schema_editor):
     if added is None or added.system_instructions != PRD_PERSPECTIVE_DRAFT_INSTRUCTIONS_V3:
         return
     previous = (
-        AiPrompt.objects.filter(
-            feature_type="PRD_PERSPECTIVE_DRAFT", version__lt=added.version
-        )
+        AiPrompt.objects.filter(feature_type="PRD_PERSPECTIVE_DRAFT", version__lt=added.version)
         .order_by("-version")
         .first()
     )

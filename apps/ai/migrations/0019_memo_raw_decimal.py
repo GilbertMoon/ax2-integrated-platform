@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('ai', '0018_seed_brainstorm_prompts'),
+        ("ai", "0018_seed_brainstorm_prompts"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='contributionuserscore',
-            name='memo_raw',
+            model_name="contributionuserscore",
+            name="memo_raw",
             field=models.DecimalField(decimal_places=4, max_digits=12),
         ),
     ]

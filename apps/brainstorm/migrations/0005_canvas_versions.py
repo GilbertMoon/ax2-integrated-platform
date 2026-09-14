@@ -1,7 +1,7 @@
 import uuid
 
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
 
 
 def populate_node_lineages(apps, schema_editor):
@@ -11,7 +11,6 @@ def populate_node_lineages(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("brainstorm", "0004_normalize_note_status_by_section"),
     ]

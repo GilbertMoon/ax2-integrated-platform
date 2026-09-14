@@ -9,7 +9,7 @@ ANCHOR = "kind가 coach_chat이면 message에 사용자에게 보여줄 답변�
 
 HIDE_ID_RULE = (
     "message 안에서 특정 질문을 가리킬 때는 내부 id 숫자를 그대로 쓰지 말고 "
-    "그 질문의 실제 문구(prompt)로 지칭하세요 — 예를 들어 \"(id: 260)\" 대신 "
+    '그 질문의 실제 문구(prompt)로 지칭하세요 — 예를 들어 "(id: 260)" 대신 '
     "\"'프로젝트를 한 줄로 소개하면 무엇인가요?' 질문\"처럼 쓰세요. id는 "
     "proposal.question_id 필드에만 쓰고 message 텍스트에는 절대 노출하지 마세요. "
 )
@@ -21,9 +21,7 @@ def add_hide_id_rule(apps, schema_editor):
     if current is None or HIDE_ID_RULE in current.system_instructions:
         return
     if ANCHOR in current.system_instructions:
-        instructions = current.system_instructions.replace(
-            ANCHOR, ANCHOR + HIDE_ID_RULE, 1
-        )
+        instructions = current.system_instructions.replace(ANCHOR, ANCHOR + HIDE_ID_RULE, 1)
     else:
         instructions = current.system_instructions.rstrip() + "\n" + HIDE_ID_RULE
 

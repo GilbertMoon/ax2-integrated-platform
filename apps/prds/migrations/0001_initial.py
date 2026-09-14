@@ -102,12 +102,8 @@ class Migration(migrations.Migration):
             options={
                 "db_table": "prds",
                 "indexes": [
-                    models.Index(
-                        fields=["status", "-updated_at"], name="prd_status_updated_idx"
-                    ),
-                    models.Index(
-                        fields=["prd_type", "-updated_at"], name="prd_type_updated_idx"
-                    ),
+                    models.Index(fields=["status", "-updated_at"], name="prd_status_updated_idx"),
+                    models.Index(fields=["prd_type", "-updated_at"], name="prd_type_updated_idx"),
                     models.Index(fields=["deadline"], name="prd_deadline_idx"),
                     models.Index(fields=["round_id", "team_id"], name="prd_round_team_idx"),
                 ],
@@ -133,8 +129,7 @@ class Migration(migrations.Migration):
                         name="prd_creator_user_id_positive",
                     ),
                     models.CheckConstraint(
-                        condition=models.Q(team_id__isnull=True)
-                        | models.Q(team_id__gt=0),
+                        condition=models.Q(team_id__isnull=True) | models.Q(team_id__gt=0),
                         name="prd_team_id_null_or_positive",
                     ),
                     models.CheckConstraint(
@@ -380,9 +375,7 @@ class Migration(migrations.Migration):
                 "db_table": "prd_change_history",
                 "ordering": ["-created_at", "-id"],
                 "indexes": [
-                    models.Index(
-                        fields=["prd", "-created_at"], name="prd_history_created_idx"
-                    )
+                    models.Index(fields=["prd", "-created_at"], name="prd_history_created_idx")
                 ],
             },
         ),
@@ -424,11 +417,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 "db_table": "prd_participants",
-                "indexes": [
-                    models.Index(
-                        fields=["user_id", "prd"], name="prd_part_user_prd_idx"
-                    )
-                ],
+                "indexes": [models.Index(fields=["user_id", "prd"], name="prd_part_user_prd_idx")],
                 "constraints": [
                     models.CheckConstraint(
                         condition=models.Q(user_id__gt=0),

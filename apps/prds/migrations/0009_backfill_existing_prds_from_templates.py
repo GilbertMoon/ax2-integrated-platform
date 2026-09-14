@@ -1,6 +1,5 @@
 from django.db import migrations
 
-
 LEGACY_SECTION_TARGETS = {
     "문제 정의": 5,
     "목표와 성공 지표": 7,
@@ -10,7 +9,6 @@ LEGACY_SECTION_TARGETS = {
 
 def _rebuild_questions(question_model, section, template_questions):
     existing = list(question_model.objects.filter(section=section).order_by("position", "id"))
-    template_prompts = [question.prompt for question in template_questions]
     matched_ids = set()
 
     for temporary_position, question in enumerate(existing, start=10001):
@@ -59,9 +57,7 @@ def backfill_existing_prds(apps, schema_editor):
         if template is None:
             continue
         template_sections = list(template.sections.all().order_by("position", "id"))
-        existing_sections = list(
-            section_model.objects.filter(prd=prd).order_by("position", "id")
-        )
+        existing_sections = list(section_model.objects.filter(prd=prd).order_by("position", "id"))
         selected = {}
         used_ids = set()
 
@@ -124,9 +120,9 @@ def backfill_existing_prds(apps, schema_editor):
     node_model.objects.filter(node_type="note", section__isnull=False).exclude(
         status="held"
     ).update(status="accepted")
-    node_model.objects.filter(node_type="note", section__isnull=True).exclude(
-        status="held"
-    ).update(status="default")
+    node_model.objects.filter(node_type="note", section__isnull=True).exclude(status="held").update(
+        status="default"
+    )
 
 
 class Migration(migrations.Migration):

@@ -4,28 +4,43 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('prds', '0005_prd_completed_at_prdstatusauditlog'),
+        ("prds", "0005_prd_completed_at_prdstatusauditlog"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='prd',
-            name='contribution_status',
-            field=models.CharField(choices=[('not_started', '미시작'), ('pending', '계산 중'), ('succeeded', '완료'), ('failed', '실패')], default='not_started', max_length=16),
+            model_name="prd",
+            name="contribution_status",
+            field=models.CharField(
+                choices=[
+                    ("not_started", "미시작"),
+                    ("pending", "계산 중"),
+                    ("succeeded", "완료"),
+                    ("failed", "실패"),
+                ],
+                default="not_started",
+                max_length=16,
+            ),
         ),
         migrations.AddField(
-            model_name='prd',
-            name='version',
+            model_name="prd",
+            name="version",
             field=models.PositiveBigIntegerField(default=1),
         ),
         migrations.AddConstraint(
-            model_name='prd',
-            constraint=models.CheckConstraint(condition=models.Q(('version__gte', 1)), name='prd_version_positive'),
+            model_name="prd",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("version__gte", 1)), name="prd_version_positive"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='prd',
-            constraint=models.CheckConstraint(condition=models.Q(('contribution_status__in', ['not_started', 'pending', 'succeeded', 'failed'])), name='prd_contribution_status_valid'),
+            model_name="prd",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("contribution_status__in", ["not_started", "pending", "succeeded", "failed"])
+                ),
+                name="prd_contribution_status_valid",
+            ),
         ),
     ]

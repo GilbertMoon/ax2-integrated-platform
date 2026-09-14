@@ -3,7 +3,6 @@ from datetime import timedelta
 from django.db import migrations
 from django.db.models import Max
 
-
 EMPTY_PROMPT = "[질문 내용 없음]"
 EMPTY_RESPONSE = "[응답 내용 없음]"
 

@@ -66,9 +66,7 @@ def remove_v4(apps, schema_editor):
     if added is None or PRD_PERSPECTIVE_DRAFT_LENGTH_RULE_V4 not in added.system_instructions:
         return
     previous = (
-        AiPrompt.objects.filter(
-            feature_type="PRD_PERSPECTIVE_DRAFT", version__lt=added.version
-        )
+        AiPrompt.objects.filter(feature_type="PRD_PERSPECTIVE_DRAFT", version__lt=added.version)
         .order_by("-version")
         .first()
     )

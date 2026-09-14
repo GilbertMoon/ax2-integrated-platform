@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('ai', '0007_contributionevaluation_contributioncommentscore_and_more'),
+        ("ai", "0007_contributionevaluation_contributioncommentscore_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='aijob',
-            name='request_fingerprint',
-            field=models.CharField(blank=True, db_index=True, default='', max_length=64),
+            model_name="aijob",
+            name="request_fingerprint",
+            field=models.CharField(blank=True, db_index=True, default="", max_length=64),
         ),
     ]

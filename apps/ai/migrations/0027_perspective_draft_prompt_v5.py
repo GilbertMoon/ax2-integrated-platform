@@ -61,9 +61,7 @@ def remove_v5(apps, schema_editor):
     if added is None or IMPORTANCE_RULE not in added.system_instructions:
         return
     previous = (
-        AiPrompt.objects.filter(
-            feature_type="PRD_PERSPECTIVE_DRAFT", version__lt=added.version
-        )
+        AiPrompt.objects.filter(feature_type="PRD_PERSPECTIVE_DRAFT", version__lt=added.version)
         .order_by("-version")
         .first()
     )

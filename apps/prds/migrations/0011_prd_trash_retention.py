@@ -101,8 +101,7 @@ class Migration(migrations.Migration):
             model_name="prddeletionauditlog",
             constraint=models.CheckConstraint(
                 condition=(
-                    models.Q(("actor_user_id__isnull", True))
-                    | models.Q(("actor_user_id__gt", 0))
+                    models.Q(("actor_user_id__isnull", True)) | models.Q(("actor_user_id__gt", 0))
                 ),
                 name="prd_delete_audit_actor_valid",
             ),

@@ -20,7 +20,6 @@ def populate_introduced_versions(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("brainstorm", "0005_canvas_versions"),
     ]

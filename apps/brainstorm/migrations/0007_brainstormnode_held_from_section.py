@@ -1,5 +1,5 @@
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
 
 
 def populate_held_origins(apps, schema_editor):
@@ -34,18 +34,18 @@ def populate_held_origins(apps, schema_editor):
                 .values_list("section_id", flat=True)
                 .first()
             )
-        if section_id and PrdSection.objects.filter(
-            pk=section_id,
-            prd_id=node.canvas.prd_id,
-            is_deleted=False,
-        ).exists():
-            BrainstormNode.objects.filter(pk=node.pk).update(
-                held_from_section_id=section_id
-            )
+        if (
+            section_id
+            and PrdSection.objects.filter(
+                pk=section_id,
+                prd_id=node.canvas.prd_id,
+                is_deleted=False,
+            ).exists()
+        ):
+            BrainstormNode.objects.filter(pk=node.pk).update(held_from_section_id=section_id)
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("brainstorm", "0006_brainstormnode_introduced_in_version"),
         ("prds", "0013_participant_comment_versions"),

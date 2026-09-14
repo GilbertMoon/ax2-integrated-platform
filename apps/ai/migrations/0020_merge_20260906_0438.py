@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('ai', '0018_store_coach_messages_as_plain_text'),
-        ('ai', '0019_memo_raw_decimal'),
+        ("ai", "0018_store_coach_messages_as_plain_text"),
+        ("ai", "0019_memo_raw_decimal"),
     ]
 
-    operations = [
-    ]
+    operations = []

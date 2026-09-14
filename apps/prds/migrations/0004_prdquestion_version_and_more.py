@@ -4,19 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('prds', '0003_prd_comments'),
+        ("prds", "0003_prd_comments"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='prdquestion',
-            name='version',
+            model_name="prdquestion",
+            name="version",
             field=models.PositiveBigIntegerField(default=1),
         ),
         migrations.AddConstraint(
-            model_name='prdquestion',
-            constraint=models.CheckConstraint(condition=models.Q(('version__gte', 1)), name='prd_question_version_positive'),
+            model_name="prdquestion",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("version__gte", 1)), name="prd_question_version_positive"
+            ),
         ),
     ]

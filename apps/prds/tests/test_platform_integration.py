@@ -1,4 +1,4 @@
-﻿from django.test import TestCase
+from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
@@ -38,4 +38,3 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
             reverse("brainstorm_api:canvas", args=[7]),
             "/api/v1/prds/7/brainstorm/canvas/",
         )
-

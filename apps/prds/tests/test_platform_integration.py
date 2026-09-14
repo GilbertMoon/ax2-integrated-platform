@@ -1,4 +1,4 @@
-from django.test import TestCase
+﻿from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
@@ -25,7 +25,7 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "idea/prds/home.html")
-        self.assertContains(response, "Idea Developer")
+        self.assertContains(response, "AX Console")
 
     def test_idea_routes_are_mounted_in_integrated_urlconf(self):
         self.assertEqual(reverse("ideas:home"), "/ideas/")
@@ -38,3 +38,4 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
             reverse("brainstorm_api:canvas", args=[7]),
             "/api/v1/prds/7/brainstorm/canvas/",
         )
+

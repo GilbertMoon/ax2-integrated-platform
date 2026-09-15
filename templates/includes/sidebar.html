@@ -1,5 +1,5 @@
 <aside id="sidebar"
-       class="offcanvas-lg offcanvas-start"
+       class="offcanvas-lg offcanvas-start{% if request.resolver_match.namespace == 'rounds' and request.resolver_match.url_name == 'dashboard' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' %}{% else %} collapsed{% endif %}"
        tabindex="-1"
        aria-label="주 메뉴">
   <div>

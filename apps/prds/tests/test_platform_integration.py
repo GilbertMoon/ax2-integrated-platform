@@ -28,6 +28,10 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
         self.assertContains(response, "AX Console")
         self.assertContains(response, 'id="app-shell"')
         self.assertContains(response, 'id="sidebar"')
+        self.assertContains(
+            response,
+            'class="offcanvas-lg offcanvas-start collapsed"',
+        )
         self.assertContains(response, 'aria-label="PRD 대시보드 나가기"')
         self.assertContains(response, 'href="/accounts/dashboard/"')
         self.assertNotContains(response, 'class="studio-header sticky-top"')
@@ -40,6 +44,30 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'href="/ideas/"')
         self.assertNotContains(response, 'target="_blank"')
+        self.assertContains(response, 'class="offcanvas-lg offcanvas-start"')
+        self.assertNotContains(
+            response,
+            'class="offcanvas-lg offcanvas-start collapsed"',
+        )
+
+    def test_tutor_main_dashboard_keeps_sidebar_expanded(self):
+        tutor = User.objects.create_user(
+            email="sidebar-tutor@example.com",
+            password="test-password",
+            role=User.Role.TUTOR,
+            approval_status=User.ApprovalStatus.APPROVED,
+            is_onboarded=True,
+        )
+        self.client.force_login(tutor)
+
+        response = self.client.get(reverse("rounds:dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="offcanvas-lg offcanvas-start"')
+        self.assertNotContains(
+            response,
+            'class="offcanvas-lg offcanvas-start collapsed"',
+        )
 
     def test_idea_routes_are_mounted_in_integrated_urlconf(self):
         self.assertEqual(reverse("ideas:home"), "/ideas/")

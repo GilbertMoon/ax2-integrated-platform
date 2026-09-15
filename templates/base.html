@@ -225,8 +225,13 @@
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebar-toggle');
     if (sidebarToggle && sidebar) {
+      const syncSidebarToggleState = () => {
+        sidebarToggle.setAttribute('aria-expanded', String(!sidebar.classList.contains('collapsed')));
+      };
+      syncSidebarToggleState();
       sidebarToggle.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
+        syncSidebarToggleState();
       });
     }
 

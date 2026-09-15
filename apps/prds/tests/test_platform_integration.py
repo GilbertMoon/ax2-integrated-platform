@@ -69,6 +69,18 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
             'class="offcanvas-lg offcanvas-start collapsed"',
         )
 
+    def test_non_idea_page_keeps_existing_expanded_sidebar_default(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("accounts:mypage"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="offcanvas-lg offcanvas-start"')
+        self.assertNotContains(
+            response,
+            'class="offcanvas-lg offcanvas-start collapsed"',
+        )
+
     def test_idea_routes_are_mounted_in_integrated_urlconf(self):
         self.assertEqual(reverse("ideas:home"), "/ideas/")
         self.assertEqual(reverse("idea-prd-detail", args=[7]), "/ideas/prds/7/")

@@ -15,8 +15,7 @@ def screenshot_path(instance, filename):
 
 class BugReport(models.Model):
     class Status(models.TextChoices):
-        OPEN = "open", "접수"
-        IN_PROGRESS = "in_progress", "확인 중"
+        OPEN = "open", "접수 완료"
         RESOLVED = "resolved", "해결 완료"
 
     reporter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
@@ -29,7 +28,6 @@ class BugReport(models.Model):
     status = models.CharField(
         "처리 상태", max_length=20, choices=Status.choices, default=Status.OPEN
     )
-    response = models.TextField("처리 답변", blank=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_http_methods
 
 from accounts.permissions import is_operations_user
-from bug_reports.forms import ReportForm, ResponseForm
+from bug_reports.forms import ReportForm, StatusForm
 from bug_reports.models import BugReport
 
 
@@ -61,12 +61,12 @@ def detail(request, pk):
     operations = is_operations_user(request.user)
     if request.method == "POST" and not operations:
         raise PermissionDenied
-    form = ResponseForm(request.POST or None, instance=report)
+    form = StatusForm(request.POST or None, instance=report)
     if request.method == "POST" and form.is_valid():
         report = form.save(commit=False)
         report.updated_by = request.user
         report.save()
-        messages.success(request, "처리 상태와 답변을 저장했습니다.")
+        messages.success(request, "처리 상태를 저장했습니다.")
         return redirect("bug_reports:detail", pk=pk)
     return render(
         request,
@@ -84,7 +84,6 @@ def screenshot(request, pk):
     try:
         result = FileResponse(
             report.screenshot.open("rb"),
-            as_attachment=True,
             filename=f"report-{report.pk}.{report.screenshot.name.rsplit('.', 1)[-1]}",
         )
     except FileNotFoundError as error:

@@ -17,15 +17,27 @@
       <div class="text-break">{{ report.description|linebreaksbr }}</div>
       {% if report.screenshot %}
         <div class="mt-4">
-          <a class="btn btn-outline-primary"
-             href="{% url 'bug_reports:screenshot' report.pk %}"><i class="bi bi-download" aria-hidden="true"></i> 캡처 이미지 다운로드</a>
+          <h2 class="h6 mb-3">첨부된 캡처</h2>
+          <a href="{% url 'bug_reports:screenshot' report.pk %}"
+             target="_blank"
+             rel="noopener">
+            <img src="{% url 'bug_reports:screenshot' report.pk %}"
+                 class="img-fluid rounded border"
+                 style="max-height: 600px"
+                 alt="{{ report.title }} 오류 캡처">
+          </a>
+          <div class="mt-3">
+            <a class="btn btn-outline-primary"
+               target="_blank"
+               rel="noopener"
+               href="{% url 'bug_reports:screenshot' report.pk %}"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i> 원본 이미지 열기</a>
+          </div>
         </div>
       {% endif %}
     </article>
-    <section class="card card-body p-4">
-      <h2 class="h5">처리 답변</h2>
-      {% if operations %}
-        <p class="small text-muted">저장한 답변은 신고자에게도 표시됩니다.</p>
+    {% if operations %}
+      <section class="card card-body p-4">
+        <h2 class="h5">처리 상태 변경</h2>
         <form method="post">
           {% csrf_token %}{{ form.non_field_errors }}
           {% for field in form %}
@@ -34,15 +46,9 @@
               {{ field }}{{ field.errors }}
             </div>
           {% endfor %}
-          <button class="btn btn-primary" type="submit">처리 내용 저장</button>
+          <button class="btn btn-primary" type="submit">상태 저장</button>
         </form>
-      {% else %}
-        {% if report.response %}
-          <div class="text-break">{{ report.response|linebreaksbr }}</div>
-        {% else %}
-          <p class="text-muted mb-0">아직 등록된 답변이 없습니다. 확인 후 안내드리겠습니다.</p>
-        {% endif %}
-      {% endif %}
-    </section>
+      </section>
+    {% endif %}
   </div>
 {% endblock %}

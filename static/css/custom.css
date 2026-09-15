@@ -1882,3 +1882,40 @@ tbody.collapse.show { display: table-row-group; }
   outline-offset: 1px;
   background: var(--ax-primary-container);
 }
+
+/* Expandable sidebar categories. Native details supports keyboard and touch. */
+.sidebar-category > summary.nav-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
+}
+.sidebar-category > summary::-webkit-details-marker { display: none; }
+.sidebar-category > summary:hover { background: var(--ax-nav-hover); color: #fff; }
+.sidebar-category > summary:focus-visible { outline: 2px solid #60A5FA; outline-offset: -2px; }
+.category-chevron { transition: transform 0.15s ease; font-size: 11px; }
+.sidebar-category[open] > summary .category-chevron { transform: rotate(180deg); }
+.sidebar-category > .sidebar-nav { padding-top: 0; }
+#sidebar.collapsed .sidebar-category > summary.nav-section-title {
+  display: flex;
+  justify-content: center;
+  padding: 12px 4px;
+  letter-spacing: 0;
+}
+#sidebar.collapsed .category-chevron { display: none; }
+@media (max-width: 991.98px) {
+  #sidebar.collapsed .sidebar-category > summary.nav-section-title {
+    justify-content: space-between;
+    padding: 14px 16px;
+  }
+  #sidebar.collapsed .category-chevron { display: inline-block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .category-chevron { transition: none; }
+}

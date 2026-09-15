@@ -42,8 +42,7 @@
           <a class="dropdown-item small" href="{% url 'accounts:mypage' %}"><i class="bi bi-person-lines-fill me-2" aria-hidden="true"></i>마이페이지</a>
         </li>
         <li>
-          <a class="dropdown-item small"
-             href="{% url 'bug_reports:create' %}?page={{ request.path|urlencode }}"><i class="bi bi-bug me-2" aria-hidden="true"></i>오류 신고</a>
+          <a class="dropdown-item small" href="{% url 'bug_reports:index' %}"><i class="bi bi-bug me-2" aria-hidden="true"></i>오류 신고</a>
         </li>
         <li>
           <hr class="dropdown-divider">

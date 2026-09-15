@@ -68,15 +68,8 @@ class ReportForm(forms.ModelForm):
         return upload
 
 
-class ResponseForm(forms.ModelForm):
-    response = forms.CharField(
-        label="처리 답변",
-        max_length=10000,
-        required=False,
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 4}),
-    )
-
+class StatusForm(forms.ModelForm):
     class Meta:
         model = BugReport
-        fields = ["status", "response"]
+        fields = ["status"]
         widgets = {"status": forms.Select(attrs={"class": "form-select"})}

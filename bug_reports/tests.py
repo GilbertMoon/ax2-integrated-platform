@@ -92,20 +92,27 @@ class BugReportTests(TestCase):
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, "open")
 
-    def test_tutor_can_reply_and_owner_sees_it(self):
+    def test_tutor_can_resolve_and_owner_sees_only_status(self):
         self.login(self.tutor)
         self.assertContains(self.client.get(reverse("bug_reports:index")), self.report.title)
         result = self.client.post(
             reverse("bug_reports:detail", args=[self.report.pk]),
-            {"status": "resolved", "response": "수정했습니다."},
+            {"status": "resolved"},
         )
         self.assertEqual(result.status_code, 302)
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, "resolved")
         self.assertEqual(self.report.updated_by, self.tutor)
         self.login(self.owner)
+        detail = self.client.get(reverse("bug_reports:detail", args=[self.report.pk]))
+        self.assertContains(detail, "해결 완료")
+        self.assertNotContains(detail, "처리 답변")
+        self.assertNotContains(detail, "처리 상태 변경")
+
+    def test_owner_sees_open_report_as_received(self):
+        self.login(self.owner)
         self.assertContains(
-            self.client.get(reverse("bug_reports:detail", args=[self.report.pk])), "수정했습니다."
+            self.client.get(reverse("bug_reports:detail", args=[self.report.pk])), "접수 완료"
         )
 
     def test_invalid_status_rejected(self):
@@ -116,6 +123,16 @@ class BugReportTests(TestCase):
         self.assertEqual(result.status_code, 200)
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, "open")
+
+    def test_detail_embeds_authorized_screenshot(self):
+        self.report.screenshot = capture()
+        self.report.save()
+        self.login(self.owner)
+        screenshot_url = reverse("bug_reports:screenshot", args=[self.report.pk])
+        detail = self.client.get(reverse("bug_reports:detail", args=[self.report.pk]))
+        self.assertContains(detail, f'src="{screenshot_url}"')
+        self.assertContains(detail, "첨부된 캡처")
+        self.report.screenshot.delete(save=False)
 
     def test_blank_fields_rejected(self):
         form = ReportForm({"title": "   ", "description": "  "})
@@ -170,3 +187,8 @@ class BugReportTests(TestCase):
         self.assertNotContains(
             self.client.get(reverse("bug_reports:index"), {"status": "resolved"}), self.report.title
         )
+
+    def test_profile_menu_links_to_report_history(self):
+        self.login(self.owner)
+        result = self.client.get(reverse("accounts:mypage"))
+        self.assertContains(result, f'href="{reverse("bug_reports:index")}"')

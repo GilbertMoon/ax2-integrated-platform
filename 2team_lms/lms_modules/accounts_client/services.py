@@ -205,6 +205,26 @@ def get_round_period(round_id=None):
     return row
 
 
+def get_round_participant_ids(round_id=None):
+    """그 회차에 실제로 등록된 참가자(학생)의 user_id 집합.
+
+    user_round_team_view 는 INNER JOIN 이라 회차 참가자만 나온다 — get_students()가 주는
+    "전체 활성 학생"과는 다른(더 좁은) 모집단이다. RoundScore는 여전히 get_students() 전체
+    기준으로 저장되지만(grading.snapshot 변경 없음), 화면/CSV에서 "이 회차 참가자만" 보여줄
+    때 이 함수로 걸러낸다.
+    """
+    if _dev():
+        return {u["id"] for u in _DEV_STUDENTS}
+    from .models import RoundTeamMember
+
+    rid = round_id or _current_round_id()
+    if rid is None:
+        return set()
+    return set(
+        RoundTeamMember.objects.filter(round_id=rid).values_list("user_id", flat=True)
+    )
+
+
 def get_team_period(round_id=None):
     """회차의 팀 프로젝트 (시작, 종료) datetime 튜플. 못 구하면 None.
 

@@ -53,6 +53,7 @@ SITE_URL = os.getenv("DJANGO_SITE_URL", "").strip().rstrip("/") or (
 )
 
 INSTALLED_APPS = [
+    "bug_reports.apps.BugReportsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -310,7 +311,14 @@ PROFILE_IMAGE_MAX_BYTES = 2 * 1024 * 1024
 # 로컬에서는 기본값을 쓰고, 운영 환경은 DJANGO_FACE_SERVICE_URL로 실제 호스트를 지정한다.
 FACE_SERVICE_URL = os.getenv("DJANGO_FACE_SERVICE_URL", "http://127.0.0.1:5001").strip().rstrip("/")
 FACE_SERVICE_TIMEOUT = env_int("DJANGO_FACE_SERVICE_TIMEOUT", 15)
+BUG_REPORT_UPLOAD_ROOT = Path(
+    os.getenv("DJANGO_BUG_REPORT_UPLOAD_ROOT") or BASE_DIR / "private_uploads" / "bug_reports"
+)
 STORAGES = {
+    "bug_reports": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {"location": BUG_REPORT_UPLOAD_ROOT},
+    },
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {
         "BACKEND": (

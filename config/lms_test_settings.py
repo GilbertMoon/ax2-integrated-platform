@@ -32,6 +32,7 @@ GEMINI_API_KEY = None
 PRD_GEMINI_API_KEY = ""
 SLACK_NOTIFY_SYNC = True
 STORAGES = {
+    "bug_reports": {"BACKEND": "django.core.files.storage.InMemoryStorage"},
     "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     "lms": {

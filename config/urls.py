@@ -10,6 +10,7 @@ from apps.brainstorm import views as idea_brainstorm_views
 from teams import views as team_views
 
 urlpatterns = [
+    path("bug-reports/", include("bug_reports.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("accounts/google/login/", oauth.google_login, name="google_login"),

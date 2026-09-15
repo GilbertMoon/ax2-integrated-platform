@@ -24,7 +24,8 @@
           as="style"
           crossorigin
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link href="{% static 'css/custom.css' %}?v=20260915-1" rel="stylesheet">
+    <link href="{% static 'css/custom.css' %}?v=20260915-2" rel="stylesheet">
+    <script src="{% static 'js/sidebar_categories.js' %}" defer></script>
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -224,6 +225,28 @@
     <script>
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebar-toggle');
+    if (sidebar) {
+      const sidebarScrollKey = `ax_sidebar_scroll:${sidebar.dataset.sidebarRole || 'default'}`;
+      const rememberSidebarScroll = () => {
+        try {
+          sessionStorage.setItem(sidebarScrollKey, String(sidebar.scrollTop));
+        } catch (_) {
+          // 저장소를 사용할 수 없는 환경에서도 메뉴 이동은 그대로 동작한다.
+        }
+      };
+      try {
+        const savedSidebarScroll = Number(sessionStorage.getItem(sidebarScrollKey));
+        if (Number.isFinite(savedSidebarScroll) && savedSidebarScroll >= 0) {
+          requestAnimationFrame(() => {
+            sidebar.scrollTop = savedSidebarScroll;
+          });
+        }
+      } catch (_) {
+        // 저장소를 사용할 수 없는 환경에서는 기본 위치를 사용한다.
+      }
+      sidebar.addEventListener('scroll', rememberSidebarScroll, { passive: true });
+      window.addEventListener('pagehide', rememberSidebarScroll);
+    }
     if (sidebarToggle && sidebar) {
       const syncSidebarToggleState = () => {
         sidebarToggle.setAttribute('aria-expanded', String(!sidebar.classList.contains('collapsed')));

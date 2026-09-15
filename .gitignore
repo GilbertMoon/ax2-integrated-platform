@@ -64,6 +64,9 @@ private_uploads/
 db.sqlite3-journal
 staticfiles/
 
+# Manual QA sqlite DBs (config.lms_manual_qa_settings)
+/work/
+
 # Flask stuff:
 instance/
 .webassets-cache

@@ -16,7 +16,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import posixpath
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, unquote, urlparse
 
 from django.conf import settings
 from lms_modules.storage import default_storage
@@ -119,7 +119,9 @@ def _parse_github_blob(url: str) -> tuple[str, str, str, str] | None:
     """GitHub blob/raw URL → (owner, repo, ref, path). 파일 특정 불가하면 None."""
     parsed = urlparse(url)
     host = parsed.netloc.lower()
-    parts = [p for p in parsed.path.split("/") if p]
+    # URL 은 이미 퍼센트 인코딩돼 있으므로 디코드해서 실제 경로/브랜치명을 얻는다
+    # (예: "chapter%2017/x.ipynb" → "chapter 17/x.ipynb").
+    parts = [unquote(p) for p in parsed.path.split("/") if p]
     if host in ("github.com", "www.github.com"):
         if len(parts) >= 5 and parts[2] == "blob":
             return parts[0], parts[1], parts[3], "/".join(parts[4:])
@@ -502,12 +504,15 @@ def sync_feedback_issue(fi: FeedbackIssue) -> FeedbackIssue:
     return fi
 
 
-def enqueue_feedback_issue(submission: Submission) -> FeedbackIssue | None:
-    """제출물의 튜터 피드백을 이슈로 (재)동기화한다. 팀 과제면 None."""
+def ensure_feedback_issue(submission: Submission) -> FeedbackIssue | None:
+    """FeedbackIssue 행을 확보한다 (GitHub 호출 없음 — 빠른 DB 작업만). 팀 과제면 None.
+
+    재평가면 SKIPPED/FAILED 였어도 다시 시도할 수 있게 PENDING 으로 되돌린다 (개인 과제 한정).
+    실제 이슈 생성/코멘트는 sync_feedback_issue(fi) 가 한다.
+    """
     if submission.student_id is None:
         return None
     fi, _created = FeedbackIssue.objects.get_or_create(submission=submission)
-    # 재평가면 SKIPPED/FAILED 였어도 다시 시도할 수 있게 되돌린다 (개인 과제 한정).
     if not submission.assignment.is_team and fi.state in (
         FeedbackIssue.State.SKIPPED,
         FeedbackIssue.State.FAILED,
@@ -515,7 +520,13 @@ def enqueue_feedback_issue(submission: Submission) -> FeedbackIssue | None:
         fi.state = FeedbackIssue.State.PENDING
         fi.attempts = 0
         fi.save(update_fields=["state", "attempts", "updated_at"])
-    return sync_feedback_issue(fi)
+    return fi
+
+
+def enqueue_feedback_issue(submission: Submission) -> FeedbackIssue | None:
+    """제출물의 튜터 피드백을 이슈로 (재)동기화한다 (행 확보 + 즉시 1회 시도). 팀 과제면 None."""
+    fi = ensure_feedback_issue(submission)
+    return sync_feedback_issue(fi) if fi is not None else None
 
 
 def sync_pending_feedback_issues(limit: int | None = None) -> dict:
@@ -541,11 +552,5 @@ def sync_pending_feedback_issues(limit: int | None = None) -> dict:
     return result
 
 
-def try_feedback_issue_now(submission: Submission) -> None:
-    """평가 저장 직후 즉시 시도 — 실패해도 조용히 넘어간다 (커맨드가 재시도)."""
-    if not tutor_enabled():
-        return
-    try:
-        enqueue_feedback_issue(submission)
-    except Exception:  # noqa: BLE001 — 평가 저장 흐름을 절대 막지 않는다
-        logger.exception("피드백 이슈 즉시 동기화 중 예외 (submission#%s)", submission.pk)
+# 평가 저장 직후의 즉시 시도는 signals.push_feedback_issue_to_github 가
+# ensure_feedback_issue(행 확보) + background.run_in_background(sync_feedback_issue) 로 처리한다.

@@ -1,0 +1,167 @@
+from datetime import timedelta
+from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
+
+from lms_modules.core.models import Assignment, Submission, Todo
+
+
+class DashboardTodoTests(TestCase):
+    databases = {"default", "assignment_lms"}
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(approval_status="approved", is_active=True, is_onboarded=True, email="todo-student@example.com")
+        self.client.force_login(self.user)
+        for target, val in [
+            ("lms_modules.student.views_dashboard.accounts.is_student", True),
+            ("lms_modules.student.views_dashboard.accounts.get_user_team", None),
+            ("lms_modules.student.views_dashboard.external_student_id", self.user.id),
+            ("lms_modules.common.context_processors.accounts.is_tutor", False),
+            ("lms_modules.common.context_processors.accounts.is_student", True),
+        ]:
+            p = patch(target, return_value=val)
+            p.start()
+            self.addCleanup(p.stop)
+
+        self.today = timezone.localdate()
+
+    def _get(self, **params):
+        return self.client.get(reverse("lms:student:dashboard"), params)
+
+    # ---------- add ----------
+    def test_add_uses_posted_date(self):
+        d = (self.today + timedelta(days=5)).isoformat()
+        resp = self.client.post(reverse("lms:student:todo-add"), {"content": "미래 계획", "date": d})
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(f"d={d}", resp["Location"])
+        t = Todo.objects.get()
+        self.assertEqual(t.due_date.isoformat(), d)
+        self.assertEqual(t.student_id, self.user.id)
+
+    def test_add_without_date_defaults_today(self):
+        self.client.post(reverse("lms:student:todo-add"), {"content": "그냥"})
+        self.assertEqual(Todo.objects.get().due_date, self.today)
+
+    # ---------- date-scoped list ----------
+    def test_dashboard_shows_only_selected_days_todos(self):
+        Todo.objects.create(student_id=self.user.id, content="오늘꺼", due_date=self.today)
+        other = self.today + timedelta(days=2)
+        Todo.objects.create(student_id=self.user.id, content="이틀뒤꺼", due_date=other)
+
+        ctx = self._get().context
+        self.assertEqual(ctx["todo_date"], self.today)
+        self.assertEqual([t.content for t in ctx["todos"]], ["오늘꺼"])
+
+        ctx2 = self._get(y=other.year, m=other.month, d=other.isoformat()).context
+        self.assertEqual([t.content for t in ctx2["todos"]], ["이틀뒤꺼"])
+        self.assertFalse(ctx2["todo_is_today"])
+
+    def test_todo_done_count(self):
+        Todo.objects.create(student_id=self.user.id, content="a", due_date=self.today, is_done=True)
+        Todo.objects.create(student_id=self.user.id, content="b", due_date=self.today)
+        ctx = self._get().context
+        self.assertEqual(ctx["todo_done"], 1)
+        self.assertEqual(len(ctx["todos"]), 2)
+
+    # ---------- calendar dot ----------
+    def test_calendar_marks_days_with_todos(self):
+        Todo.objects.create(student_id=self.user.id, content="x", due_date=self.today)
+        weeks = self._get().context["cal"]["weeks"]
+        cells = [c for wk in weeks for c in wk if c["date"] == self.today]
+        self.assertTrue(cells[0]["has_todo"])
+        # 할 일 없는 다른 날은 False
+        empty = [c for wk in weeks for c in wk if c["date"] == self.today + timedelta(days=1)]
+        self.assertFalse(empty[0]["has_todo"])
+
+    # ---------- toggle / delete keep the day ----------
+    def test_toggle_redirects_back_to_todo_day(self):
+        d = self.today + timedelta(days=3)
+        t = Todo.objects.create(student_id=self.user.id, content="q", due_date=d)
+        resp = self.client.post(reverse("lms:student:todo-toggle", args=[t.pk]))
+        self.assertIn(f"d={d.isoformat()}", resp["Location"])
+        t.refresh_from_db()
+        self.assertTrue(t.is_done)
+
+    def test_cannot_touch_other_students_todo(self):
+        t = Todo.objects.create(student_id=self.user.id + 999, content="남의것", due_date=self.today)
+        self.assertEqual(self.client.post(reverse("lms:student:todo-toggle", args=[t.pk])).status_code, 404)
+
+    # ---------- edit ----------
+    def test_edit_updates_content_and_redirects_back_to_todo_day(self):
+        d = self.today + timedelta(days=3)
+        t = Todo.objects.create(student_id=self.user.id, content="원래 내용", due_date=d)
+        resp = self.client.post(reverse("lms:student:todo-edit", args=[t.pk]), {"content": "수정된 내용"})
+        self.assertIn(f"d={d.isoformat()}", resp["Location"])
+        t.refresh_from_db()
+        self.assertEqual(t.content, "수정된 내용")
+
+    def test_edit_with_blank_content_keeps_original(self):
+        t = Todo.objects.create(student_id=self.user.id, content="원래 내용", due_date=self.today)
+        self.client.post(reverse("lms:student:todo-edit", args=[t.pk]), {"content": "   "})
+        t.refresh_from_db()
+        self.assertEqual(t.content, "원래 내용")
+
+    def test_cannot_edit_other_students_todo(self):
+        t = Todo.objects.create(student_id=self.user.id + 999, content="남의것", due_date=self.today)
+        resp = self.client.post(reverse("lms:student:todo-edit", args=[t.pk]), {"content": "해킹"})
+        self.assertEqual(resp.status_code, 404)
+        t.refresh_from_db()
+        self.assertEqual(t.content, "남의것")
+
+    # ---------- weekly submission status ----------
+    def _assignment(self, title, due_date, **overrides):
+        values = {
+            "title": title,
+            "due_at": timezone.make_aware(
+                timezone.datetime.combine(due_date, timezone.datetime.min.time())
+            ),
+            "created_by": 1,
+            "is_team": False,
+        }
+        values.update(overrides)
+        return Assignment.objects.create(**values)
+
+    def test_weekly_submission_status_counts_current_week(self):
+        monday = self.today - timedelta(days=self.today.weekday())
+        submitted = self._assignment("제출 과제", monday)
+        graded = self._assignment("채점 과제", monday + timedelta(days=2))
+        self._assignment("미제출 과제", monday + timedelta(days=4))
+        self._assignment("다음 주 과제", monday + timedelta(days=7))
+        Submission.objects.create(assignment=submitted, student_id=self.user.id)
+        Submission.objects.create(
+            assignment=graded, student_id=self.user.id, final_score=90
+        )
+
+        response = self._get()
+
+        self.assertEqual(
+            response.context["submission_week"],
+            {
+                "start": monday,
+                "end": monday + timedelta(days=6),
+                "total": 3,
+                "submitted": 2,
+                "ungraded": 1,
+                "pct": 67,
+                "prev_url": f"?week={(monday - timedelta(days=7)).isoformat()}",
+                "next_url": f"?week={(monday + timedelta(days=7)).isoformat()}",
+            },
+        )
+        self.assertContains(response, "과제 제출 현황")
+        self.assertNotContains(response, "최근 공개 결과")
+
+    def test_week_navigation_preserves_dashboard_parameters(self):
+        anchor = self.today + timedelta(days=14)
+
+        response = self._get(
+            y=anchor.year, m=anchor.month, d=anchor.isoformat(), week=anchor.isoformat()
+        )
+
+        stats = response.context["submission_week"]
+        self.assertIn(f"y={anchor.year}", stats["prev_url"])
+        self.assertIn(f"m={anchor.month}", stats["prev_url"])
+        self.assertIn(f"d={anchor.isoformat()}", stats["prev_url"])
+        self.assertIn("week=", stats["prev_url"])

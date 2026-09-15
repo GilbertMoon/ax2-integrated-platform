@@ -1739,6 +1739,34 @@ tbody.collapse.show { display: table-row-group; }
 @media (min-width: 992px) {
   /* Bootstrap의 .offcanvas-lg는 넓은 화면에서 배경을 투명으로 되돌린다 - 사이드바 색을 지킨다. */
   #sidebar.offcanvas-lg { background-color: var(--ax-nav) !important; }
+
+  /* 아이디어 개발에서는 화면 공간을 확보하되, 메뉴를 찾을 때는 마우스·키보드로 즉시 펼친다. */
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:hover,
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:focus-within {
+    width: var(--sidebar-width);
+  }
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:hover .nav-text,
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:hover .nav-section-title,
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:hover .brand-text,
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:focus-within .nav-text,
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:focus-within .nav-section-title,
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:focus-within .brand-text {
+    display: revert;
+  }
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:hover .sidebar-header,
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:focus-within .sidebar-header {
+    justify-content: space-between;
+    padding: 0 16px;
+  }
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:hover .sidebar-nav-link,
+  #sidebar.collapsed[data-auto-expand-on-hover="true"]:focus-within .sidebar-nav-link {
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 8px 16px;
+    gap: 8px;
+    justify-content: flex-start;
+  }
 }
 
 /* ===== 좁은 화면 (lg 미만) =====

@@ -32,6 +32,7 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
             response,
             'class="offcanvas-lg offcanvas-start collapsed"',
         )
+        self.assertContains(response, 'data-auto-expand-on-hover="true"')
         self.assertContains(response, 'aria-label="PRD 대시보드 나가기"')
         self.assertContains(response, 'href="/accounts/dashboard/"')
         self.assertNotContains(response, 'class="studio-header sticky-top"')
@@ -44,11 +45,14 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'href="/ideas/"')
         self.assertNotContains(response, 'target="_blank"')
+        self.assertContains(response, 'data-sidebar-role="student"')
+        self.assertContains(response, "ax_sidebar_scroll:")
         self.assertContains(response, 'class="offcanvas-lg offcanvas-start"')
         self.assertNotContains(
             response,
             'class="offcanvas-lg offcanvas-start collapsed"',
         )
+        self.assertNotContains(response, 'data-auto-expand-on-hover="true"')
 
     def test_tutor_main_dashboard_keeps_sidebar_expanded(self):
         tutor = User.objects.create_user(
@@ -61,6 +65,18 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
         self.client.force_login(tutor)
 
         response = self.client.get(reverse("rounds:dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="offcanvas-lg offcanvas-start"')
+        self.assertNotContains(
+            response,
+            'class="offcanvas-lg offcanvas-start collapsed"',
+        )
+
+    def test_non_idea_page_keeps_existing_expanded_sidebar_default(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("accounts:mypage"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'class="offcanvas-lg offcanvas-start"')

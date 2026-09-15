@@ -83,7 +83,7 @@ class PrdEvaluationService:
             for question in section["questions"]
         }
         demo_cache_enabled = bool(
-            settings.AI_EVALUATION_DEMO_CACHE and not settings.GEMINI_API_KEY.strip()
+            settings.AI_EVALUATION_DEMO_CACHE and not settings.PRD_GEMINI_API_KEY.strip()
         )
         if demo_cache_enabled:
             cached = self._current_demo_job(

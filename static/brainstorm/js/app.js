@@ -1530,7 +1530,7 @@
 
     return h("div", {className: "brain-react-shell"},
       h("header", {className: "brain-topbar"},
-        h("div", {className: "brain-project"}, h("a", {href: "/ideas/prds/" + root.dataset.prdId + "/", className: "brain-back"}, h("i", {className: "bi bi-arrow-left"}), " PRD로 돌아가기"), h("span", {className: "brain-divider"}), h("div", null, h("strong", {className: "brain-title"}, prdTitle), h("small", null, "브레인스토밍 보드"))),
+        h("div", {className: "brain-project"}, h("a", {href: "/ideas/prds/" + root.dataset.prdId + "/write/", className: "brain-back"}, h("i", {className: "bi bi-arrow-left"}), " PRD로 돌아가기"), h("span", {className: "brain-divider"}), h("div", null, h("strong", {className: "brain-title"}, prdTitle), h("small", null, "브레인스토밍 보드"))),
         h("nav", {className: "brain-view-tabs", "aria-label": "브레인스토밍 보기 방식"}, [
           ["board", "bi bi-kanban", "섹션 보드"], ["canvas", "bi bi-bounding-box", "자유 캔버스"], ["list", "bi bi-list-ul", "아이디어 목록"]
         ].map(function (item) { return h("button", {key: item[0], type: "button", className: boardView === item[0] ? "active" : "", onClick: function () { changeBoard(item[0]); }}, h("i", {className: item[1]}), item[2]); })),

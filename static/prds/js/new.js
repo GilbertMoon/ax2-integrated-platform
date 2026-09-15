@@ -301,7 +301,7 @@
     submit.textContent = "생성 중…";
     try {
       const data = await api(root.dataset.createApi, {method: "POST", headers: {"Idempotency-Key": requestKey()}, body: JSON.stringify({prd_type: selectedType, title: document.getElementById("prd-title").value.trim(), description: document.getElementById("prd-description").value.trim(), deadline: document.getElementById("prd-deadline").value || null, participant_user_ids: Array.from(selected.keys())})});
-      window.location.href = "/ideas/prds/" + data.prd.id + "/";
+      window.location.href = "/ideas/prds/" + data.prd.id + "/write/";
     } catch (error) {
       showError(error);
       submit.disabled = false;

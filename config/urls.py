@@ -45,6 +45,11 @@ urlpatterns = [
         include("apps.brainstorm.api_urls"),
     ),
     path(
+        "ideas/prds/<int:prd_id>/",
+        idea_ai_views.prd_write_page,
+        name="idea-prd-detail",
+    ),
+    path(
         "ideas/prds/<int:prd_id>/write/",
         idea_ai_views.prd_write_page,
         name="idea-prd-write",

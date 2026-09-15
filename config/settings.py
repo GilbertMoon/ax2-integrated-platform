@@ -358,6 +358,8 @@ STORAGES["lms"] = {
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 GEMINI_FALLBACK_MODELS = env_list("GEMINI_FALLBACK_MODELS", ["gemini-flash-latest"])
+# 3조 Idea Developer는 2조 LMS의 Gemini 자격 증명과 분리한다.
+PRD_GEMINI_API_KEY = os.getenv("PRD_GEMINI_API_KEY", "")
 GITHUB_OAUTH_CLIENT_ID = os.getenv("GITHUB_OAUTH_CLIENT_ID")
 GITHUB_OAUTH_CLIENT_SECRET = os.getenv("GITHUB_OAUTH_CLIENT_SECRET")
 GITHUB_TOKEN_ENC_KEY = os.getenv("GITHUB_TOKEN_ENC_KEY")

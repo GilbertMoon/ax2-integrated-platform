@@ -33,6 +33,7 @@ services:
       DJANGO_EMAIL_BACKEND: ${DJANGO_EMAIL_BACKEND:-django.core.mail.backends.smtp.EmailBackend}
       DJANGO_EMAIL_HOST_PASSWORD: ${DJANGO_EMAIL_HOST_PASSWORD:-}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      PRD_GEMINI_API_KEY: ${PRD_GEMINI_API_KEY:?PRD_GEMINI_API_KEY is required}
       # 업로드 경로는 아래 볼륨 마운트 지점과 반드시 같아야 해서 여기서 못 박는다 -
       # 환경 파일에서 다른 경로로 바뀌면 사진이 볼륨 밖(컨테이너 안)에 쌓여 배포 때 사라진다.
       DJANGO_MEDIA_ROOT: /app/media
@@ -58,6 +59,24 @@ services:
       - edge
       - data
       - mail
+
+  prd-worker:
+    image: review-system-production-app
+    restart: unless-stopped
+    init: true
+    command: ["python", "manage.py", "run_job_worker"]
+    env_file:
+      - ${PRODUCTION_ENV_FILE:-.env.production}
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      PRD_GEMINI_API_KEY: ${PRD_GEMINI_API_KEY:?PRD_GEMINI_API_KEY is required}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - edge
+      - data
 
   scheduler:
     # 웹과 같은 릴리스 이미지를 사용해 관리 명령과 메일 템플릿 버전이 어긋나지 않게 한다.

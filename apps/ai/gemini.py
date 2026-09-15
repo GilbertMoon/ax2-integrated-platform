@@ -20,10 +20,10 @@ class GeminiAiProvider:
     def generate(self, request, *, timeout_seconds, cancellation_check):
         if cancellation_check():
             raise AiProviderError("AI request was cancelled.", code="cancelled", retryable=False)
-        api_key = settings.GEMINI_API_KEY.strip()
+        api_key = settings.PRD_GEMINI_API_KEY.strip()
         if not api_key:
             raise AiProviderError(
-                "Gemini API key is not configured.",
+                "PRD Gemini API key is not configured.",
                 code="provider_not_configured",
                 retryable=False,
             )

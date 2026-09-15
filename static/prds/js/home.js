@@ -65,8 +65,8 @@
       body: JSON.stringify(body)
     }, "요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
-  function pageUrl(id) { return "/ideas/prds/" + encodeURIComponent(id) + "/"; }
-  function brainstormUrl(id) { return pageUrl(id) + "brainstorm/"; }
+  function pageUrl(id) { return "/ideas/prds/" + encodeURIComponent(id) + "/write/"; }
+  function brainstormUrl(id) { return "/ideas/prds/" + encodeURIComponent(id) + "/brainstorm/"; }
   function deleteUrl(id) { return root.dataset.deleteApiUrlTemplate.replace("/0/delete/", "/" + encodeURIComponent(id) + "/delete/"); }
   function askToDelete(item) {
     pendingDeletion = item;

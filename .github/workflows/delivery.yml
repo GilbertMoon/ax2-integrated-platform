@@ -50,9 +50,11 @@ jobs:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           KAKAO_OAUTH_CLIENT_ID: ${{ secrets.KAKAO_OAUTH_CLIENT_ID }}
           KAKAO_OAUTH_CLIENT_SECRET: ${{ secrets.KAKAO_OAUTH_CLIENT_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          PRD_GEMINI_API_KEY: ${{ secrets.PRD_GEMINI_API_KEY }}
         run: >-
           python deploy/render_production_env.py
           --template .env.production.example

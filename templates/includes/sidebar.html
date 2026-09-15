@@ -1,5 +1,6 @@
 <aside id="sidebar"
        class="offcanvas-lg offcanvas-start{% if request.resolver_match.namespace == 'ideas' or request.resolver_match.url_name == 'idea-prd-detail' or request.resolver_match.url_name == 'idea-prd-write' or request.resolver_match.url_name == 'idea-brainstorm' %} collapsed{% endif %}"
+       data-sidebar-role="{{ user.role|default:'preview' }}"
        tabindex="-1"
        aria-label="주 메뉴">
   <div>

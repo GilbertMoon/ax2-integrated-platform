@@ -224,6 +224,28 @@
     <script>
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebar-toggle');
+    if (sidebar) {
+      const sidebarScrollKey = `ax_sidebar_scroll:${sidebar.dataset.sidebarRole || 'default'}`;
+      const rememberSidebarScroll = () => {
+        try {
+          sessionStorage.setItem(sidebarScrollKey, String(sidebar.scrollTop));
+        } catch (_) {
+          // 저장소를 사용할 수 없는 환경에서도 메뉴 이동은 그대로 동작한다.
+        }
+      };
+      try {
+        const savedSidebarScroll = Number(sessionStorage.getItem(sidebarScrollKey));
+        if (Number.isFinite(savedSidebarScroll) && savedSidebarScroll >= 0) {
+          requestAnimationFrame(() => {
+            sidebar.scrollTop = savedSidebarScroll;
+          });
+        }
+      } catch (_) {
+        // 저장소를 사용할 수 없는 환경에서는 기본 위치를 사용한다.
+      }
+      sidebar.addEventListener('scroll', rememberSidebarScroll, { passive: true });
+      window.addEventListener('pagehide', rememberSidebarScroll);
+    }
     if (sidebarToggle && sidebar) {
       const syncSidebarToggleState = () => {
         sidebarToggle.setAttribute('aria-expanded', String(!sidebar.classList.contains('collapsed')));

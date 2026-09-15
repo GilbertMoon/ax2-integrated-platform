@@ -44,6 +44,8 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'href="/ideas/"')
         self.assertNotContains(response, 'target="_blank"')
+        self.assertContains(response, 'data-sidebar-role="student"')
+        self.assertContains(response, "ax_sidebar_scroll:")
         self.assertContains(response, 'class="offcanvas-lg offcanvas-start"')
         self.assertNotContains(
             response,

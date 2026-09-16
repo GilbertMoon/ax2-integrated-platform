@@ -25,6 +25,7 @@ from lms_modules.accounts_client import services as accounts
 from lms_modules.core.models import Assignment, Lesson, Submission
 from lms_modules.github_sync import services as github_services
 from lms_modules.github_sync.models import TutorGithubAccount
+from lms_modules.notices_client.notices import active_notice_texts
 
 FEEDBACK_QUEUE_LIMIT = 12
 LESSON_LIMIT = 4  # 대시보드는 최근 4개만. 나머지는 강의안 관리에서.
@@ -236,6 +237,7 @@ def dashboard(request):
         request,
         "lms_ui/tutor/dashboard.html",
         {
+            "notices": active_notice_texts(),
             "greeting": greeting,
             "summary": summary,
             "ongoing_rows": ongoing_rows,

@@ -53,6 +53,7 @@ SITE_URL = os.getenv("DJANGO_SITE_URL", "").strip().rstrip("/") or (
 )
 
 INSTALLED_APPS = [
+    "bug_reports.apps.BugReportsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -121,6 +122,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "lms_modules.common.context_processors.nav",
+                "lms_modules.common.context_processors.analytics",
             ],
         },
     }
@@ -310,7 +312,14 @@ PROFILE_IMAGE_MAX_BYTES = 2 * 1024 * 1024
 # 로컬에서는 기본값을 쓰고, 운영 환경은 DJANGO_FACE_SERVICE_URL로 실제 호스트를 지정한다.
 FACE_SERVICE_URL = os.getenv("DJANGO_FACE_SERVICE_URL", "http://127.0.0.1:5001").strip().rstrip("/")
 FACE_SERVICE_TIMEOUT = env_int("DJANGO_FACE_SERVICE_TIMEOUT", 15)
+BUG_REPORT_UPLOAD_ROOT = Path(
+    os.getenv("DJANGO_BUG_REPORT_UPLOAD_ROOT") or BASE_DIR / "private_uploads" / "bug_reports"
+)
 STORAGES = {
+    "bug_reports": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {"location": BUG_REPORT_UPLOAD_ROOT},
+    },
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {
         "BACKEND": (
@@ -357,9 +366,13 @@ STORAGES["lms"] = {
 }
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
-GEMINI_FALLBACK_MODELS = env_list("GEMINI_FALLBACK_MODELS", ["gemini-flash-latest"])
+GEMINI_FALLBACK_MODELS = env_list(
+    "GEMINI_FALLBACK_MODELS", ["gemini-flash-latest", "gemini-flash-lite-latest"]
+)
 # 3조 Idea Developer는 2조 LMS의 Gemini 자격 증명과 분리한다.
 PRD_GEMINI_API_KEY = os.getenv("PRD_GEMINI_API_KEY", "")
+GITHUB_OAUTH_REDIRECT_URI = os.getenv("GITHUB_OAUTH_REDIRECT_URI", "").strip()
+GITHUB_SYNC_SYNC = os.getenv("GITHUB_SYNC_SYNC", "false").lower() in {"1", "true", "yes"}
 GITHUB_OAUTH_CLIENT_ID = os.getenv("GITHUB_OAUTH_CLIENT_ID")
 GITHUB_OAUTH_CLIENT_SECRET = os.getenv("GITHUB_OAUTH_CLIENT_SECRET")
 GITHUB_TOKEN_ENC_KEY = os.getenv("GITHUB_TOKEN_ENC_KEY")
@@ -433,3 +446,7 @@ REACT_CDN_URL = f"https://cdn.jsdelivr.net/npm/react@{REACT_VERSION}/umd/react.p
 REACT_DOM_CDN_URL = (
     f"https://cdn.jsdelivr.net/npm/react-dom@{REACT_VERSION}/umd/react-dom.production.min.js"
 )
+
+# --- Google Analytics (GA4) ---
+# 값이 있으면 LMS base.html 이 gtag.js 스니펫을 심는다. 비우면 아무것도 안 함(no-op).
+GA_MEASUREMENT_ID = os.getenv("GA_MEASUREMENT_ID", "").strip()

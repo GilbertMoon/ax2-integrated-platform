@@ -1,0 +1,145 @@
+from datetime import timedelta
+from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
+from django.test import TestCase, override_settings
+from django.urls import reverse
+from django.utils import timezone
+
+from lms_modules.core.models import Assignment
+from lms_modules.tutor.forms import AssignmentForm
+
+
+class AssignmentFormFieldTests(TestCase):
+    databases = {"default", "assignment_lms"}
+
+    def _data(self, **over):
+        d = {
+            "title": "과제",
+            "description": "설명",
+            "due_at": (timezone.localtime() + timedelta(days=1)).strftime("%Y-%m-%dT%H:%M"),
+            "is_required": "1",
+            "allow_late": "1",
+            "is_team": "",
+            "weight_tier": "HIGH",
+            "late_penalty": "15",
+        }
+        d.update(over)
+        return d
+
+    def test_accepts_weight_tier_and_late_penalty(self):
+        form = AssignmentForm(self._data())
+        self.assertTrue(form.is_valid(), form.errors)
+        obj = form.save(commit=False)
+        self.assertEqual(obj.weight_tier, "HIGH")
+        self.assertEqual(obj.late_penalty, 15)
+
+    def test_blank_late_penalty_becomes_zero(self):
+        form = AssignmentForm(self._data(late_penalty=""))
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["late_penalty"], 0)
+
+    def test_late_penalty_over_100_rejected(self):
+        form = AssignmentForm(self._data(late_penalty="150"))
+        self.assertFalse(form.is_valid())
+        self.assertIn("late_penalty", form.errors)
+
+    def test_new_form_defaults(self):
+        form = AssignmentForm()
+        self.assertEqual(form.initial["weight_tier"], Assignment.WeightTier.MID)
+        self.assertEqual(form.initial["late_penalty"], 0)
+
+    # --- 팀 과제 마감일 상한 (team_deadline) ---
+
+    def _deadline(self, days):
+        return timezone.localtime() + timedelta(days=days)
+
+    def test_team_assignment_due_after_deadline_rejected(self):
+        form = AssignmentForm(
+            self._data(is_team="1", due_at=self._deadline(5).strftime("%Y-%m-%dT%H:%M")),
+            team_deadline=self._deadline(2),
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("due_at", form.errors)
+        self.assertIn("팀 활동 기한", form.errors["due_at"][0])
+
+    def test_team_assignment_due_within_deadline_ok(self):
+        form = AssignmentForm(
+            self._data(is_team="1", due_at=self._deadline(1).strftime("%Y-%m-%dT%H:%M")),
+            team_deadline=self._deadline(3),
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_individual_assignment_ignores_deadline(self):
+        form = AssignmentForm(
+            self._data(is_team="", due_at=self._deadline(10).strftime("%Y-%m-%dT%H:%M")),
+            team_deadline=self._deadline(2),
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_no_deadline_skips_check(self):
+        form = AssignmentForm(
+            self._data(is_team="1", due_at=self._deadline(30).strftime("%Y-%m-%dT%H:%M")),
+            team_deadline=None,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+
+
+@override_settings(DEV_SKIP_AUTH=True)
+class AssignmentCreateViewTests(TestCase):
+    databases = {"default", "assignment_lms"}
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(approval_status="approved", is_active=True, is_onboarded=True, email="tutor-a@example.com", password="pw")
+        self.client.force_login(self.user)
+        p = patch("lms_modules.tutor.views_manage.accounts.is_tutor", return_value=True)
+        p.start()
+        self.addCleanup(p.stop)
+
+    def test_create_persists_weight_and_penalty(self):
+        resp = self.client.post(reverse("lms:tutor:assignment-list"), {
+            "title": "중요 과제",
+            "description": "설명",
+            "due_at": (timezone.localtime() + timedelta(days=1)).strftime("%Y-%m-%dT%H:%M"),
+            "is_required": "1",
+            "allow_late": "1",
+            "is_team": "",
+            "weight_tier": "LOW",
+            "late_penalty": "5",
+        })
+        self.assertEqual(resp.status_code, 302)
+        a = Assignment.objects.get(title="중요 과제")
+        self.assertEqual(a.weight_tier, "LOW")
+        self.assertEqual(a.late_penalty, 5)
+
+    @patch("lms_modules.tutor.views_manage.accounts.get_students", return_value=[])
+    @patch("lms_modules.tutor.views_manage.accounts.get_teams", return_value=[])
+    def test_list_sorts_open_then_recently_closed_assignments(
+        self, _get_teams, _get_students
+    ):
+        now = timezone.now()
+        older_closed = Assignment.objects.create(
+            title="이전 마감 과제", due_at=now - timedelta(days=2), created_by=1
+        )
+        recent_closed = Assignment.objects.create(
+            title="최근 마감 과제", due_at=now - timedelta(days=1), created_by=1
+        )
+        older_open = Assignment.objects.create(
+            title="먼저 생성된 진행 과제", due_at=now + timedelta(days=3), created_by=1
+        )
+        recent_open = Assignment.objects.create(
+            title="최근 생성된 진행 과제", due_at=now + timedelta(days=1), created_by=1
+        )
+        Assignment.objects.filter(pk=older_open.pk).update(
+            created_at=now - timedelta(hours=2)
+        )
+        Assignment.objects.filter(pk=recent_open.pk).update(
+            created_at=now - timedelta(hours=1)
+        )
+
+        response = self.client.get(reverse("lms:tutor:assignment-list"))
+
+        self.assertEqual(
+            [assignment.id for assignment in response.context["assignments"]],
+            [recent_open.id, older_open.id, recent_closed.id, older_closed.id],
+        )

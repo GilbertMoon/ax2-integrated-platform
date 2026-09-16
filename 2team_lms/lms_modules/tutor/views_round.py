@@ -130,10 +130,14 @@ def round_close(request):
 
 @tutor_required
 def round_close_result(request, round_id):
-    rows = RoundScore.objects.filter(round_id=round_id)
-    if not rows.exists():
+    snapshot_rows = RoundScore.objects.filter(round_id=round_id)
+    if not snapshot_rows.exists():
         raise Http404("마감된 회차가 아닙니다.")
-    head = rows.first()
+    head = snapshot_rows.first()
+    # RoundScore 자체는 get_students() 전체 학생 기준으로 저장돼 있다(grading.snapshot 그대로).
+    # 화면 표시만 이 회차의 실제 참가자로 좁힌다 — DB 행은 그대로 남는다.
+    participant_ids = accounts.get_round_participant_ids(round_id)
+    rows = snapshot_rows.filter(student_id__in=participant_ids)
     return render(request, "lms_ui/tutor/round_close_result.html", {
         "round_id": round_id,
         "round_title": head.round_title,
@@ -146,9 +150,12 @@ def round_close_result(request, round_id):
 
 @tutor_required
 def round_close_csv(request, round_id):
-    rows = RoundScore.objects.filter(round_id=round_id)
-    if not rows.exists():
+    snapshot_rows = RoundScore.objects.filter(round_id=round_id)
+    if not snapshot_rows.exists():
         raise Http404("마감된 회차가 아닙니다.")
+    # round_close_result와 동일하게 이 회차 참가자만 CSV(AX2 전달용)에 담는다.
+    participant_ids = accounts.get_round_participant_ids(round_id)
+    rows = snapshot_rows.filter(student_id__in=participant_ids)
 
     response = HttpResponse(content_type="text/csv; charset=utf-8")
     response["Content-Disposition"] = f'attachment; filename="round_{round_id}_scores.csv"'

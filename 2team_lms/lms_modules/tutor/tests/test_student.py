@@ -1,0 +1,136 @@
+from datetime import timedelta
+from types import SimpleNamespace
+from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
+from django.test import TestCase, override_settings
+from django.urls import reverse
+from django.utils import timezone
+
+from lms_modules.core.models import Assignment, Evaluation, Submission
+
+STUDENTS = [SimpleNamespace(id=i, name=f"학생{i}", email=f"s{i}@x.io", role="student") for i in (1, 2, 3)]
+
+
+@override_settings(DEV_SKIP_AUTH=True)
+class TutorStudentMgmtTests(TestCase):
+    databases = {"default", "assignment_lms"}
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(approval_status="approved", is_active=True, is_onboarded=True, email="tutor-stu@example.com")
+        self.client.force_login(self.user)
+        for name, val in [
+            ("lms_modules.tutor.views_student.accounts.is_tutor", True),
+            ("lms_modules.tutor.views_student.accounts.get_students", STUDENTS),
+        ]:
+            p = patch(name, return_value=val)
+            p.start()
+            self.addCleanup(p.stop)
+        p = patch("lms_modules.tutor.views_student.accounts.get_user",
+                  side_effect=lambda sid: next((s for s in STUDENTS if s.id == sid), None))
+        p.start()
+        self.addCleanup(p.stop)
+
+    def _a(self, **kw):
+        d = dict(title="과제", due_at=timezone.now() + timedelta(days=1),
+                 is_team=False, is_required=True, allow_late=True, created_by=self.user.id)
+        d.update(kw)
+        return Assignment.objects.create(**d)
+
+    # ---------- list ----------
+    def test_list_requires_tutor(self):
+        with patch("lms_modules.tutor.views_student.accounts.is_tutor", return_value=False):
+            self.assertEqual(self.client.get(reverse("lms:tutor:student-list")).status_code, 403)
+
+    def test_required_rate_personal_only(self):
+        r1 = self._a(title="필수1")
+        r2 = self._a(title="필수2")
+        self._a(title="팀과제", is_team=True)          # 분모에서 제외돼야 함
+        self._a(title="선택1", is_required=False)
+        Submission.objects.create(assignment=r1, student_id=1)   # 학생1: 2개 중 1개
+
+        rows = {r["id"]: r for r in self.client.get(reverse("lms:tutor:student-list")).context["rows"]}
+        self.assertEqual(rows[1]["req_total"], 2)
+        self.assertEqual(rows[1]["req_done"], 1)
+        self.assertEqual(rows[1]["req_rate"], 50)
+        self.assertEqual(rows[1]["opt_total"], 1)
+        self.assertEqual(rows[2]["req_done"], 0)
+
+    def test_students_with_missing_counts_overdue_unsubmitted(self):
+        self._a(title="지난 필수", due_at=timezone.now() - timedelta(days=1))
+        Submission.objects.create(assignment=Assignment.objects.get(title="지난 필수"), student_id=1)
+        ctx = self.client.get(reverse("lms:tutor:student-list")).context
+        # 학생2, 학생3 은 미제출
+        self.assertEqual(ctx["students_with_missing"], 2)
+
+    def test_sort_by_name(self):
+        self._a()
+        ctx = self.client.get(reverse("lms:tutor:student-list"), {"sort": "name"}).context
+        self.assertEqual([r["name"] for r in ctx["rows"]], ["학생1", "학생2", "학생3"])
+
+    def test_sort_by_score(self):
+        a = self._a(due_at=timezone.now() - timedelta(days=1))
+        for sid, sc in [(1, 90), (2, 30), (3, 60)]:
+            sub = Submission.objects.create(assignment=a, student_id=sid)
+            Evaluation.objects.create(submission=sub, score=sc, feedback="x")
+        low = self.client.get(reverse("lms:tutor:student-list"), {"sort": "score_low"}).context
+        self.assertEqual([r["id"] for r in low["rows"]], [2, 3, 1])
+        high = self.client.get(reverse("lms:tutor:student-list"), {"sort": "score_high"}).context
+        self.assertEqual([r["id"] for r in high["rows"]], [1, 3, 2])
+
+    def test_invalid_sort_falls_back(self):
+        self._a()
+        ctx = self.client.get(reverse("lms:tutor:student-list"), {"sort": "bogus"}).context
+        self.assertEqual(ctx["filters"]["sort"], "required")
+
+    # ---------- detail ----------
+    def test_detail_timeline_statuses(self):
+        done = self._a(title="제출완료", due_at=timezone.now() + timedelta(days=2))
+        late = self._a(title="지각", due_at=timezone.now() - timedelta(days=2))
+        missing = self._a(title="미제출", due_at=timezone.now() - timedelta(days=1))
+        upcoming = self._a(title="마감전", due_at=timezone.now() + timedelta(days=3))
+        Submission.objects.create(assignment=done, student_id=1)
+        s_late = Submission.objects.create(assignment=late, student_id=1)
+        Submission.objects.filter(pk=s_late.pk).update(submitted_at=timezone.now())
+
+        ctx = self.client.get(reverse("lms:tutor:student-detail", args=[1])).context
+        status = {t["assignment"].title: t["status"] for t in ctx["timeline"]}
+        self.assertEqual(status["제출완료"], "제출완료")
+        self.assertEqual(status["지각"], "지각 제출")
+        self.assertEqual(status["미제출"], "미제출")
+        self.assertEqual(status["마감전"], "마감 전")
+
+    def test_detail_score_shows_only_graded(self):
+        a = self._a(due_at=timezone.now() - timedelta(days=1))
+        sub = Submission.objects.create(assignment=a, student_id=1)
+        Evaluation.objects.create(submission=sub, score=88, feedback="ok")
+        ctx = self.client.get(reverse("lms:tutor:student-detail", args=[1])).context
+        self.assertEqual(ctx["timeline"][0]["score"], 88)
+
+    def test_detail_unknown_student_403(self):
+        self.assertEqual(self.client.get(reverse("lms:tutor:student-detail", args=[999])).status_code, 403)
+
+    # ---------- 최종 점수 (grading) ----------
+    def test_list_shows_final_score(self):
+        a = self._a(due_at=timezone.now() - timedelta(days=1))
+        sub = Submission.objects.create(assignment=a, student_id=1)
+        Evaluation.objects.create(submission=sub, score=90, feedback="ok")
+        rows = {r["id"]: r for r in self.client.get(reverse("lms:tutor:student-list")).context["rows"]}
+        # 학생1: 성취도 90, 성실성 100 → 90*.7 + 100*.3 = 93.0
+        self.assertEqual(rows[1]["final_score"], 93.0)
+        # 학생2: 미제출 필수 → 성취도 10, 성실성 0 → 7.0
+        self.assertEqual(rows[2]["final_score"], 7.0)
+
+    def test_list_final_score_none_when_all_ungraded(self):
+        a = self._a(due_at=timezone.now() - timedelta(days=1))
+        Submission.objects.create(assignment=a, student_id=1)  # 채점 안 함
+        rows = {r["id"]: r for r in self.client.get(reverse("lms:tutor:student-list")).context["rows"]}
+        self.assertIsNone(rows[1]["final_score"])
+        self.assertEqual(rows[1]["score_ungraded"], 1)
+
+    def test_detail_has_final_score(self):
+        a = self._a(due_at=timezone.now() - timedelta(days=1))
+        sub = Submission.objects.create(assignment=a, student_id=1)
+        Evaluation.objects.create(submission=sub, score=80, feedback="ok")
+        ctx = self.client.get(reverse("lms:tutor:student-detail", args=[1])).context
+        self.assertEqual(ctx["final_score"], 86.0)  # 80*.7 + 100*.3

@@ -20,7 +20,7 @@
 
   --space-xs: 4px; --space-sm: 8px; --space-md: 16px;
   --space-lg: 24px; --space-xl: 32px; --space-xxl: 48px;
-  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+  --radius-sm: 8px; --radius-md: 16px; --radius-lg: 14px;
 
   --sidebar-width: 240px;
   --topbar-height: 64px;
@@ -31,8 +31,6 @@
 }
 
 * { box-sizing: border-box; }
-
-html { overflow-y: scroll; }
 
 body {
   margin: 0;
@@ -58,29 +56,41 @@ body {
   height: 100vh;
 }
 .app-sidebar .brand {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 700;
   font-size: 16px;
-  padding: var(--space-lg) var(--space-md);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  text-decoration: none;
+  padding: 0 var(--space-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
+.app-sidebar .brand i { font-size: 20px; color: #60A5FA; }
 .app-sidebar nav { padding: var(--space-sm); flex: 1; overflow-y: auto; }
 .app-sidebar a {
-  display: block;
-  padding: 10px 12px;
-  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin-bottom: 8px;
   border-radius: var(--radius-sm);
-  color: rgba(255, 255, 255, 0.82);
+  color: #CBD5E1;
   text-decoration: none;
+  font-weight: 500;
   font-size: 13.5px;
+  transition: all 200ms ease-out;
 }
 .app-sidebar a:hover { background: var(--color-navigation-hover); color: #fff; }
-.app-sidebar a.active { background: var(--color-primary); color: #fff; font-weight: 600; }
+.app-sidebar a.active { background: var(--color-primary); color: #fff; font-weight: 600; box-shadow: 0 2px 6px rgba(23, 105, 224, 0.3); }
 .app-sidebar .nav-group-label {
   font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.45);
-  padding: 14px 12px 4px;
+  letter-spacing: 0.06em;
+  color: #94A3B8;
+  padding: 16px 16px 8px;
 }
 
 .app-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -95,21 +105,98 @@ body {
   justify-content: space-between;
   padding: 0 var(--space-lg);
   gap: var(--space-md);
+  position: sticky;
+  top: 0;
+  z-index: 1020;
 }
-.app-topbar .crumb { font-size: 12.5px; color: var(--color-text-muted); font-weight: 600; }
+.app-topbar .crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.app-topbar .crumb-root { display: flex; align-items: center; gap: 8px; }
+.app-topbar .crumb-sep { font-size: 11px; color: var(--color-text-muted); }
+.app-topbar .crumb-current { color: var(--color-text); font-weight: 600; }
 .app-topbar .utils { display: flex; align-items: center; gap: var(--space-md); font-size: 13px; }
 .app-topbar .utils a { color: var(--color-text-muted); text-decoration: none; }
 .app-topbar .utils a:hover { color: var(--color-primary); }
 
-.app-main { flex: 1; padding: var(--space-lg) var(--space-xl); }
-.app-main > .container-fluid { max-width: var(--content-max-width); margin: 0 auto; }
+/* 4조 Core 상단바의 사용자 표시(member-avatar)와 동일한 값 — 새 기능(드롭다운 등) 없이 시각 요소만 맞춘다. */
+.member-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-primary-container);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+.avatar-xs { width: 28px; height: 28px; font-size: 11px; }
+
+/* 사용자 표시 + 로그아웃을 하나의 pill 안에 묶어 Core 상단바의 "사용자 영역"과 같은 느낌을 준다. */
+.app-topbar .user-chip {
+  padding: 4px 8px 4px 4px;
+}
+.app-topbar .user-chip-logout {
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-decoration: none;
+  line-height: 1;
+  padding-left: 10px;
+  margin-left: 2px;
+  border-left: 1px solid var(--color-outline);
+}
+.app-topbar .user-chip-logout:hover { color: var(--color-primary); }
+
+/* 학생/튜터 대시보드 공용 공지 배너 (Core notices 연동, lms_ui/includes/notice_banner.html) — Core .notice-bar와 동일 값 */
+.notice-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--color-primary-container);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-md);
+  padding: 10px 20px;
+  font-size: 13.5px;
+  margin-bottom: 20px;
+}
+.notice-banner .tag { color: var(--color-primary); font-weight: 600; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+.notice-banner .body { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice-banner .nav { display: flex; align-items: center; gap: 8px; color: var(--color-text-muted); flex-shrink: 0; }
+.notice-banner .nav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-outline);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+}
+.notice-banner .nav button:hover { background: var(--color-background); border-color: var(--color-primary); }
+
+.app-main { flex: 1; padding: var(--space-lg); }
+.app-main > .container-fluid { max-width: var(--content-max-width); margin: 0 auto; padding-left: 0; padding-right: 0; }
 
 .page-header { margin-bottom: var(--space-lg); }
 
 .sidebar-toggle,
 .sidebar-overlay { display: none; }
 
-@media (max-width: 992px) {
+@media (max-width: 991.98px) {
   .app-topbar {
     position: sticky;
     top: 0;

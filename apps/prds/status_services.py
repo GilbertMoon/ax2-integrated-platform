@@ -146,19 +146,11 @@ class PrdStatusService:
             raise PrdStatusConflict(current_status=prd.status)
         if access.role != PrdParticipantRole.OWNER and not access.is_admin:
             raise PermissionDenied("Only the PRD owner or an administrator can reopen it.")
-        latest_completion_reason = (
-            prd.status_audit_logs.filter(
-                action=PrdStatusAuditAction.COMPLETED,
-            )
-            .order_by("-created_at", "-id")
-            .values_list("reason", flat=True)
-            .first()
-        )
-        if latest_completion_reason == self.AUTO_COMPLETION_REASON and (
-            prd.deadline is None or prd.deadline < timezone.localdate()
-        ):
+        # 완료 사유와 무관하게 막는다. 기한이 지난 채로 다시 열면 다음 조회 때
+        # complete_overdue가 곧바로 완료로 되돌려 재오픈이 무의미해진다.
+        if prd.deadline is not None and prd.deadline < timezone.localdate():
             raise ValidationError(
-                {"deadline": "자동 완료된 PRD를 다시 열려면 마감 기한을 오늘 이후로 변경해 주세요."}
+                {"deadline": "마감 기한이 지난 PRD를 다시 열려면 기한을 오늘 이후로 변경해 주세요."}
             )
 
         previous_status = prd.status

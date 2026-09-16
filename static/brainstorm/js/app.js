@@ -1033,13 +1033,17 @@
     function line(connection) {
       var nodeA = visible.find(function (node) { return node.id === connection.node_a_id; });
       var nodeB = visible.find(function (node) { return node.id === connection.node_b_id; });
-      // 자유 캔버스에서는 두 메모가 모두 미분류일 때만 관계선을 보여 준다.
-      // 분류 뒤에도 DB 연결은 유지하므로 둘 다 미분류로 돌아오면 다시 표시된다.
-      if (!nodeA || !nodeB || nodeA.section_id !== null || nodeB.section_id !== null) return null;
+      if (!nodeA || !nodeB) return null;
+      // 가리키거나 고른 메모에 닿는 선인지. 부챗살 계산과 강조 표시가 함께 쓴다.
+      var spotlightId = hoveredNode || focused;
+      var touches = spotlightId && (connection.node_a_id === spotlightId || connection.node_b_id === spotlightId);
+      // 둘 다 미분류면 항상 흐리게 보여 준다. 한쪽이라도 섹션에 들어가면 선이 섹션 위를
+      // 가로질러 어지러우므로, 그 메모를 가리키거나 골랐을 때만 드러낸다.
+      var bothUnclassified = nodeA.section_id === null && nodeB.section_id === null;
+      if (!bothUnclassified && !touches) return null;
       var a = positions[connection.node_a_id], b = positions[connection.node_b_id]; if (!a || !b) return null;
       var x1 = a.x + NODE_W / 2, y1 = a.y + NODE_H / 2, x2 = b.x + NODE_W / 2, y2 = b.y + NODE_H / 2;
       // 강조 중인 메모 쪽 끝만 부챗살로 벌려 선끼리 겹치지 않게 한다.
-      var spotlightId = hoveredNode || focused;
       if (spotlightId === connection.node_a_id) {
         var fanA = spreadAnchor(spotlightId, connection, x1, y1, x2, y2);
         x1 = fanA.x; y1 = fanA.y;
@@ -1072,12 +1076,11 @@
           u * u * u * y1 + 3 * u * u * t * bend.ay + 3 * u * t * t * bend.by + t * t * t * y2
         ]);
       }
-      // 평소엔 숨겨 두고, 가리키거나 고른 메모로 이어진 선만 그때 드러낸다.
-      var spotlight = hoveredNode || focused;
-      var touches = spotlight && (connection.node_a_id === spotlight || connection.node_b_id === spotlight);
+      // unclassified 클래스가 평소 흐리게 보이는 상태를 만든다. 분류된 메모가 낀 선은
+      // 이 클래스를 빼서 기본 opacity:0으로 두고 highlighted 때만 드러나게 한다.
       var emphasis = touches ? " highlighted" : "";
       return h("g", {key: connection.id},
-        h("path", {d: curve, className: "brain-connection unclassified" + emphasis + (connection.pending ? " pending" : "")}),
+        h("path", {d: curve, className: "brain-connection" + (bothUnclassified ? " unclassified" : "") + emphasis + (connection.pending ? " pending" : "")}),
         canEdit && !connection.pending ? h("circle", {cx: handleX, cy: handleY, r: 9, className: "brain-connection-delete" + emphasis, onClick: function () { deleteConnection(connection); }}) : null);
     }
     function note(node) {

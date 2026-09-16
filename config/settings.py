@@ -122,6 +122,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "lms_modules.common.context_processors.nav",
+                "lms_modules.common.context_processors.analytics",
             ],
         },
     }
@@ -445,3 +446,7 @@ REACT_CDN_URL = f"https://cdn.jsdelivr.net/npm/react@{REACT_VERSION}/umd/react.p
 REACT_DOM_CDN_URL = (
     f"https://cdn.jsdelivr.net/npm/react-dom@{REACT_VERSION}/umd/react-dom.production.min.js"
 )
+
+# --- Google Analytics (GA4) ---
+# 값이 있으면 LMS base.html 이 gtag.js 스니펫을 심는다. 비우면 아무것도 안 함(no-op).
+GA_MEASUREMENT_ID = os.getenv("GA_MEASUREMENT_ID", "").strip()

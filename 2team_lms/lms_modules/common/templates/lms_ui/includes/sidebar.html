@@ -4,31 +4,34 @@ role(nav_role: TUTOR|STUDENT)?메뉴 분기. active ?시??url_namespace 기?.
 ??지금? 최소 버전. 모바??offcanvas / ?이?바 ?기 / ?이콘? 추후.
 {% endcomment %}
 <aside class="app-sidebar" id="app-sidebar">
-  <div class="brand">AX 과제 시스템</div>
+  <a href="{% url 'accounts:dashboard' %}" class="brand">
+    <i class="bi bi-mortarboard-fill"></i>
+    <span>AX Console</span>
+  </a>
   <nav>
-    <a href="{% url 'accounts:dashboard' %}">통합 플랫폼</a>
+    <a href="{% url 'accounts:dashboard' %}"><i class="bi bi-house-door-fill"></i><span>통합 플랫폼</span></a>
     {% if nav_role == "TUTOR" %}
       <div class="nav-group-label">튜터</div>
       <a href="{% url 'lms:tutor:dashboard' %}"
-         class="{% if url_namespace == 'tutor' and url_name == 'dashboard' or url_namespace == 'tutor' and url_name == 'dashboard-alt' %}active{% endif %}">대시보드</a>
+         class="{% if url_namespace == 'tutor' and url_name == 'dashboard' or url_namespace == 'tutor' and url_name == 'dashboard-alt' %}active{% endif %}"><i class="bi bi-grid-1x2-fill"></i><span>대시보드</span></a>
       <a href="{% url 'lms:tutor:student-list' %}"
-         class="{% if url_namespace == 'tutor' and url_name == 'student-list' or url_namespace == 'tutor' and url_name == 'student-detail' %}active{% endif %}">학생 관리</a>
+         class="{% if url_namespace == 'tutor' and url_name == 'student-list' or url_namespace == 'tutor' and url_name == 'student-detail' %}active{% endif %}"><i class="bi bi-people"></i><span>학생 관리</span></a>
       <a href="{% url 'lms:tutor:round-close' %}"
-         class="{% if url_namespace == 'tutor' and url_name == 'round-close' or url_namespace == 'tutor' and url_name == 'round-close-result' %}active{% endif %}">점수집계</a>
+         class="{% if url_namespace == 'tutor' and url_name == 'round-close' or url_namespace == 'tutor' and url_name == 'round-close-result' %}active{% endif %}"><i class="bi bi-bar-chart-line-fill"></i><span>점수집계</span></a>
       <a href="{% url 'lms:tutor:assignment-list' %}"
-         class="{% if url_namespace == 'tutor' and url_name != 'lecture' and url_name != 'dashboard' and url_name != 'dashboard-alt' and url_name != 'student-list' and url_name != 'student-detail' and url_name != 'round-close' and url_name != 'round-close-result' and url_name != 'round-close-csv' %}active{% endif %}">과제 관리</a>
+         class="{% if url_namespace == 'tutor' and url_name != 'lecture' and url_name != 'dashboard' and url_name != 'dashboard-alt' and url_name != 'student-list' and url_name != 'student-detail' and url_name != 'round-close' and url_name != 'round-close-result' and url_name != 'round-close-csv' %}active{% endif %}"><i class="bi bi-card-checklist"></i><span>과제 관리</span></a>
       <a href="{% url 'lms:tutor:lecture' %}"
-         class="{% if url_namespace == 'tutor' and url_name == 'lecture' %}active{% endif %}">강의 및 교안 관리</a>
+         class="{% if url_namespace == 'tutor' and url_name == 'lecture' %}active{% endif %}"><i class="bi bi-book"></i><span>강의 및 교안 관리</span></a>
     {% elif nav_role == "STUDENT" %}
       <div class="nav-group-label">학생</div>
       <a href="{% url 'lms:student:dashboard' %}"
-         class="{% if url_name == 'dashboard' or url_name == 'home' %}active{% endif %}">대시보드</a>
+         class="{% if url_name == 'dashboard' or url_name == 'home' %}active{% endif %}"><i class="bi bi-grid-1x2-fill"></i><span>대시보드</span></a>
       <a href="{% url 'lms:student:lecture-list' %}"
-         class="{% if url_name == 'lecture-list' or url_name == 'lecture-detail' %}active{% endif %}">강의 및 교안 학습</a>
+         class="{% if url_name == 'lecture-list' or url_name == 'lecture-detail' %}active{% endif %}"><i class="bi bi-book"></i><span>강의 및 교안 학습</span></a>
       <a href="{% url 'lms:student:assignment-list' %}"
-         class="{% if url_name == 'assignment-list' or url_name == 'assignment-submit' or url_name == 'assignment-preview' or url_name == 'submission-resubmit' %}active{% endif %}">과제 목록</a>
+         class="{% if url_name == 'assignment-list' or url_name == 'assignment-submit' or url_name == 'assignment-preview' or url_name == 'submission-resubmit' %}active{% endif %}"><i class="bi bi-list-check"></i><span>과제 목록</span></a>
     {% else %}
-      <a href="/admin/">관리자</a>
+      <a href="/admin/"><i class="bi bi-gear-fill"></i><span>관리자</span></a>
     {% endif %}
   </nav>
 </aside>

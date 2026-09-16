@@ -29,7 +29,6 @@ class PrdAccessService:
         # permission input for explicit completion/reopen operations.
         from .status_services import PrdStatusService
 
-        PrdStatusService().complete_overdue(prd_ids=[prd_id])
         try:
             prd = Prd.objects.with_completion_rate().get(pk=prd_id, is_deleted=False)
         except Prd.DoesNotExist as exc:
@@ -54,6 +53,11 @@ class PrdAccessService:
         is_admin = is_admin_context(context)
         if role is None and not has_team_access and not is_admin:
             raise PermissionDenied("The user cannot access this PRD.")
+
+        # 자동 완료는 권한 확인을 통과한 뒤에만 돌린다. 앞에서 돌리면 접근이 거부될 요청도
+        # 남의 PRD 상태를 완료로 바꾸고 커밋해 버린다.
+        if PrdStatusService().complete_overdue(prd_ids=[prd.pk]):
+            prd = Prd.objects.with_completion_rate().get(pk=prd.pk)
         return PrdAccess(prd=prd, role=role, is_admin=is_admin)
 
 

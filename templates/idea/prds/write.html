@@ -3,8 +3,11 @@
 {% block title %}{{ prd.title }} | Idea Developer{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/write.css' %}?v=20260914-1"
+  <link href="{% static 'prds/css/write.css' %}?v=20260916-1"
         rel="stylesheet">
+  {% comment %}PRD 화면은 다크모드 대응 CSS가 없어 라이트로 고정하고 토글을 숨긴다.{% endcomment %}
+  <script>document.documentElement.setAttribute('data-bs-theme', 'light');</script>
+  <style>.ax-theme-toggle { display: none !important; }</style>
 {% endblock %}
 {% block content %}
   <div id="prd-write-app"

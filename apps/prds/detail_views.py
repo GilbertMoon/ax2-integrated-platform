@@ -856,6 +856,9 @@ def participant_item(request, prd_id, user_id):
         PrdParticipantVersionConflict,
     ) as exc:
         return _error_response(request, exc)
+    except PrdParticipant.DoesNotExist:
+        # 뷰가 읽은 뒤 서비스가 잠글 때까지 사이에 다른 요청이 참여자를 지운 경우다.
+        return _error_response(request, PrdNotFound())
 
 
 @require_http_methods(["POST"])
@@ -1241,6 +1244,9 @@ def comment_item(request, prd_id, comment_id):
         PrdCommentVersionConflict,
     ) as exc:
         return _error_response(request, exc)
+    except PrdComment.DoesNotExist:
+        # 뷰가 읽은 뒤 서비스가 잠글 때까지 사이에 다른 요청이 댓글을 지운 경우다.
+        return _error_response(request, PrdNotFound())
 
 
 def _serialize_comment(comment, *, display_name, actor_user_id=None, access=None):

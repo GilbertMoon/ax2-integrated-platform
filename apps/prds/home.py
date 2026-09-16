@@ -35,6 +35,7 @@ from .models import (
     PrdType,
 )
 from .status_services import PrdStatusService
+from .views import mask_email
 
 HOME_TABS = {"all", "project", "team", "personal"}
 HOME_SCOPES = {"all", "mine", "viewer"}
@@ -345,7 +346,8 @@ class HomeQueryService:
             if duplicate:
                 parent_user = self.repository.get_user(row["user_id"])
                 if parent_user:
-                    row["email"] = parent_user.primary_email or parent_user.user_email
+                    email = parent_user.primary_email or parent_user.user_email
+                    row["email"] = mask_email(email) if email else None
         return {
             "items": items,
             "pagination": {
@@ -399,12 +401,16 @@ class HomeQueryService:
         context: IntegrationContext,
         page: int,
         page_size: int,
+        dashboard_view: str = "tutoring",
     ):
         if page <= 0 or page_size <= 0:
             raise ValidationError({"pagination": "페이지 값은 1 이상이어야 합니다."})
+        if dashboard_view not in TUTOR_DASHBOARD_VIEWS:
+            raise ValidationError({"dashboard_view": "지원하지 않는 튜터 화면입니다."})
         base = self._dashboard_base(
             context=context,
             tutor_mode=self.is_tutor_context(context),
+            dashboard_view=dashboard_view,
         )
         participant_prd_ids = base.filter(
             participants__user_id=context.user_id,

@@ -362,7 +362,7 @@
     modalAlert.classList.add("d-none");
     modalList.replaceChildren();
     try {
-      const query = new URLSearchParams({page: String(page), page_size: "8"});
+      const query = new URLSearchParams({page: String(page), page_size: "8", dashboard_view: state.dashboardView});
       const data = await requestJson(root.dataset.recentActivityApiUrl + "?" + query, null, "최근 활동을 불러오지 못했습니다.");
       renderRecentList(modalList, data.items);
       renderRecentPages(data.pagination);

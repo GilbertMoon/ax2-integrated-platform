@@ -154,6 +154,7 @@ def recent_activity(request):
             context=context,
             page=page,
             page_size=min(requested_page_size, 20),
+            dashboard_view=request.GET.get("dashboard_view", "tutoring"),
         )
     except (TypeError, ValueError, ValidationError) as exc:
         details = exc.message_dict if hasattr(exc, "message_dict") else None

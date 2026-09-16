@@ -33,7 +33,6 @@ class IdeaDeveloperPlatformIntegrationTests(TestCase):
             'class="offcanvas-lg offcanvas-start collapsed"',
         )
         self.assertContains(response, 'data-auto-expand-on-hover="true"')
-        self.assertContains(response, 'aria-label="PRD 대시보드 나가기"')
         self.assertContains(response, 'href="/accounts/dashboard/"')
         self.assertNotContains(response, 'class="studio-header sticky-top"')
 

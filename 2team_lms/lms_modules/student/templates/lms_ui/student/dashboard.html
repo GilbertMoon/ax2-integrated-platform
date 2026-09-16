@@ -7,7 +7,6 @@
 
 {% block extra_head %}
 <style>
-  .app-topbar .crumb { display:none; }
   .app-topbar .utils { margin-left:auto; }
   .dash {
     --d-surface:#fff; --d-sunken:#eef1f8; --d-muted:#f4f6fb;
@@ -33,14 +32,7 @@
     background:var(--d-sunken); color:var(--d-tmuted); }
   .dash .pill.accent { background:var(--d-accent-soft); color:var(--d-accent-text); }
 
-  .dash .notice { display:flex; align-items:center; gap:12px; background:var(--d-surface); border:1px solid var(--d-border);
-    border-radius:var(--d-r-md); box-shadow:var(--d-shadow); padding:12px 18px; font-size:13.5px; margin-bottom:16px; }
-  .dash .notice .tag { color:var(--d-accent-text); font-weight:700; white-space:nowrap; }
-  .dash .notice .body { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .dash .notice .nav { display:flex; align-items:center; gap:8px; color:var(--d-tfaint); flex-shrink:0; }
-  .dash .notice .nav button { border:none; background:none; color:var(--d-tmuted); cursor:pointer; font-size:15px; padding:2px 6px; border-radius:6px; }
-  .dash .notice .nav button:hover { background:var(--d-muted); color:var(--d-text); }
-  .dash .page-head { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  .dash .page-head { display:flex; flex-direction:column; gap:6px; margin-bottom:24px; }
   .dash .breadcrumb { font-size:12.5px; color:var(--d-tfaint); font-weight:600; }
   .dash h1.dash-title { font-size:21px; font-weight:800; margin:0; letter-spacing:-.01em; }
 
@@ -173,18 +165,7 @@
 
 {% block page_header %}
 <div class="dash">
-  {% if notices %}
-  <div class="notice" id="notice">
-    <span class="tag">🔔 공지</span>
-    <span class="body" id="noticeBody">{{ notices.0 }}</span>
-    <span class="nav">
-      <button type="button" id="noticePrev" aria-label="이전 공지">‹</button>
-      <span id="noticeIdx">1 / {{ notices|length }}</span>
-      <button type="button" id="noticeNext" aria-label="다음 공지">›</button>
-    </span>
-  </div>
-  {{ notices|json_script:"noticeData" }}
-  {% endif %}
+  {% include "lms_ui/includes/notice_banner.html" %}
   <div class="page-head">
 
     <h1 class="dash-title">학생 대시보드</h1>
@@ -327,19 +308,6 @@
 
 {% block extra_script %}
 <script>
-(function () {
-  var el = document.getElementById("notice");
-  if (!el) return;
-  var data = [];
-  try { data = JSON.parse(document.getElementById("noticeData").textContent); } catch (e) { return; }
-  if (data.length < 2) return;
-  var i = 0;
-  var body = document.getElementById("noticeBody"), idx = document.getElementById("noticeIdx");
-  function render() { body.textContent = data[i]; idx.textContent = (i + 1) + " / " + data.length; }
-  document.getElementById("noticePrev").addEventListener("click", function () { i = (i - 1 + data.length) % data.length; render(); });
-  document.getElementById("noticeNext").addEventListener("click", function () { i = (i + 1) % data.length; render(); });
-})();
-
 (function () {
   var list = document.querySelector(".todo-list");
   if (!list) return;

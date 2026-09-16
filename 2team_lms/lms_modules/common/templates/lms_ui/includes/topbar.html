@@ -2,6 +2,7 @@
 apps/common/templates/includes/topbar.html — 공통 담당 전담 (LAYOUT.md §4, §10)
 전역 유틸리티만. 페이지 제목·페이지별 액션은 여기 두지 않는다 (page_header 블록).
 {% endcomment %}
+{% firstof user.first_name user.username "사용자" as display_name %}
 <header class="app-topbar">
   {% if nav_role %}
     <button class="sidebar-toggle" type="button"
@@ -12,16 +13,26 @@ apps/common/templates/includes/topbar.html — 공통 담당 전담 (LAYOUT.md �
     </button>
   {% endif %}
   <div class="crumb">
-    {% if nav_role == "STUDENT" %}학생{% endif %}
+    <span class="crumb-root"><i class="bi bi-house"></i> AX Console</span>
+    {% if nav_role == "STUDENT" %}
+      <i class="bi bi-chevron-right crumb-sep"></i>
+      <span class="crumb-current">학생 대시보드</span>
+    {% elif nav_role == "TUTOR" %}
+      <i class="bi bi-chevron-right crumb-sep"></i>
+      <span class="crumb-current">튜터 대시보드</span>
+    {% endif %}
   </div>
   <div class="utils">
 
     {% if user.is_authenticated %}
-      <span>{{ user.get_username }}{% if nav_role %} · {{ nav_role }}{% endif %}</span>
-      <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-link btn-sm p-0 align-baseline">로그아웃</button>
-      </form>
+      <div class="user-chip d-flex align-items-center gap-2 rounded-pill border"{% if nav_role %} title="{{ nav_role }}"{% endif %}>
+        <span class="member-avatar avatar-xs">{{ display_name|slice:":1" }}</span>
+        <span class="fw-semibold small">{{ display_name }}</span>
+        <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-link btn-sm p-0 user-chip-logout">로그아웃</button>
+        </form>
+      </div>
     {% else %}
       <a href="{% url 'accounts:login' %}">로그인</a>
     {% endif %}

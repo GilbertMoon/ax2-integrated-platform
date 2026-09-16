@@ -5,7 +5,7 @@
 # 목업: docs/mockups/student-dashboard.html — 바꾼 부분:
 #   - 평가 진행률 카드 → 별도 박스 없이 "다가오는 마감" 패널에 진행률·개수 통합
 #   - 최근 공개 결과 → 100점 만점 기준 (5점 척도·가중합산은 ERD §4.3 폐기안)
-#   - 공지 배너 → 정적 플레이스홀더 (공지 모델 없음)
+#   - 공지 배너 → Core notices 앱을 원본으로 조회 (lms_modules.notices_client)
 #   - 캘린더 = Assignment.due_at + Lesson.lesson_date, 점은 제출 상태별 색(미제출/제출완료)
 #   - 캘린더 아래 패널 = 평소엔 "다가오는 마감"(미제출·마감 전 과제 D-day순 + 진행률),
 #     날짜를 누르면(?d=) 그날 일정으로 전환, 패널의 "← 다가오는 마감"으로 복귀
@@ -29,15 +29,10 @@ from lms_modules.accounts_client import services as accounts
 from lms_modules.core.models import Assignment, Lesson, Submission, Todo
 from lms_modules.github_sync import services as github_services
 from lms_modules.github_sync.models import StudentGithubAccount
+from lms_modules.notices_client.notices import active_notice_texts
 
 from .identity import external_student_id
 
-# 공지 모델이 없어 정적 문구로 노출 (목업 배너 자리)
-NOTICES = [
-    "[안내] 과제 제출 마감은 각 과제의 마감일시 기준입니다.",
-    "[안내] 팀 과제는 팀원 누구나 팀을 대신해 제출할 수 있습니다.",
-    "[안내] 튜터 평가가 등록되면 해당 제출물은 재제출이 제한됩니다.",
-]
 UPCOMING_LIMIT = 5
 
 
@@ -180,7 +175,7 @@ def dashboard(request):
         request,
         "lms_ui/student/dashboard.html",
         {
-            "notices": NOTICES,
+            "notices": active_notice_texts(),
             "cal": {
                 "year": year, "month": month, "weeks": weeks,
                 "prev": {"y": prev_y, "m": prev_m},

@@ -13,6 +13,13 @@ load_dotenv()
 SLACK_API_URL = "https://slack.com/api"
 
 
+def _slack_setting(name):
+    """Return the Slack setting selected for this runtime environment."""
+    target = os.getenv("SLACK_TARGET_ENV", "test").strip().lower()
+    prefix = "SLACK_PROD" if target == "production" else "SLACK_TEST"
+    return os.getenv(f"{prefix}_{name}") or os.getenv(f"SLACK_{name}")
+
+
 def _format_message(*, title, message="", link=""):
     text = f"*{title}*"
     if message:
@@ -23,7 +30,7 @@ def _format_message(*, title, message="", link=""):
 
 
 def _slack_headers():
-    token = os.getenv("SLACK_BOT_TOKEN")
+    token = _slack_setting("BOT_TOKEN")
     if not token:
         return None
     return {
@@ -53,7 +60,7 @@ def _slack_post(endpoint, *, headers, payload):
 
 
 def send_slack_message(*, title, message="", link=""):
-    webhook_url = os.getenv("SLACK_WEBHOOK_URL")
+    webhook_url = _slack_setting("WEBHOOK_URL")
     if not webhook_url:
         return False
     try:
@@ -138,7 +145,7 @@ def fetch_slack_users():
     """Fetch all non-bot Slack workspace members, following cursor pagination."""
     headers = _slack_headers()
     if not headers:
-        raise RuntimeError("SLACK_BOT_TOKEN이 설정되지 않았습니다.")
+        raise RuntimeError("선택한 Slack 환경의 BOT_TOKEN이 설정되지 않았습니다.")
 
     members = []
     cursor = ""

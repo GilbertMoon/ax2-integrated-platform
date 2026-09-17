@@ -55,6 +55,8 @@ jobs:
           KAKAO_OAUTH_CLIENT_SECRET: ${{ secrets.KAKAO_OAUTH_CLIENT_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           PRD_GEMINI_API_KEY: ${{ secrets.PRD_GEMINI_API_KEY }}
+          SLACK_PROD_BOT_TOKEN: ${{ secrets.SLACK_PROD_BOT_TOKEN }}
+          SLACK_PROD_WEBHOOK_URL: ${{ secrets.SLACK_PROD_WEBHOOK_URL }}
         run: >-
           python deploy/render_production_env.py
           --template .env.production.example

@@ -8,6 +8,10 @@ from config.settings import *  # noqa: F403 - inherit base settings before QA ov
 # Prevent real notifications in this isolated test configuration.
 os.environ.pop("SLACK_BOT_TOKEN", None)
 os.environ.pop("SLACK_WEBHOOK_URL", None)
+os.environ.pop("SLACK_TEST_BOT_TOKEN", None)
+os.environ.pop("SLACK_TEST_WEBHOOK_URL", None)
+os.environ.pop("SLACK_PROD_BOT_TOKEN", None)
+os.environ.pop("SLACK_PROD_WEBHOOK_URL", None)
 
 
 class OfflineRunner(DiscoverRunner):

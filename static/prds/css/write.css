@@ -162,35 +162,46 @@ body:has(#prd-write-app) .studio-header{display:none}body:has(#prd-write-app) .s
 .perspective-draft-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.perspective-draft-toolbar small{color:#8b94a5;font-size:11px}
 .perspective-draft-list{display:grid;gap:10px}.perspective-draft-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:11px;padding:13px 14px;border:1px solid #e6e8ef;border-radius:13px;background:#fbfcfe}.perspective-draft-item.is-unchecked{opacity:.55}.perspective-draft-item input[type="checkbox"]{margin-top:3px;width:16px;height:16px;accent-color:#6366f1}.perspective-draft-item-body strong{display:block;color:#344054;font-size:12px;font-weight:750;margin-bottom:5px}.perspective-draft-item-draft{margin:0;color:#3f485a;font-size:12px;line-height:1.6;white-space:pre-wrap}.perspective-draft-item-reasoning{display:flex;gap:5px;margin:7px 0 0;color:#8b94a5;font-size:10px;line-height:1.55}.perspective-draft-item-reasoning i{flex:0 0 auto;margin-top:2px;color:#a78bfa}
 .perspective-draft-item-chat-link{display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:0;border:0;background:transparent;color:#6366f1;font-size:10px;font-weight:750;cursor:pointer}.perspective-draft-item-chat-link:hover{color:#4338ca;text-decoration:underline}
-/* App-wide readability pass: preserve the compact editor while removing micro text. */
-#prd-write-app{font-size:16px;line-height:1.5}
-.write-doc-copy h1{font-size:16px}.write-doc-copy p{font-size:12px}
-.write-role-badge{flex:0 0 auto;padding:4px 7px;border-radius:99px;color:#475467;background:#f2f4f7;font-size:10px;font-weight:800;line-height:1}.write-role-badge.owner{color:#3730a3;background:#e0e7ff}.write-role-badge.editor{color:#047857;background:#d1fae5}.write-role-badge.viewer{color:#5b21b6;background:#ede9fe}.write-role-badge.tutor{color:#075985;background:#e0f2fe}
-.write-status,.write-status-control.dropdown-toggle,.write-deadline,.write-deadline input,.write-actions .btn{font-size:12px}
-.write-step,.write-step-progress,.write-step-progress strong{font-size:12px}
-.write-panel-head h2,.write-evaluation-title h2,.write-diagnosis-head h3{font-size:16px}
-.write-panel-head span,.write-panel-head .btn-group .btn,.save-all-answers.btn-primary{font-size:11px}
-.write-section-title strong{font-size:15px}.write-section-title small{font-size:12px}
-.write-section-badge,.write-question h3{font-size:12px}
-.question-editor,.question-answer{font-size:14px}
-.write-answer-footer small,.question-save-button,.question-hold-button,.question-held-badge{font-size:11px}
-.question-held-panel strong{font-size:12px}.question-held-panel p{font-size:11px}
-.write-score-ring small,.write-score-legend,.write-diagnosis-head small,.write-section-score-head small{font-size:10px}
-.write-score-main>div:last-child strong,.write-section-score-head h3{font-size:13px}
-.write-score-main>div:last-child p,.diagnosis-card small,.score-row,.score-row strong{font-size:11px}
-.diagnosis-card .diagnosis-badge,.diagnosis-coach-button{font-size:10px}
-.write-status-menu .dropdown-item strong{font-size:12px}.write-status-menu .dropdown-item small{font-size:10px}
-.write-support-head span,.comment-panel-head span,.write-evaluation-title span:first-child,.write-diagnosis-head span{font-size:10px}
-.comment-panel-head p,.comment-panel-alert,.comment-empty,.comment-content,.comment-form textarea{font-size:12px}
-.comment-author strong,.comment-form .btn{font-size:12px}.comment-author small,.comment-kind,.comment-question,.comment-form small{font-size:10px}
-.coach-header h2{font-size:14px}.coach-header p,.coach-notice,.coach-form small{font-size:10px}
-.coach-header select,.ai-coach-messages>p,.coach-message,.coach-form textarea{font-size:12px}
-.coach-proposal-head,.coach-proposal-question,.coach-proposal-preview{font-size:12px}
-.coach-proposal-section,.coach-proposal-reason,.coach-proposal-actions .btn,.coach-proposal-applied,.coach-proposal-declined{font-size:10px}
-.participant-modal-head span,.summary-modal-head span{font-size:10px}
-.participant-section-head h3,.participant-person-copy strong{font-size:13px}
-.participant-section-head p,.participant-person-copy small,.participant-section-head>span,.participant-person-actions .form-select,.participant-person-actions .btn,.participant-result .btn,.participant-empty{font-size:11px}
-.summary-modal-body .form-label,.summary-modal-body .form-control{font-size:13px}.summary-modal-body .form-text{font-size:11px}
+/* App-wide readability pass: 본문 14px 기준 타입 스케일.
+   18 패널·모달 제목 / 17 섹션 제목 / 15 질문·소제목·입력 / 14 본문 / 13 보조·작은 버튼 / 12 캡션·뱃지 */
+#prd-write-app{font-size:14px;line-height:1.6}
+.write-doc-copy h1{font-size:18px}.write-doc-copy p{font-size:14px}
+.write-role-badge{flex:0 0 auto;padding:4px 8px;border-radius:99px;color:#475467;background:#f2f4f7;font-size:12px;font-weight:800;line-height:1}.write-role-badge.owner{color:#3730a3;background:#e0e7ff}.write-role-badge.editor{color:#047857;background:#d1fae5}.write-role-badge.viewer{color:#5b21b6;background:#ede9fe}.write-role-badge.tutor{color:#075985;background:#e0f2fe}
+.write-status,.write-status-control.dropdown-toggle,.write-deadline,.write-deadline input,.write-actions .btn{font-size:14px}
+.write-step,.write-step-progress,.write-step-progress strong{font-size:14px}
+.write-panel-head h2,.write-evaluation-title h2,.write-diagnosis-head h3{font-size:18px}
+.write-panel-head span,.write-panel-head .btn-group .btn,.save-all-answers.btn-primary{font-size:13px}
+.write-section-title strong{font-size:17px}.write-section-title small{font-size:14px}
+.write-section-badge{font-size:12px}.write-question h3{font-size:15px}
+.question-editor,.question-answer{font-size:15px}
+.write-answer-footer small,.question-save-button,.question-hold-button,.question-held-badge{font-size:13px}
+.question-held-panel strong{font-size:14px}.question-held-panel p{font-size:13px}
+.write-score-ring small,.write-score-legend,.write-diagnosis-head small,.write-section-score-head small{font-size:12px}
+.write-score-main>div:last-child strong,.write-section-score-head h3{font-size:15px}
+.write-score-main>div:last-child p,.diagnosis-card small,.score-row,.score-row strong{font-size:13px}
+.diagnosis-card .diagnosis-badge,.diagnosis-coach-button{font-size:12px}
+.write-status-menu .dropdown-item strong{font-size:14px}.write-status-menu .dropdown-item small{font-size:12px}
+.write-support-head span,.comment-panel-head span,.write-evaluation-title span:first-child,.write-diagnosis-head span{font-size:12px}
+.comment-panel-head p,.comment-panel-alert,.comment-empty,.comment-content,.comment-form textarea{font-size:14px}
+.comment-author strong,.comment-form .btn{font-size:14px}.comment-author small,.comment-kind,.comment-question,.comment-form small{font-size:12px}
+.coach-header h2{font-size:16px}.coach-header p,.coach-notice,.coach-form small{font-size:12px}
+.coach-header select,.ai-coach-messages>p,.coach-message,.coach-form textarea{font-size:14px}
+.coach-proposal-head,.coach-proposal-question,.coach-proposal-preview{font-size:14px}
+.coach-proposal-section,.coach-proposal-reason,.coach-proposal-actions .btn,.coach-proposal-applied,.coach-proposal-declined{font-size:12px}
+.participant-modal-head span,.summary-modal-head span{font-size:12px}
+.participant-section-head h3,.participant-person-copy strong{font-size:15px}
+.participant-section-head p,.participant-person-copy small,.participant-section-head>span,.participant-person-actions .form-select,.participant-person-actions .btn,.participant-result .btn,.participant-empty{font-size:13px}
+.summary-modal-body .form-label,.summary-modal-body .form-control{font-size:15px}.summary-modal-body .form-text{font-size:13px}
 
 /* Creation metadata is visible to every PRD participant from the settings dialog. */
 .prd-settings-info h3{margin:0 0 9px;color:#485164;font-size:11px;font-weight:850}.prd-settings-created{display:flex;min-height:42px;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px;border:1px solid #e4e7ef;border-radius:11px;background:#fafbfe}.prd-settings-created span{display:inline-flex;align-items:center;gap:7px;color:#737d90;font-size:11px;font-weight:750}.prd-settings-created span i{color:#6366f1}.prd-settings-created strong{color:#343d50;font-size:12px;font-weight:850}.prd-settings-info+.prd-settings-edit,.prd-settings-info+.prd-settings-danger{padding-top:17px;border-top:1px solid #eceef4}
+
+/* 위 스케일에서 빠진 마이크로 텍스트 보강. 파일 끝이라 앞선 규칙보다 뒤에 적용된다. */
+.write-section-index,.write-step b,.comment-count,.write-evaluation-title>span,.write-doc-mark,.write-question-group-index,.evaluation-caption,.export-modal-head span,.prd-settings-content .modal-header span,.prd-settings-edit .form-text,.prd-settings-action small,.write-deadline-warning,.status-option-check,.write-participant-label,.write-participant-picker-head span,.write-participant-picker-head>b,.write-score-persona-copy strong,.write-team-add>span:last-child,.perspective-draft-modal-content .modal-header span,.perspective-draft-toolbar small,.write-participant-picker .participant-person-copy small{font-size:12px}
+.comment-actions .btn,.comment-edit-actions .btn,.comment-pagination .btn,.contribution-card-head small,.contribution-panel-head span,.contribution-score-row small,.contribution-status,.diagnosis-copy span,.evaluation-alert,.export-section-copy small,.perspective-draft-item-chat-link,.perspective-draft-item-reasoning,.prd-settings-edit .form-label,.prd-settings-save .btn,.prd-settings-info h3,.prd-settings-created span,.write-participant-alert,.write-participant-search input,.write-question-group-summary,.write-participant-picker .participant-search-help,.participant-person-actions .studio-select-button,.participant-person-actions .studio-select-option{font-size:13px}
+.prd-settings-created strong{font-size:14px}
+/* 아바타는 지름이 고정이라 글자가 넘치지 않게 한 단계만 올린다. */
+.write-member,.participant-person-avatar,.comment-card-head .participant-person-avatar,.write-participant-picker .participant-person-avatar{font-size:11px}
+/* 남아 있던 11px대 잔여 텍스트를 본문 14px 기준에 맞춰 올린다. 아바타와 아이콘 전용 크기는 제외. */
+.save-all-answers,.write-status-control,.write-delete-confirm-content p,.write-delete-confirm-content .modal-footer .btn,.write-question-list-intro,.write-question-group-guide,.participant-modal-head p,.summary-modal-head p,.comment-form>.form-label,.comment-pagination span,.contribution-panel-head p,.contribution-alert,.contribution-note,.contribution-retry,.write-score-persona-feedback,.evaluation-actions .btn-primary,.evaluation-actions .btn-outline-secondary,#cancel-evaluation,.evaluation-empty,.diagnosis-copy strong,.export-modal-head p,.export-summary p,.export-section-row>b,.export-modal-footer .btn,.perspective-draft-modal-content .modal-header p,.prd-settings-content .modal-header p,.prd-settings-edit h3,.prd-settings-danger h3,.prd-settings-action strong,.write-participant-picker .participant-person-copy strong,.write-participant-picker .participant-person-actions .studio-select-button,.write-participant-picker .participant-person-actions .btn{font-size:13px}
+.save-all-answers .save-count,.save-all-answers>i,.write-participant-search>i,.prd-settings-action>i,.coach-proposal-head i{font-size:12px}

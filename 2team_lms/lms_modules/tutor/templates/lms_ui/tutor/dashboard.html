@@ -19,7 +19,7 @@
     --t-shadow:0 1px 2px rgba(24,30,51,.03), 0 1px 10px rgba(24,30,51,.03);
     color:var(--t-text);
   }
-  .tdash .page-head { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  .tdash .page-head { display:flex; flex-direction:column; gap:6px; margin-bottom:24px; }
   .tdash .breadcrumb { font-size:12.5px; color:var(--t-tfaint); font-weight:600; }
   .tdash h1.tdash-title { font-size:21px; font-weight:800; margin:0; letter-spacing:-.01em; }
 
@@ -131,6 +131,7 @@
 
 {% block page_header %}
 <div class="tdash">
+  {% include "lms_ui/includes/notice_banner.html" %}
   <div class="page-head">
 
     <h1 class="tdash-title">{{ greeting }}</h1>

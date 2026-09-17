@@ -1,0 +1,163 @@
+import tempfile
+from datetime import timedelta
+from types import SimpleNamespace
+from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
+from lms_modules.storage import default_storage
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
+from django.urls import reverse
+from django.utils import timezone
+
+from lms_modules.core.models import Assignment, Submission, SubmissionFile
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp(), DEV_SKIP_AUTH=True)
+class TutorSubmissionPreviewTests(TestCase):
+    databases = {"default", "assignment_lms"}
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(approval_status="approved", is_active=True, is_onboarded=True, email="preview-tutor@example.com")
+        self.client.force_login(self.user)
+        tutor_gate = patch("lms_modules.tutor.views_manage.accounts.is_tutor", return_value=True)
+        tutor_gate.start()
+        self.addCleanup(tutor_gate.stop)
+        self.assignment = Assignment.objects.create(
+            title="미리보기 과제",
+            due_at=timezone.now() + timedelta(days=1),
+            is_team=False,
+            created_by=self.user.id,
+        )
+        self.submission = Submission.objects.create(
+            assignment=self.assignment,
+            student_id=11,
+        )
+
+    def _file(self, name, content):
+        stored_name = default_storage.save(
+            f"submissions/tests/{name}", SimpleUploadedFile(name, content)
+        )
+        return SubmissionFile.objects.create(
+            submission=self.submission,
+            kind=SubmissionFile.Kind.OTHER,
+            file_url=default_storage.url(stored_name),
+            file_name=name,
+            file_size=len(content),
+        )
+
+    def _link(self, url):
+        # 링크 제출은 file_size=0, file_name=file_url 로 저장된다 (student.views_submit).
+        return SubmissionFile.objects.create(
+            submission=self.submission,
+            kind=SubmissionFile.Kind.OTHER,
+            file_url=url,
+            file_name=url,
+            file_size=0,
+        )
+
+    def _review(self):
+        with (
+            patch("lms_modules.tutor.views_review._neighbors", return_value=(None, None, (1, 1))),
+            patch(
+                "lms_modules.tutor.views_review.accounts.get_user",
+                return_value=SimpleNamespace(name="김학생"),
+            ),
+        ):
+            return self.client.get(
+                reverse("lms:tutor:submission-review", args=[self.submission.pk])
+            )
+
+    def test_review_renders_arbitrary_text_file(self):
+        self._file("solution.sql", b"SELECT name, score FROM students;")
+
+        response = self._review()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "SELECT name, score FROM students;")
+        self.assertContains(response, "텍스트 미리보기")
+
+    def test_review_renders_cp949_text_file(self):
+        self._file("notes.log", "한글 로그입니다".encode("cp949"))
+
+        response = self._review()
+
+        self.assertContains(response, "한글 로그입니다")
+
+    def test_review_uses_inline_endpoints_for_image_and_pdf(self):
+        image = self._file("diagram.png", b"\x89PNG\r\n\x1a\npreview")
+        pdf = self._file("report.pdf", b"%PDF-1.4 preview")
+
+        response = self._review()
+
+        self.assertContains(response, reverse("lms:tutor:submission-file-inline", args=[image.pk]))
+        self.assertContains(response, reverse("lms:tutor:submission-file-inline", args=[pdf.pk]))
+
+        image_response = self.client.get(
+            reverse("lms:tutor:submission-file-inline", args=[image.pk])
+        )
+        pdf_response = self.client.get(
+            reverse("lms:tutor:submission-file-inline", args=[pdf.pk])
+        )
+        self.assertEqual(image_response["Content-Type"], "image/png")
+        self.assertEqual(pdf_response["Content-Type"], "application/pdf")
+
+    def test_binary_file_remains_unsupported(self):
+        self._file("archive.bin", b"\x00\x01\x02\x03")
+
+        response = self._review()
+
+        self.assertContains(response, "미리보기 미지원")
+
+    def test_review_renders_submitted_link_as_clickable(self):
+        self._link("https://github.com/nelson/lms-assignments")
+
+        response = self._review()
+
+        self.assertEqual(response.status_code, 200)
+        # 파일명 자리에 plain text 가 아니라 실제 <a href> 로 나와야 한다 (UX-1)
+        self.assertContains(
+            response, 'href="https://github.com/nelson/lms-assignments"'
+        )
+        self.assertContains(response, "제출 링크")
+        self.assertNotContains(response, "미리보기 미지원")
+
+    def test_review_offers_download_for_every_file(self):
+        text_file = self._file("solution.sql", b"SELECT 1;")
+        binary = self._file("archive.bin", b"\x00\x01")
+
+        response = self._review()
+
+        for f in (text_file, binary):
+            self.assertContains(
+                response,
+                reverse("lms:tutor:submission-file-download", args=[f.pk]),
+            )
+
+    def test_file_download_is_attachment(self):
+        f = self._file("archive.bin", b"\x00\x01\x02\x03")
+
+        response = self.client.get(
+            reverse("lms:tutor:submission-file-download", args=[f.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("attachment", response["Content-Disposition"])
+        self.assertIn("archive.bin", response["Content-Disposition"])
+
+    def test_file_download_requires_tutor(self):
+        f = self._file("solution.sql", b"SELECT 1;")
+        with patch("lms_modules.tutor.views_manage.accounts.is_tutor", return_value=False):
+            response = self.client.get(
+                reverse("lms:tutor:submission-file-download", args=[f.pk])
+            )
+        self.assertEqual(response.status_code, 403)
+
+    def test_link_submission_has_no_download(self):
+        self._link("https://github.com/x/y/blob/main/a.py")
+
+        response = self._review()
+
+        self.assertNotContains(response, "⬇ 다운로드")
+        self.assertContains(response, "링크 열기")
+

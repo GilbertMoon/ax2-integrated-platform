@@ -1,0 +1,30 @@
+{% comment %}
+apps/common/templates/includes/notice_banner.html — 공통 담당 전담.
+Core notices 앱을 원본으로 조회한 공지(학생/튜터 대시보드 공용). context: notices(문자열 리스트).
+{% endcomment %}
+{% if notices %}
+<div class="notice-banner" id="notice">
+  <span class="tag"><i class="bi bi-megaphone-fill"></i> 공지</span>
+  <span class="body" id="noticeBody">{{ notices.0 }}</span>
+  <span class="nav">
+    <button type="button" id="noticePrev" aria-label="이전 공지"><i class="bi bi-chevron-left"></i></button>
+    <span id="noticeIdx">1 / {{ notices|length }}</span>
+    <button type="button" id="noticeNext" aria-label="다음 공지"><i class="bi bi-chevron-right"></i></button>
+  </span>
+</div>
+{{ notices|json_script:"noticeData" }}
+<script>
+(function () {
+  var el = document.getElementById("notice");
+  if (!el) return;
+  var data = [];
+  try { data = JSON.parse(document.getElementById("noticeData").textContent); } catch (e) { return; }
+  if (data.length < 2) return;
+  var i = 0;
+  var body = document.getElementById("noticeBody"), idx = document.getElementById("noticeIdx");
+  function render() { body.textContent = data[i]; idx.textContent = (i + 1) + " / " + data.length; }
+  document.getElementById("noticePrev").addEventListener("click", function () { i = (i - 1 + data.length) % data.length; render(); });
+  document.getElementById("noticeNext").addEventListener("click", function () { i = (i + 1) % data.length; render(); });
+})();
+</script>
+{% endif %}

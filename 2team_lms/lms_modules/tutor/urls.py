@@ -45,6 +45,11 @@ urlpatterns = [
         name="assignment-list",
     ),
     path(
+        "assignments/new/",
+        views_manage.assignment_create,
+        name="assignment-create",
+    ),
+    path(
         "assignments/<int:pk>/edit/",
         views_manage.assignment_edit,
         name="assignment-edit",
@@ -101,6 +106,11 @@ urlpatterns = [
         "submission-files/<int:file_id>/inline/",
         views_review.submission_file_inline,
         name="submission-file-inline",
+    ),
+    path(
+        "submission-files/<int:file_id>/download/",
+        views_review.submission_file_download,
+        name="submission-file-download",
     ),
     path(
         "submissions/<int:pk>/ai-evaluation/",

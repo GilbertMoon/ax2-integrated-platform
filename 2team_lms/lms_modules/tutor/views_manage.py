@@ -235,7 +235,6 @@ def _assignment_rows():
         .annotate(
             submission_count=Count("submissions")
         )
-        .order_by("due_at")
     )
 
     for a in rows:
@@ -247,7 +246,17 @@ def _assignment_rows():
 
         a.is_past = a.due_at < now
 
-    return rows
+    open_rows = sorted(
+        (a for a in rows if not a.is_past),
+        key=lambda a: (a.created_at, a.id),
+        reverse=True,
+    )
+    closed_rows = sorted(
+        (a for a in rows if a.is_past),
+        key=lambda a: (a.due_at, a.id),
+        reverse=True,
+    )
+    return open_rows + closed_rows
 
 
 # =========================================================
@@ -256,7 +265,25 @@ def _assignment_rows():
 
 @tutor_required
 def assignment_list(request):
-    """GET: 과제 목록, POST: 신규 과제 등록."""
+    """과제 목록."""
+
+    return render(
+        request,
+        "lms_ui/tutor/assignment_manage.html",
+        {
+            "assignments": _assignment_rows(),
+            "deleted_assignments": (
+                Assignment.all_objects
+                .deleted()
+                .order_by("-deleted_at")
+            ),
+        },
+    )
+
+
+@tutor_required
+def assignment_create(request):
+    """GET: 새 과제 등록 폼(전체 화면), POST: 등록 저장."""
 
     if request.method == "POST":
         form = AssignmentForm(
@@ -308,23 +335,17 @@ def assignment_list(request):
 
     return render(
         request,
-        "lms_ui/tutor/assignment_manage.html",
+        "lms_ui/tutor/assignment_form.html",
         {
             "form": form,
             "form_mode": "create",
-            "assignments": _assignment_rows(),
-            "deleted_assignments": (
-                Assignment.all_objects
-                .deleted()
-                .order_by("-deleted_at")
-            ),
         },
     )
 
 
 @tutor_required
 def assignment_edit(request, pk):
-    """GET: 수정 폼, POST: 수정 저장."""
+    """GET: 수정 폼(전체 화면), POST: 수정 저장."""
 
     assignment = get_object_or_404(
         Assignment.objects,
@@ -368,23 +389,15 @@ def assignment_edit(request, pk):
         )
 
     else:
-        form = AssignmentForm(
-            instance=assignment
-        )
+        form = AssignmentForm(instance=assignment)
 
     return render(
         request,
-        "lms_ui/tutor/assignment_manage.html",
+        "lms_ui/tutor/assignment_form.html",
         {
             "form": form,
             "form_mode": "edit",
             "editing": assignment,
-            "assignments": _assignment_rows(),
-            "deleted_assignments": (
-                Assignment.all_objects
-                .deleted()
-                .order_by("-deleted_at")
-            ),
         },
     )
 

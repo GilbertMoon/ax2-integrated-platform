@@ -38,3 +38,7 @@ def nav(request):
         "url_namespace": match.namespaces[-1] if match else "",
         "url_name": match.url_name if match else "",
     }
+
+
+def analytics(request):
+    return {"ga_measurement_id": getattr(settings, "GA_MEASUREMENT_ID", "")}

@@ -253,13 +253,17 @@
   }
 
   function setPicker(open) {
-    picker.classList.toggle("d-none", !open);
-    pickerToggle.setAttribute("aria-expanded", String(open));
+    const modal = bootstrap.Modal.getOrCreateInstance(picker);
     if (open) {
       loadTeam();
-      window.setTimeout(function () { searchInput.focus(); }, 0);
+      modal.show();
+    } else {
+      modal.hide();
     }
   }
+
+  // 모달이 스스로 포커스를 가져간 뒤에 옮겨야 검색창에 바로 입력할 수 있다.
+  picker.addEventListener("shown.bs.modal", function () { searchInput.focus(); });
 
   document.querySelectorAll(".prd-type-card").forEach(function (button) {
     button.addEventListener("click", function () {
@@ -278,14 +282,10 @@
 
   document.getElementById("to-details").addEventListener("click", function () { showStep(2); loadTeam(); });
   document.getElementById("back-to-types").addEventListener("click", function () { setPicker(false); showStep(1); });
-  pickerToggle.addEventListener("click", function () { setPicker(picker.classList.contains("d-none")); });
-  document.addEventListener("mousedown", function (event) {
-    if (!picker.classList.contains("d-none") && !event.target.closest(".participant-add-wrap")) setPicker(false);
-  });
+  pickerToggle.addEventListener("click", function () { setPicker(true); });
   searchInput.addEventListener("input", function () { scheduleSearch(); });
   searchInput.addEventListener("keydown", function (event) {
     if (event.key === "Enter") { event.preventDefault(); scheduleSearch(0); }
-    if (event.key === "Escape") setPicker(false);
   });
   addTeamButton.addEventListener("click", function () {
     teamUsers.forEach(addUser);

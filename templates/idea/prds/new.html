@@ -3,7 +3,10 @@
 {% block title %}새 PRD 만들기 | 아이디어 디벨로퍼{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/new.css' %}?v=20260907-1" rel="stylesheet">
+  <link href="{% static 'prds/css/new.css' %}?v=20260915-1" rel="stylesheet">
+  {% comment %}PRD 화면은 다크모드 대응 CSS가 없어 라이트로 고정하고 토글을 숨긴다.{% endcomment %}
+  <script>document.documentElement.setAttribute('data-bs-theme', 'light');</script>
+  <style>.ax-theme-toggle { display: none !important; }</style>
 {% endblock %}
 {% block breadcrumb %}
   <nav aria-label="breadcrumb">
@@ -140,39 +143,9 @@
                       <button id="participant-picker-toggle"
                               class="participant-add-button"
                               type="button"
-                              aria-expanded="false"
-                              aria-controls="participant-picker"
                               aria-label="참여자 추가">
                         <i class="bi bi-plus-lg" aria-hidden="true"></i>
                       </button>
-                      <div id="participant-picker" class="participant-picker d-none">
-                        <div class="participant-search-box">
-                          <i class="bi bi-search" aria-hidden="true"></i>
-                          <input id="participant-search"
-                                 type="search"
-                                 minlength="2"
-                                 autocomplete="off"
-                                 placeholder="이름 검색 · 전체는 all"
-                                 aria-label="참여자 이름 검색">
-                          <span id="participant-search-spinner"
-                                class="spinner-border spinner-border-sm d-none"
-                                aria-hidden="true"></span>
-                        </div>
-                        <div class="participant-picker-scroll">
-                          <section class="participant-picker-section">
-                            <p class="participant-picker-label">내가 속한 팀</p>
-                            <button id="add-team" class="team-add-row" type="button" disabled>
-                              <span class="team-add-icon"><i class="bi bi-people-fill"></i></span><span class="team-add-copy"><strong id="team-name">현재 팀</strong><small id="team-description">팀 정보를 불러오는 중입니다.</small></span><span id="team-add-state" class="team-add-state">불러오는 중</span>
-                            </button>
-                          </section>
-                          <div class="participant-picker-divider"></div>
-                          <section class="participant-picker-section">
-                            <p class="participant-picker-label">개별 추가</p>
-                            <p id="participant-search-help" class="participant-search-help">이름을 2자 이상 입력해 주세요.</p>
-                            <div id="participant-results" class="participant-results"></div>
-                          </section>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </fieldset>
@@ -186,11 +159,55 @@
         </section>
       </div>
     </div>
+    {% comment %}참여자 목록은 폼 맨 아래라 드롭다운으로 열면 화면 밖으로 잘린다. 모달로 띄운다.{% endcomment %}
+    <div id="participant-picker"
+         class="modal fade"
+         tabindex="-1"
+         aria-labelledby="participant-picker-title"
+         aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered participant-picker-dialog">
+        <div class="modal-content participant-picker-content">
+          <div class="modal-header">
+            <h2 id="participant-picker-title" class="modal-title h6 fw-semibold mb-0">참여자 추가</h2>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="닫기"></button>
+          </div>
+          <div class="participant-search-box">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input id="participant-search"
+                   type="search"
+                   minlength="2"
+                   autocomplete="off"
+                   placeholder="이름 검색 · 전체는 all"
+                   aria-label="참여자 이름 검색">
+            <span id="participant-search-spinner"
+                  class="spinner-border spinner-border-sm d-none"
+                  aria-hidden="true"></span>
+          </div>
+          <div class="participant-picker-scroll">
+            <section class="participant-picker-section">
+              <p class="participant-picker-label">내가 속한 팀</p>
+              <button id="add-team" class="team-add-row" type="button" disabled>
+                <span class="team-add-icon"><i class="bi bi-people-fill"></i></span><span class="team-add-copy"><strong id="team-name">현재 팀</strong><small id="team-description">팀 정보를 불러오는 중입니다.</small></span><span id="team-add-state" class="team-add-state">불러오는 중</span>
+              </button>
+            </section>
+            <div class="participant-picker-divider"></div>
+            <section class="participant-picker-section">
+              <p class="participant-picker-label">개별 추가</p>
+              <p id="participant-search-help" class="participant-search-help">이름을 2자 이상 입력해 주세요.</p>
+              <div id="participant-results" class="participant-results"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
     <form class="d-none">
       {% csrf_token %}
     </form>
   </div>
 {% endblock %}
 {% block extra_js %}
-  {{ block.super }}<script src="{% static 'prds/js/new.js' %}?v=20260914-1"></script>
+  {{ block.super }}<script src="{% static 'prds/js/new.js' %}?v=20260915-1"></script>
 {% endblock %}

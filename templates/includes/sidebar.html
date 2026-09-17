@@ -170,7 +170,7 @@
           </li>
           {% if user.role == 'student' %}
             <li class="sidebar-nav-item">
-              <a href="/cat-game" title="게임" class="sidebar-nav-link"><i class="bi bi-controller"></i><span class="nav-text">게임</span></a>
+              <a href="{% url 'home' %}cat-game" title="게임" class="sidebar-nav-link"><i class="bi bi-controller"></i><span class="nav-text">게임</span></a>
             </li>
           {% endif %}
         </ul>

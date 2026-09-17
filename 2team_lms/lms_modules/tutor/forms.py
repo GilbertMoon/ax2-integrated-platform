@@ -8,10 +8,12 @@
 
 from datetime import timedelta
 
+import bleach
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 
+from lms_modules.common.html_sanitize import clean_assignment_description
 from lms_modules.core.models import Assignment, Evaluation
 
 # HTML5 <input type="datetime-local"> 이 주고받는 포맷
@@ -46,7 +48,7 @@ class AssignmentForm(forms.ModelForm):
                        "placeholder": "예: 4차 프로젝트 최종 보고서 제출"}
             ),
             "description": forms.Textarea(
-                attrs={"class": "form-control", "rows": 4, "maxlength": 600,
+                attrs={"class": "form-control rte-source", "rows": 4,
                        "placeholder": "학생들에게 안내할 과제 내용을 입력하세요. "
                                       "(예: 무엇을 해야 하는지, 평가 기준 등)"}
             ),
@@ -92,6 +94,11 @@ class AssignmentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.team_deadline = team_deadline
 
+        # 과제 설명은 contenteditable 리치텍스트 에디터가 값을 채워 넣는 숨김
+        # textarea 라, 네이티브 HTML5 required 검증이 "보이지 않는 필드" 라며
+        # 제출을 막아버린다. 필수 여부는 clean_description 에서 서버 쪽으로 검증한다.
+        self.use_required_attribute = False
+
         self.fields["due_at"].input_formats = _DATETIME_LOCAL_FORMATS
         # 목업 기준: 과제 설명도 필수 입력 (모델은 blank 허용이나 화면에서는 요구)
         self.fields["description"].required = True
@@ -119,6 +126,16 @@ class AssignmentForm(forms.ModelForm):
         # 위조된 POST 로 값을 바꾸려는 시도는 clean_is_team 이 최종 차단한다.
         if self.has_submissions:
             self.fields["is_team"].help_text = "제출물이 있어 개인/팀 구분을 변경할 수 없습니다."
+
+    def clean_description(self):
+        """리치텍스트 에디터가 보낸 HTML 을 허용 태그만 남기고 정제한다."""
+        raw = self.cleaned_data.get("description", "")
+        cleaned = clean_assignment_description(raw)
+        has_text = bool(bleach.clean(cleaned, tags=[], strip=True).strip())
+        has_image = "<img" in cleaned
+        if not has_text and not has_image:
+            raise forms.ValidationError("과제 설명을 입력해주세요.")
+        return cleaned
 
     def clean_late_penalty(self):
         return self.cleaned_data.get("late_penalty") or 0

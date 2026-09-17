@@ -49,6 +49,48 @@ class AssignmentFormFieldTests(TestCase):
         self.assertEqual(form.initial["weight_tier"], Assignment.WeightTier.MID)
         self.assertEqual(form.initial["late_penalty"], 0)
 
+    def test_description_strips_disallowed_tags_but_keeps_formatting(self):
+        form = AssignmentForm(self._data(
+            description='<p>안내<script>alert(1)</script></p><b>굵게</b>'
+        ))
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(
+            form.cleaned_data["description"],
+            "<p>안내alert(1)</p><b>굵게</b>",
+        )
+
+    def test_description_empty_after_stripping_tags_rejected(self):
+        form = AssignmentForm(self._data(description="<p></p><br>"))
+        self.assertFalse(form.is_valid())
+        self.assertIn("description", form.errors)
+
+    def test_description_keeps_trix_div_paragraphs_and_underline(self):
+        # Trix 는 문단마다 <div>, 밑줄은 커스텀 등록한 <u> 로 내보낸다.
+        form = AssignmentForm(self._data(
+            description="<div>첫 줄</div><div><u>밑줄</u> 둘째 줄</div>"
+        ))
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(
+            form.cleaned_data["description"],
+            "<div>첫 줄</div><div><u>밑줄</u> 둘째 줄</div>",
+        )
+
+    def test_description_image_attachment_figure_unwraps_to_bare_img(self):
+        # Trix 가 이미지를 <figure data-trix-attachment="..."> 로 감싸도
+        # 허용 목록에 없는 figure/속성은 벗겨지고 안의 <img> 만 남아야 한다.
+        form = AssignmentForm(self._data(
+            description=(
+                '<div><figure data-trix-attachment=\'{"contentType":"image"}\' '
+                'class="attachment attachment--preview">'
+                '<img src="https://example.com/a.png"></figure></div>'
+            )
+        ))
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(
+            form.cleaned_data["description"],
+            '<div>\n<img src="https://example.com/a.png"></div>',
+        )
+
     # --- 팀 과제 마감일 상한 (team_deadline) ---
 
     def _deadline(self, days):
@@ -97,7 +139,7 @@ class AssignmentCreateViewTests(TestCase):
         self.addCleanup(p.stop)
 
     def test_create_persists_weight_and_penalty(self):
-        resp = self.client.post(reverse("lms:tutor:assignment-list"), {
+        resp = self.client.post(reverse("lms:tutor:assignment-create"), {
             "title": "중요 과제",
             "description": "설명",
             "due_at": (timezone.localtime() + timedelta(days=1)).strftime("%Y-%m-%dT%H:%M"),
@@ -111,6 +153,32 @@ class AssignmentCreateViewTests(TestCase):
         a = Assignment.objects.get(title="중요 과제")
         self.assertEqual(a.weight_tier, "LOW")
         self.assertEqual(a.late_penalty, 5)
+
+    def test_create_get_renders_fullpage_form(self):
+        resp = self.client.get(reverse("lms:tutor:assignment-create"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "lms_ui/tutor/assignment_form.html")
+        self.assertEqual(resp.context["form_mode"], "create")
+
+    def test_edit_get_renders_fullpage_form(self):
+        assignment = Assignment.objects.create(
+            title="기존 과제",
+            description="설명",
+            due_at=timezone.localtime() + timedelta(days=1),
+            created_by=1,
+        )
+        resp = self.client.get(
+            reverse("lms:tutor:assignment-edit", args=[assignment.pk])
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "lms_ui/tutor/assignment_form.html")
+        self.assertEqual(resp.context["form_mode"], "edit")
+
+    def test_list_view_has_no_form_in_context(self):
+        resp = self.client.get(reverse("lms:tutor:assignment-list"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "lms_ui/tutor/assignment_manage.html")
+        self.assertNotIn("form", resp.context)
 
     @patch("lms_modules.tutor.views_manage.accounts.get_students", return_value=[])
     @patch("lms_modules.tutor.views_manage.accounts.get_teams", return_value=[])

@@ -45,6 +45,11 @@ urlpatterns = [
         name="assignment-list",
     ),
     path(
+        "assignments/new/",
+        views_manage.assignment_create,
+        name="assignment-create",
+    ),
+    path(
         "assignments/<int:pk>/edit/",
         views_manage.assignment_edit,
         name="assignment-edit",

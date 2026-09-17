@@ -16,6 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from django.conf import settings
+from django.utils.html import strip_tags
 from google import genai
 from google.genai import types
 from google.genai.errors import ClientError, ServerError
@@ -118,7 +119,7 @@ def _build_prompt(submission: Submission) -> tuple[str, int, list[str]]:
     assignment = submission.assignment
     parts = [
         f"[과제 제목]\n{assignment.title}",
-        f"[과제 설명]\n{assignment.description or '(설명 없음)'}",
+        f"[과제 설명]\n{strip_tags(assignment.description) or '(설명 없음)'}",
         f"[학생이 남긴 설명]\n{submission.description or '(없음)'}",
     ]
 

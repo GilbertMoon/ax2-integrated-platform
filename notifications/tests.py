@@ -252,7 +252,15 @@ class AnnounceTests(TestCase):
 
 
 class SlackDirectMessageTests(TestCase):
-    @patch.dict("os.environ", {"SLACK_BOT_TOKEN": "xoxb-test-token"}, clear=False)
+    @patch.dict(
+        "os.environ",
+        {
+            "SLACK_TARGET_ENV": "test",
+            "SLACK_TEST_BOT_TOKEN": "xoxb-test-token",
+            "SLACK_PROD_BOT_TOKEN": "xoxb-production-token",
+        },
+        clear=True,
+    )
     @patch("notifications.slack.requests.post")
     def test_send_slack_dm_opens_user_dm_and_posts_message(self, mock_post):
         from notifications.slack import send_slack_dm
@@ -274,6 +282,10 @@ class SlackDirectMessageTests(TestCase):
 
         self.assertEqual(mock_post.call_count, 2)
         self.assertIn("conversations.open", mock_post.call_args_list[0].args[0])
+        self.assertEqual(
+            mock_post.call_args_list[0].kwargs["headers"]["Authorization"],
+            "Bearer xoxb-test-token",
+        )
         self.assertEqual(mock_post.call_args_list[0].kwargs["json"], {"users": "U123"})
         self.assertIn("chat.postMessage", mock_post.call_args_list[1].args[0])
         self.assertEqual(mock_post.call_args_list[1].kwargs["json"]["channel"], "D123")
@@ -283,6 +295,27 @@ class SlackDirectMessageTests(TestCase):
         from notifications.slack import send_slack_dm
 
         self.assertFalse(send_slack_dm(slack_user_id="U123", title="테스트"))
+
+    @patch.dict(
+        "os.environ",
+        {
+            "SLACK_TARGET_ENV": "production",
+            "SLACK_TEST_WEBHOOK_URL": "https://hooks.slack.com/services/test/value",
+            "SLACK_PROD_WEBHOOK_URL": "https://hooks.slack.com/services/production/value",
+        },
+        clear=True,
+    )
+    @patch("notifications.slack.requests.post")
+    def test_send_slack_message_uses_production_webhook_when_selected(self, mock_post):
+        from notifications.slack import send_slack_message
+
+        mock_post.return_value.raise_for_status.return_value = None
+
+        self.assertTrue(send_slack_message(title="운영 알림"))
+        self.assertEqual(
+            mock_post.call_args.args[0],
+            "https://hooks.slack.com/services/production/value",
+        )
 
 
 class SlackSyncTests(TestCase):

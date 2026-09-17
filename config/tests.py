@@ -120,6 +120,8 @@ class ProductionEnvironmentRenderTests(SimpleTestCase):
                 "GOOGLE_OAUTH_CLIENT_SECRET=",
                 "KAKAO_OAUTH_CLIENT_ID=",
                 "KAKAO_OAUTH_CLIENT_SECRET=",
+                "SLACK_PROD_BOT_TOKEN=",
+                "SLACK_PROD_WEBHOOK_URL=",
             )
         )
         secrets = {
@@ -132,6 +134,8 @@ class ProductionEnvironmentRenderTests(SimpleTestCase):
             "GOOGLE_OAUTH_CLIENT_SECRET": "oauth-secret-with_symbols-123",
             "KAKAO_OAUTH_CLIENT_ID": "a" * 32,
             "KAKAO_OAUTH_CLIENT_SECRET": "kakao-login-secret-with-symbols",
+            "SLACK_PROD_BOT_TOKEN": "xoxb-production-test-token",
+            "SLACK_PROD_WEBHOOK_URL": "https://hooks.slack.com/services/test/value",
         }
 
         with (
@@ -155,6 +159,8 @@ class ProductionEnvironmentRenderTests(SimpleTestCase):
             )
             self.assertIn(f"GEMINI_API_KEY={secrets['GEMINI_API_KEY']}", rendered)
             self.assertIn(f"PRD_GEMINI_API_KEY={secrets['PRD_GEMINI_API_KEY']}", rendered)
+            self.assertIn(f"SLACK_PROD_BOT_TOKEN={secrets['SLACK_PROD_BOT_TOKEN']}", rendered)
+            self.assertIn(f"SLACK_PROD_WEBHOOK_URL={secrets['SLACK_PROD_WEBHOOK_URL']}", rendered)
             if os.name != "nt":
                 self.assertEqual(output_path.stat().st_mode & 0o777, 0o600)
 
@@ -169,6 +175,8 @@ class ProductionEnvironmentRenderTests(SimpleTestCase):
             "GOOGLE_OAUTH_CLIENT_SECRET": "valid-prefix-with-newline\nINJECTED=True",
             "KAKAO_OAUTH_CLIENT_ID": "a" * 32,
             "KAKAO_OAUTH_CLIENT_SECRET": "kakao-login-secret-with-symbols",
+            "SLACK_PROD_BOT_TOKEN": "xoxb-production-test-token",
+            "SLACK_PROD_WEBHOOK_URL": "https://hooks.slack.com/services/test/value",
         }
 
         with (

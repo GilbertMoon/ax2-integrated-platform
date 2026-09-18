@@ -42,8 +42,20 @@ def notify(*, user_id, category, title, message="", link=""):
 
 
 def notify_many(*, user_ids, category, title, message="", link=""):
+    """여러 명에게 알림 생성 — 실제로 존재하는 유저에게만 보낸다.
+
+    accounts_client(get_students/get_team_members 등)가 반환하는 id는 우리 쪽
+    Notification.recipient(FK)가 참조하는 accounts_user와 항상 100% 일치한다는
+    보장이 없다 (예: DEV_SKIP_AUTH 개발/테스트 모드의 가짜 fixture id). 존재하지
+    않는 id로 그냥 create()하면 FK 제약 위반으로 과제 등록/채점 같은 핵심
+    동작 자체가 같이 죽어버리므로, 여기서 한 번 걸러서 그런 위험을 없앤다.
+    """
+    from accounts.models import User
+
+    valid_ids = set(User.objects.filter(id__in=user_ids).values_list("id", flat=True))
     for user_id in user_ids:
-        notify(user_id=user_id, category=category, title=title, message=message, link=link)
+        if user_id in valid_ids:
+            notify(user_id=user_id, category=category, title=title, message=message, link=link)
 
 
 def _lms_notifications(user):

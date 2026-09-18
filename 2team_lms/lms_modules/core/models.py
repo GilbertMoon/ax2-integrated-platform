@@ -93,6 +93,10 @@ class LessonMaterial(models.Model):
     kind = models.CharField(max_length=10, choices=Kind.choices)
     title = models.CharField(max_length=200)
     file_url = models.URLField(blank=True, null=True, help_text="kind=FILE인 경우")
+    file_name = models.CharField(
+        max_length=255, blank=True, help_text="원본 파일명 (kind=FILE, 다운로드 시 Content-Type/파일명 복원용)"
+    )
+    file_size = models.PositiveBigIntegerField(default=0, help_text="바이트 (kind=FILE)")
     link_url = models.URLField(blank=True, null=True, help_text="kind=LINK인 경우")
 
     class Meta:

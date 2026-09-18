@@ -750,16 +750,8 @@
     renderCalendar();
   }
 
-  function downloadMockFile(filename) {
-    const blob = new Blob(["이것은 테스트용 강의교안 파일입니다."], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename || "material.txt";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  function materialDownloadUrl(materialId) {
+    return `/lms/lecture-materials/${materialId}/download/`;
   }
 
   // selectVideo: 현재 선택된 날짜의 lesson에서 특정 인덱스 영상을 플레이어에 로드
@@ -832,8 +824,8 @@
               <div class="material-meta">${isFile ? '파일 첨부' : '외부 참고 링크'}</div>
             </div>
           </div>
-          ${isFile 
-            ? `<button class="material-btn" onclick="downloadMockFile('${mat.title}')">다운로드</button>`
+          ${isFile
+            ? `<a href="${materialDownloadUrl(mat.id)}" class="material-btn">다운로드</a>`
             : `<a href="${mat.url}" target="_blank" class="material-btn">링크 열기</a>`
           }
         `;
@@ -918,8 +910,8 @@
               <div class="material-meta">${isFile ? `파일 첨부 · ${mat.size}` : '외부 참고 링크'}</div>
             </div>
           </div>
-          ${isFile 
-            ? `<button class="material-btn" onclick="downloadMockFile('${mat.title}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> 다운로드</button>`
+          ${isFile
+            ? `<a href="${materialDownloadUrl(mat.id)}" class="material-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> 다운로드</a>`
             : `<a href="${mat.url}" target="_blank" class="material-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg> 링크 열기</a>`
           }
         `;

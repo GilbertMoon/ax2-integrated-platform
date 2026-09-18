@@ -10,4 +10,9 @@ urlpatterns = [
         views.assignment_file_download,
         name="assignment-file-download",
     ),
+    path(
+        "lecture-materials/<int:material_id>/download/",
+        views.lecture_material_download,
+        name="lecture-material-download",
+    ),
 ]

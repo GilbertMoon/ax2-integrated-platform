@@ -39,6 +39,7 @@ def _lessons_by_date(lecture):
             group["videos"].append({"title": video.title, "url": video.video_url})
         for mat in lesson.materials.all():
             group["materials"].append({
+                "id": mat.id,
                 "kind": mat.kind,
                 "title": mat.title,
                 "url": mat.file_url if mat.kind == "FILE" else mat.link_url,

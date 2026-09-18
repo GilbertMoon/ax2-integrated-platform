@@ -95,6 +95,11 @@ urlpatterns = [
         views_lecture.tutor_lecture_update_api,
         name="lecture-update-api",
     ),
+    path(
+        "lecture/api/upload-material/",
+        views_lecture.tutor_lecture_material_upload,
+        name="lecture-material-upload",
+    ),
 
     # 튜터B — 제출물 검토 / 평가 (FR-011, FR-012, FR-013)
     path(

@@ -518,7 +518,16 @@
   async function toggleQuestionHold(question, button) {
     const key = String(question.id);
     const nextHeld = !question.is_held;
-    if (nextHeld && pendingAnswers.has(key) && !window.confirm("저장하지 않은 답변이 있습니다. 답변을 버리고 질문을 보류하시겠습니까?")) return;
+    if (nextHeld && pendingAnswers.has(key)) {
+      const confirmed = await window.IdeaUI.confirm({
+        title: "질문을 보류할까요?",
+        message: "저장하지 않은 답변이 있습니다. 답변을 버리고 질문을 보류합니다.",
+        confirmText: "보류",
+        cancelText: "취소",
+        tone: "danger"
+      });
+      if (!confirmed) return;
+    }
     button.disabled = true;
     try {
       const data = await api(detailApi + "questions/" + question.id + "/hold/", {
@@ -1435,12 +1444,25 @@
     statusControl.disabled = true;
     try {
       if (requested === "completed") {
-        if (!window.confirm("PRD를 완료하면 일반 편집이 잠깁니다. 완료하시겠습니까?")) return;
+        const completeConfirmed = await window.IdeaUI.confirm({
+          title: "PRD를 완료할까요?",
+          message: "완료하면 일반 편집이 잠깁니다.",
+          confirmText: "완료",
+          cancelText: "취소"
+        });
+        if (!completeConfirmed) return;
         try {
           await api(detailApi + "complete/", {method: "POST", body: JSON.stringify({confirm_incomplete: false})});
         } catch (error) {
           const needsConfirmation = error.details && error.details.confirm_incomplete;
-          if (!needsConfirmation || !window.confirm("아직 답변하지 않은 질문이 있습니다. 그래도 완료하시겠습니까?")) throw error;
+          if (!needsConfirmation) throw error;
+          const incompleteConfirmed = await window.IdeaUI.confirm({
+            title: "미답변 질문이 있습니다",
+            message: "아직 답변하지 않은 질문이 있습니다. 그래도 완료하시겠습니까?",
+            confirmText: "그래도 완료",
+            cancelText: "돌아가기"
+          });
+          if (!incompleteConfirmed) return;
           await api(detailApi + "complete/", {method: "POST", body: JSON.stringify({confirm_incomplete: true})});
         }
         renderDetail(await api(detailApi));
@@ -1452,7 +1474,14 @@
           deadlineInput.focus();
           return;
         }
-        const reason = window.prompt("PRD를 다시 여는 이유를 입력해 주세요.");
+        const reason = await window.IdeaUI.prompt({
+          title: "PRD 다시 열기",
+          message: "다시 여는 이유를 입력해 주세요.",
+          placeholder: "예: 추가 수정이 필요합니다.",
+          confirmText: "다시 열기",
+          cancelText: "취소",
+          required: true
+        });
         if (!reason || !reason.trim()) return;
         await api(detailApi + "reopen/", {method: "POST", body: JSON.stringify({reason: reason.trim()})});
         renderDetail(await api(detailApi));
@@ -1510,7 +1539,14 @@
       deadlineInput.focus();
       return;
     }
-    const reason = window.prompt("PRD를 다시 여는 이유를 입력해 주세요.");
+    const reason = await window.IdeaUI.prompt({
+      title: "PRD 다시 열기",
+      message: "다시 여는 이유를 입력해 주세요.",
+      placeholder: "예: 추가 수정이 필요합니다.",
+      confirmText: "다시 열기",
+      cancelText: "취소",
+      required: true
+    });
     if (!reason || !reason.trim()) return;
     const button = event.currentTarget;
     button.disabled = true;

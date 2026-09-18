@@ -22,6 +22,13 @@
       var participantTeamLoaded = false;
       var participantSearchTimer = null;
       var participantSearchSequence = 0;
+      var writeRoot = document.getElementById("prd-write-app");
+      var currentUserId = String(writeRoot?.dataset.currentUserId || "");
+
+      function isCurrentUser(user) {
+        return currentUserId &&
+          String(user?.user_id ?? "") === currentUserId;
+      }
 
       function avatarColor(user) {
         const rawId = Number(user.user_id);
@@ -34,7 +41,18 @@
 
       function participantAvatar(participant, className) {
         const name = participant.display_name || "?";
-        const avatar = element("span", className + " avatar-color-" + avatarColor(participant), name.slice(0, 2));
+        const compact = Array.from(String(name).trim().replace(/\s+/g, ""));
+        const label = compact.slice(-2).join("") || "?";
+        const avatar = element(
+          "span",
+          className +
+            (
+              isCurrentUser(participant)
+                ? " is-current-user"
+                : " avatar-color-" + avatarColor(participant)
+            ),
+          label
+        );
         avatar.title = name + " · " + participant.role;
         return avatar;
       }
@@ -111,7 +129,14 @@
             const remove = element("button", "btn btn-sm btn-outline-danger", "제거");
             remove.type = "button";
             remove.addEventListener("click", async function () {
-              if (!window.confirm(participant.display_name + "님을 이 PRD에서 제거하시겠습니까?")) return;
+              const confirmed = await window.IdeaUI.confirm({
+                title: "참여자를 제거할까요?",
+                message: participant.display_name + "님을 이 PRD에서 제거합니다.",
+                confirmText: "제거",
+                cancelText: "취소",
+                tone: "danger"
+              });
+              if (!confirmed) return;
               remove.disabled = true;
               try {
                 await api(participantsApi + encodeURIComponent(participant.user_id) + "/", {

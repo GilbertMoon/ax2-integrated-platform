@@ -29,6 +29,23 @@
     renderTable();
   }
 
+  function uploadMaterialFile(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return fetch("/lms/tutor/lecture/api/upload-material/", {
+      method: "POST",
+      headers: { "X-CSRFToken": csrfToken },
+      body: formData,
+    })
+      .then((res) => res.json().then((data) => ({ status: res.status, data })))
+      .then(({ status, data }) => {
+        if (status !== 200 || data.status !== "success") {
+          throw new Error(data.detail || "파일 업로드에 실패했습니다.");
+        }
+        return data; // { url, file_name, file_size }
+      });
+  }
+
   function saveToStorage() {
     return fetch("/lms/tutor/lecture/api/update/", {
       method: "POST",
@@ -246,7 +263,7 @@
     const matList = document.getElementById("material-builder-list");
     matList.innerHTML = "";
     if (lesson.materials && lesson.materials.length > 0) {
-      lesson.materials.forEach((m) => addMaterialRow(m.kind, m.title, m.url));
+      lesson.materials.forEach((m) => addMaterialRow(m.kind, m.title, m.url, m.file_name));
     } else {
       addMaterialRow("LINK", "", "");
     }
@@ -309,7 +326,7 @@
     }
   }
 
-  function addMaterialRow(kind = "FILE", title = "", url = "") {
+  function addMaterialRow(kind = "FILE", title = "", url = "", fileName = "") {
     const list = document.getElementById("material-builder-list");
     const row = document.createElement("div");
     row.className = "material-row";
@@ -326,8 +343,9 @@
 
       <div id="wrap-file-${rowId}" style="display: ${kind === "FILE" ? "block" : "none"};">
         <input type="hidden" class="mat-existing-url" value="${kind === "FILE" ? url : ""}">
+        <input type="hidden" class="mat-existing-filename" value="${kind === "FILE" ? (fileName || "") : ""}">
         <input type="file" class="form-control mat-file" style="padding: 4px 8px; font-size:12px;" ${kind === "FILE" ? "" : "disabled"}>
-        ${kind === "FILE" && url ? `<div style="font-size:10px; color:var(--text-muted); margin-top:4px;">현재 파일: ${url}</div>` : ""}
+        ${kind === "FILE" && url ? `<div style="font-size:10px; color:var(--text-muted); margin-top:4px;">현재 파일: ${fileName || url}</div>` : ""}
       </div>
       <div id="wrap-url-${rowId}" style="display: ${kind === "LINK" ? "block" : "none"};">
         <input type="text" class="form-control mat-url" placeholder="https://..." value="${url}" style="padding: 6px 8px; font-size:12px;" ${kind === "LINK" ? "" : "disabled"}>
@@ -378,77 +396,94 @@
       if (vUrl) videos.push({ title: vTitle, url: vUrl });
     });
 
-    // Collect materials
-    const materials = [];
-    document.querySelectorAll("#material-builder-list .material-row").forEach((row) => {
+    // Collect materials — FILE 행에 새로 고른 파일이 있으면 먼저 서버에 업로드하고,
+    // 그 결과 URL/파일명을 쓴다. 기존 파일(수정 모드, 파일을 다시 안 고른 경우)은
+    // hidden 필드에 저장해둔 URL/파일명을 그대로 이어서 보낸다.
+    const materialTasks = Array.from(
+      document.querySelectorAll("#material-builder-list .material-row")
+    ).map((row) => {
       const kind = row.querySelector(".mat-kind").value;
       let matTitle = row.querySelector(".mat-title").value.trim();
-      let matUrl = "";
-      let matSize = "";
 
       if (kind === "FILE") {
         const fileInput = row.querySelector(".mat-file");
         if (fileInput && fileInput.files && fileInput.files.length > 0) {
           const file = fileInput.files[0];
-          matUrl = file.name;
-          matSize = (file.size / 1024 / 1024).toFixed(1) + " MB";
           if (!matTitle) matTitle = file.name;
-        } else {
-          const existingUrlInput = row.querySelector(".mat-existing-url");
-          if (existingUrlInput && existingUrlInput.value) {
-            matUrl = existingUrlInput.value;
-            matSize = "기존 파일";
-            if (!matTitle) matTitle = matUrl;
-          } else {
-            matUrl = "#";
-          }
+          return uploadMaterialFile(file).then((uploaded) => ({
+            kind,
+            title: matTitle,
+            url: uploaded.url,
+            file_name: uploaded.file_name,
+            file_size: uploaded.file_size,
+          }));
         }
-      } else {
-        matUrl = row.querySelector(".mat-url").value.trim() || "#";
-        if (!matTitle && matUrl !== "#") matTitle = "외부 링크";
+
+        const existingUrlInput = row.querySelector(".mat-existing-url");
+        const existingNameInput = row.querySelector(".mat-existing-filename");
+        if (existingUrlInput && existingUrlInput.value) {
+          const existingName = existingNameInput ? existingNameInput.value : "";
+          if (!matTitle) matTitle = existingName || existingUrlInput.value;
+          return {
+            kind,
+            title: matTitle,
+            url: existingUrlInput.value,
+            file_name: existingName,
+          };
+        }
+
+        return null; // 새 파일도, 기존 파일도 없는 빈 행은 버린다
       }
 
-      if (matTitle) {
-        materials.push({ kind, title: matTitle, url: matUrl, size: matSize });
-      }
+      const matUrl = row.querySelector(".mat-url").value.trim();
+      if (!matUrl) return null;
+      if (!matTitle) matTitle = "외부 링크";
+      return { kind, title: matTitle, url: matUrl };
     });
 
-    if (editId) {
-      // Update
-      const idx = lessons.findIndex((l) => l.id === parseInt(editId));
-      if (idx !== -1) {
-        lessons[idx] = {
-          ...lessons[idx],
-          date,
-          title,
-          videos,
-          materials,
-        };
-      }
-      showToast(`${date} 수업 정보가 수정되었습니다.`);
-    } else {
-      // Create
-      const newLesson = {
-        id: Date.now(),
-        date,
-        title,
-        videos,
-        materials,
-      };
-      lessons.push(newLesson);
-      showToast("새 일정이 등록되었습니다. (학생 화면 즉시 반영)");
-    }
+    Promise.all(materialTasks)
+      .then((materials) => {
+        const cleanedMaterials = materials.filter((m) => m !== null);
 
-    lessons.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+        if (editId) {
+          // Update
+          const idx = lessons.findIndex((l) => l.id === parseInt(editId));
+          if (idx !== -1) {
+            lessons[idx] = {
+              ...lessons[idx],
+              date,
+              title,
+              videos,
+              materials: cleanedMaterials,
+            };
+          }
+          showToast(`${date} 수업 정보가 수정되었습니다.`);
+        } else {
+          // Create
+          const newLesson = {
+            id: Date.now(),
+            date,
+            title,
+            videos,
+            materials: cleanedMaterials,
+          };
+          lessons.push(newLesson);
+          showToast("새 일정이 등록되었습니다. (학생 화면 즉시 반영)");
+        }
 
-    // UI 우선 반영
-    renderTable();
-    closeModal("lesson-modal");
+        lessons.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 
-    // 서버 저장 및 DB ID로 갱신
-    saveToStorage().catch((e) => {
-      alert("저장에 실패했습니다.");
-    });
+        // UI 우선 반영
+        renderTable();
+        closeModal("lesson-modal");
+
+        // 서버 저장 및 DB ID로 갱신
+        return saveToStorage();
+      })
+      .catch((e) => {
+        console.error("Error saving lesson:", e);
+        alert((e && e.message) || "저장에 실패했습니다.");
+      });
   }
 
   

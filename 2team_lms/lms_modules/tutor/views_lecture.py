@@ -1,16 +1,22 @@
 import json
+from pathlib import Path
+from uuid import uuid4
 
-from lms_modules import transaction
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from lms_modules import transaction
 from lms_modules.accounts_client import services as accounts
-from lms_modules.core.models import Lecture, Lesson, LessonMaterial
+from lms_modules.core.models import Lecture
 from lms_modules.notifications import services as lms_notifications
+from lms_modules.storage import default_storage
 
 from .views_manage import tutor_required
+
+# 강의 자료(LessonMaterial) 파일 1개당 크기 상한. AssignmentFile 첨부와 동일 기준.
+MAX_MATERIAL_SIZE = 50 * 1024 * 1024  # 50MB
 
 
 def _serialize_lessons(lecture):
@@ -37,6 +43,7 @@ def _serialize_lessons(lecture):
                     "title": mat.title,
                     "size": "기존 파일" if mat.kind == "FILE" else "",
                     "url": mat.file_url if mat.kind == "FILE" else mat.link_url,
+                    "file_name": mat.file_name if mat.kind == "FILE" else None,
                 }
                 for mat in lesson.materials.all()
             ],
@@ -134,11 +141,17 @@ def tutor_lecture_update_api(request):
             for mat in item.get("materials", []):
                 kind = mat.get("kind", "FILE")
                 url = mat.get("url")
+                try:
+                    file_size = int(mat.get("file_size") or 0)
+                except (TypeError, ValueError):
+                    file_size = 0
                 LessonMaterial.objects.create(
                     lesson=lesson,
                     kind=kind,
                     title=(mat.get("title") or "").strip() or (url or ""),
                     file_url=url if kind == "FILE" else None,
+                    file_name=(mat.get("file_name") or "") if kind == "FILE" else "",
+                    file_size=file_size if kind == "FILE" else 0,
                     link_url=url if kind == "LINK" else None,
                 )
 
@@ -163,3 +176,36 @@ def tutor_lecture_update_api(request):
             )
 
     return JsonResponse(payload)
+
+
+@tutor_required
+@require_POST
+def tutor_lecture_material_upload(request):
+    """강의 자료 파일 하나를 스토리지에 저장하고 (url, file_name, file_size) 를 반환한다.
+
+    lessons 전체를 JSON 으로 저장하는 tutor_lecture_update_api 는 파일 바이트를
+    실어 보낼 수 없어서, 파일은 이 엔드포인트로 먼저 업로드하고 그 결과 URL을
+    lessons 저장 요청(JSON)에 실어 보내는 2단계 구조를 쓴다.
+    """
+    uploaded = request.FILES.get("file")
+    if not uploaded:
+        return JsonResponse({"status": "error", "detail": "파일이 없습니다."}, status=400)
+
+    if uploaded.size > MAX_MATERIAL_SIZE:
+        return JsonResponse(
+            {"status": "error", "detail": "50MB를 초과하는 파일은 올릴 수 없습니다."},
+            status=400,
+        )
+
+    safe_name = Path(uploaded.name).name
+    storage_name = f"lesson_materials/{uuid4().hex}_{safe_name}"
+    saved = default_storage.save(storage_name, uploaded)
+
+    return JsonResponse(
+        {
+            "status": "success",
+            "url": default_storage.url(saved),
+            "file_name": safe_name,
+            "file_size": uploaded.size,
+        }
+    )

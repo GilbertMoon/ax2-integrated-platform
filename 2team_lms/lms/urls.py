@@ -10,6 +10,7 @@ urlpatterns = [
     path("lecture/", login_required(student_lecture_list_view), name="lecture-list"),
     path("lecture/<int:lesson_id>/", login_required(student_lecture_detail_view), name="lecture-detail"),
     path("github/", include("lms_modules.github_sync.urls")),
+    path("notifications/", include("lms_modules.notifications.urls")),
     path("tutor/", include("lms_modules.tutor.urls")),
     path("", include("lms_modules.core.urls")),
     path("", include("lms_modules.student.urls")),

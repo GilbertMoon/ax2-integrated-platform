@@ -8,6 +8,7 @@
 {% block extra_head %}
 <style>
   .app-topbar .utils { margin-left:auto; }
+  .dash, .dash *, .dash *::before, .dash *::after { box-sizing:border-box; }
   .dash {
     --d-surface:#fff; --d-sunken:#eef1f8; --d-muted:#f4f6fb;
     --d-text:#1c2130; --d-tmuted:#6b7280; --d-tfaint:#9aa1b1;
@@ -117,7 +118,7 @@
   .dash .see-all .soon { margin-left:auto; font-size:11px; color:var(--d-tfaint); }
 
   .dash .todo-input { display:flex; gap:8px; margin-bottom:12px; }
-  .dash .todo-input input { flex:1; border:1px solid var(--d-bstrong); background:var(--d-sunken); border-radius:var(--d-r-sm);
+  .dash .todo-input input { flex:1; min-width:0; border:1px solid var(--d-bstrong); background:var(--d-sunken); border-radius:var(--d-r-sm);
     padding:9px 12px; font-size:13px; color:var(--d-text); font-family:inherit; }
   .dash .todo-input input:focus { outline:none; border-color:var(--d-accent); background:var(--d-surface); }
   .dash .todo-input button { border:none; background:var(--d-accent); color:#fff; width:36px; border-radius:var(--d-r-sm);

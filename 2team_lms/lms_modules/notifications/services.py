@@ -14,6 +14,38 @@ from django.utils import timezone
 LMS_LINK_PREFIX = "/lms/"
 
 
+class Category:
+    """LMS 쪽에서 만드는 알림의 category 값.
+
+    Core `Notification.Category`(TextChoices)는 건드릴 수 없고, choices는
+    DB 레벨로 강제되지 않는 CharField라 새 값을 그냥 써도 저장/조회엔 문제없다
+    (Core 관리자 화면에서 라벨이 안 예쁘게 나올 수 있다는 것만 트레이드오프).
+    """
+
+    ASSIGNMENT_GRADED = "LMS_ASSIGNMENT_GRADED"
+    ASSIGNMENT_CREATED = "LMS_ASSIGNMENT_CREATED"
+    LESSON_ADDED = "LMS_LESSON_ADDED"
+    TEAM_SUBMITTED = "LMS_TEAM_SUBMITTED"
+
+
+def notify(*, user_id, category, title, message="", link=""):
+    """학생 한 명에게 LMS 알림 하나 생성. link는 항상 "/lms/"로 시작해야 벨에 잡힌다."""
+    from notifications.models import Notification
+
+    Notification.objects.create(
+        recipient_id=user_id,
+        category=category,
+        title=title,
+        message=message,
+        link=link,
+    )
+
+
+def notify_many(*, user_ids, category, title, message="", link=""):
+    for user_id in user_ids:
+        notify(user_id=user_id, category=category, title=title, message=message, link=link)
+
+
 def _lms_notifications(user):
     from notifications.models import Notification
 

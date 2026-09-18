@@ -23,6 +23,7 @@ from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
 
 from lms_modules.accounts_client import services as accounts
+from lms_modules.notifications import services as lms_notifications
 from lms_modules.common.preview import IMAGE_PREVIEW_EXTENSIONS, _preview, _storage_name
 from lms_modules.core.models import AiEvaluation, Evaluation, Submission, SubmissionFile
 from lms_modules.notifications.slack import notify_dm_ax_many
@@ -154,6 +155,13 @@ def submission_review(request, pk):
                 # 개인 과제 → 해당 학생에게 DM
                 recipients = [submission.student_id]
             notify_dm_ax_many(recipients, title, message)
+            lms_notifications.notify_many(
+                user_ids=recipients,
+                category=lms_notifications.Category.ASSIGNMENT_GRADED,
+                title=title,
+                message=f"과제명: {assignment.title}",
+                link=reverse("lms:student:submission-result", args=[submission.pk]),
+            )
 
             messages.success(request, "평가를 저장했습니다.")
             return redirect(_review_url(pk, request.POST))

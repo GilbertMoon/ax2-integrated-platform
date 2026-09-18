@@ -3,9 +3,12 @@ import json
 from lms_modules import transaction
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from lms_modules.accounts_client import services as accounts
 from lms_modules.core.models import Lecture, Lesson, LessonMaterial
+from lms_modules.notifications import services as lms_notifications
 
 from .views_manage import tutor_required
 
@@ -88,6 +91,7 @@ def tutor_lecture_update_api(request):
 
         existing_ids = set(lecture.lessons.values_list("id", flat=True))
         seen_ids = set()
+        new_lessons = []  # 학생 알림용 — 진짜 새로 생긴 Lesson만 담는다 (수정은 제외)
 
         from lms_modules.core.models import Lesson, LessonMaterial, LessonVideo
 
@@ -109,6 +113,7 @@ def tutor_lecture_update_api(request):
                 lesson = Lesson.objects.create(
                     lecture=lecture, title=title, lesson_date=date
                 )
+                new_lessons.append(lesson)
             seen_ids.add(lesson.id)
 
             # Sync videos
@@ -145,5 +150,16 @@ def tutor_lecture_update_api(request):
             "lessons": _serialize_lessons(lecture),
             "revision": _revision(lecture),
         }
+
+    if new_lessons:
+        student_ids = [s.id for s in accounts.get_students()]
+        for lesson in new_lessons:
+            lms_notifications.notify_many(
+                user_ids=student_ids,
+                category=lms_notifications.Category.LESSON_ADDED,
+                title="새 강의가 등록되었습니다.",
+                message=f"{lesson.lesson_date} - {lesson.title}",
+                link=reverse("lms:student:lecture-detail", args=[lesson.id]),
+            )
 
     return JsonResponse(payload)

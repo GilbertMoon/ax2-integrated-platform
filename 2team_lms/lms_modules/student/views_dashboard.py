@@ -6,7 +6,8 @@
 #   - 평가 진행률 카드 → 별도 박스 없이 "다가오는 마감" 패널에 진행률·개수 통합
 #   - 최근 공개 결과 → 100점 만점 기준 (5점 척도·가중합산은 ERD §4.3 폐기안)
 #   - 공지 배너 → Core notices 앱을 원본으로 조회 (lms_modules.notices_client)
-#   - 캘린더 = Assignment.due_at + Lesson.lesson_date, 점은 제출 상태별 색(미제출/제출완료)
+#   - 캘린더 = Assignment.due_at + Lesson.lesson_date, 셀에 제목+색상 태그로 표시
+#     (미제출 과제를 맨 위로, 그다음 제출완료/강의/할일 순 · 최대 2개 + "+N개")
 #   - 캘린더 아래 패널 = 평소엔 "다가오는 마감"(미제출·마감 전 과제 D-day순 + 진행률),
 #     날짜를 누르면(?d=) 그날 일정으로 전환, 패널의 "← 다가오는 마감"으로 복귀
 #
@@ -87,12 +88,12 @@ def dashboard(request):
     year, month = _resolve_month(request, today)
     selected = _resolve_selected_day(request, year, month, today)
     by_day = _calendar_events(year, month, my_subs, _applies)
-    todo_days = set(
-        Todo.objects.filter(
-            student_id=uid, due_date__year=year, due_date__month=month
-        ).values_list("due_date", flat=True)
-    )
-    weeks = _month_weeks(year, month, today, selected, by_day, todo_days)
+    todo_map = {}
+    for t in Todo.objects.filter(
+        student_id=uid, due_date__year=year, due_date__month=month
+    ):
+        todo_map.setdefault(t.due_date, []).append(t.content)
+    weeks = _month_weeks(year, month, today, selected, by_day, todo_map)
 
     day_selected = bool(request.GET.get("d"))
     day_bucket = by_day.get(selected, {})
@@ -266,7 +267,10 @@ def _calendar_events(year, month, my_subs, applies):
     return by_day
 
 
-def _month_weeks(year, month, today, selected, by_day, todo_days=frozenset()):
+def _month_weeks(year, month, today, selected, by_day, todo_map=None):
+    """cal.weeks 셀 목록. items = 그날 표시할 항목(제목+색상) 최대 2개
+    — 미제출 과제를 맨 위로, 그다음 제출완료/강의/할일 순."""
+    todo_map = todo_map or {}
     cal = _calendar.Calendar(firstweekday=6)  # 일요일 시작
     weeks = []
     for week in cal.monthdatescalendar(year, month):
@@ -274,16 +278,28 @@ def _month_weeks(year, month, today, selected, by_day, todo_days=frozenset()):
         for d in week:
             bucket = by_day.get(d, {})
             assigns = bucket.get("assignment", [])
+            lectures = bucket.get("lecture", [])
+            day_todos = todo_map.get(d, [])
+
+            items = (
+                [{"cat": "r", "title": a["title"]} for a in assigns if not a["done"]]
+                + [{"cat": "g", "title": a["title"]} for a in assigns if a["done"]]
+                + [{"cat": "b", "title": lec["title"]} for lec in lectures]
+                + [{"cat": "p", "title": content} for content in day_todos]
+            )
+
             row.append({
                 "date": d,
                 "day": d.day,
                 "in_month": d.month == month,
                 "is_today": d == today,
                 "is_selected": d == selected,
-                "has_lecture": bool(bucket.get("lecture")),
+                "has_lecture": bool(lectures),
                 "has_pending": any(not x["done"] for x in assigns),
                 "has_done": any(x["done"] for x in assigns),
-                "has_todo": d in todo_days,
+                "has_todo": d in todo_map,
+                "items": items[:2],
+                "more_count": max(0, len(items) - 2),
             })
         weeks.append(row)
     return weeks

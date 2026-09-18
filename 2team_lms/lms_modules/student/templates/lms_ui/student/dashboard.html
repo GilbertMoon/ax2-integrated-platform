@@ -19,9 +19,13 @@
     --d-shadow:0 1px 2px rgba(24,30,51,.03), 0 1px 10px rgba(24,30,51,.03);
     color:var(--d-text);
   }
-  .dash .grid { display:grid; gap:18px; grid-template-columns:2fr 1fr; align-items:start; }
-  .dash .col { display:flex; flex-direction:column; gap:18px; min-width:0; }
+  .dash .grid { display:grid; gap:16px; grid-template-columns:minmax(0,1fr) 260px; align-items:start; }
+  .dash .col { display:flex; flex-direction:column; gap:14px; min-width:0; }
   @media (max-width:960px){ .dash .grid { grid-template-columns:1fr; } }
+
+  /* 오른쪽 사이드 칸 — 폭을 줄인 만큼 카드도 세로로 컴팩트하게 */
+  .dash .col.side .card { padding:14px 16px 16px; }
+  .dash .col.side .card-title { font-size:13.5px; }
 
   .dash .card { background:var(--d-surface); border:1px solid var(--d-border); border-radius:var(--d-r-lg);
     box-shadow:var(--d-shadow); padding:20px 22px 22px; }
@@ -47,18 +51,26 @@
   .dash .cal-grid-head, .dash .cal-week { display:grid; grid-template-columns:repeat(7,1fr); }
   .dash .cal-grid-head { text-align:center; font-size:11px; color:var(--d-tfaint); font-weight:600; margin-bottom:4px; }
   .dash .cal-grid-head span:first-child { color:#e2837e; } .dash .cal-grid-head span:last-child { color:#7f9bdb; }
-  .dash .cal-week { gap:3px; margin-bottom:3px; }
-  .dash .cal-cell { height:42px; border-radius:12px; border:1.5px solid transparent; display:flex; flex-direction:column;
-    align-items:center; padding-top:5px; gap:3px; font-size:12px; color:var(--d-text); text-decoration:none; }
-  .dash .cal-cell.blank { visibility:hidden; }
+  .dash .cal-week { gap:5px; margin-bottom:5px; }
+  .dash .cal-cell { height:104px; border-radius:14px; border:1.5px solid var(--d-border); display:flex; flex-direction:column;
+    align-items:stretch; padding:6px 6px 5px; gap:4px; font-size:12px; color:var(--d-text); text-decoration:none;
+    background:var(--d-surface); overflow:hidden; }
+  .dash .cal-cell.blank { visibility:hidden; border-color:transparent; }
   .dash .cal-cell.pick:hover { background:var(--d-muted); }
   .dash .cal-cell.today { border-color:var(--d-accent); }
   .dash .cal-cell.today .num { color:var(--d-accent-text); font-weight:700; }
   .dash .cal-cell.sel { border-color:var(--d-accent); background:var(--d-accent-soft); }
-  .dash .cal-cell .num { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-  .dash .cal-cell .dots { display:flex; gap:2px; height:4px; }
-  .dash .cal-cell .dots i { width:4px; height:4px; border-radius:50%; }
-  .dash .cal-cell .dots i.b { background:#2f74c0; } .dash .cal-cell .dots i.g { background:var(--d-green); } .dash .cal-cell .dots i.r { background:var(--d-red); } .dash .cal-cell .dots i.p { background:#7c4fd6; }
+  .dash .cal-cell .num { font-size:12.5px; font-weight:700; }
+  .dash .cal-cell .chips { display:flex; flex-direction:column; gap:3px; margin-top:2px; overflow:hidden; }
+  .dash .cal-cell .chip { font-size:10.5px; font-weight:700; line-height:1.35; padding:2px 6px; border-radius:6px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:4px; }
+  .dash .cal-cell .chip::before { content:""; width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+  .dash .cal-cell .chip.b { background:#e7f0fa; color:#2f74c0; } .dash .cal-cell .chip.b::before { background:#2f74c0; }
+  .dash .cal-cell .chip.g { background:var(--d-green-soft); color:var(--d-green); } .dash .cal-cell .chip.g::before { background:var(--d-green); }
+  .dash .cal-cell .chip.r { background:var(--d-red-soft); color:#c53737; } .dash .cal-cell .chip.r::before { background:var(--d-red); }
+  .dash .cal-cell .chip.p { background:#f1ebfc; color:#7c4fd6; } .dash .cal-cell .chip.p::before { background:#7c4fd6; }
+  .dash .cal-cell .more { font-size:10px; color:var(--d-tfaint); font-weight:700; padding-left:6px; }
+  @media (max-width:960px){ .dash .cal-cell { height:88px; } }
 
   .dash .day-panel { margin-top:12px; padding-top:10px; border-top:1px dashed var(--d-bstrong); }
   .dash .day-panel-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px; }
@@ -110,7 +122,7 @@
   .dash .todo-input input:focus { outline:none; border-color:var(--d-accent); background:var(--d-surface); }
   .dash .todo-input button { border:none; background:var(--d-accent); color:#fff; width:36px; border-radius:var(--d-r-sm);
     font-size:17px; cursor:pointer; flex-shrink:0; }
-  .dash .todo-list { max-height:288px; overflow-y:auto; margin:0 -4px; padding:0 4px; }
+  .dash .todo-list { max-height:220px; overflow-y:auto; margin:0 -4px; padding:0 4px; }
   .dash .todo-list::-webkit-scrollbar { width:8px; }
   .dash .todo-list::-webkit-scrollbar-thumb { background:var(--d-bstrong); border-radius:20px; }
   .dash .todo-list::-webkit-scrollbar-track { background:transparent; }
@@ -133,8 +145,7 @@
   .dash .todo-empty { color:var(--d-tfaint); font-size:12.5px; text-align:center; padding:18px 0; }
   .dash .todo-foot { margin-top:10px; font-size:11.5px; color:var(--d-tfaint); text-align:right; }
 
-  .dash .team-list { display:grid; grid-template-columns:1fr 1fr; gap:4px 10px; }
-  @media (max-width:520px){ .dash .team-list { grid-template-columns:1fr; } }
+  .dash .team-list { display:grid; grid-template-columns:1fr; gap:4px 10px; }
   .dash .team-row { display:flex; align-items:center; gap:8px; padding:6px 4px; border-radius:9px; min-width:0; }
   .dash .team-row .avatar { width:28px; height:28px; border-radius:50%; background:var(--d-accent); color:#fff;
     display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
@@ -144,11 +155,11 @@
 
   /* 우측 사이드 칸(≈250px)에 들어가므로 항상 세로 배치 — 도넛 위, 통계 아래 */
   .dash .submission-status { display:flex; flex-direction:column; align-items:center; gap:16px; }
-  .dash .submission-ring { --submission-pct:0%; position:relative; width:128px; height:128px; margin:auto; border-radius:50%;
+  .dash .submission-ring { --submission-pct:0%; position:relative; width:104px; height:104px; margin:auto; border-radius:50%;
     display:grid; place-items:center; background:conic-gradient(from -90deg,var(--d-accent) var(--submission-pct),var(--d-sunken) 0); }
-  .dash .submission-ring::before { content:""; position:absolute; inset:24px; border-radius:50%; background:var(--d-surface); }
-  .dash .submission-ring-label { position:relative; z-index:1; text-align:center; color:var(--d-tmuted); font-size:11px; font-weight:600; }
-  .dash .submission-ring-label strong { display:block; margin-top:2px; color:var(--d-accent); font-size:24px; line-height:1; }
+  .dash .submission-ring::before { content:""; position:absolute; inset:20px; border-radius:50%; background:var(--d-surface); }
+  .dash .submission-ring-label { position:relative; z-index:1; text-align:center; color:var(--d-tmuted); font-size:10.5px; font-weight:600; }
+  .dash .submission-ring-label strong { display:block; margin-top:2px; color:var(--d-accent); font-size:19px; line-height:1; }
   .dash .submission-summary { display:flex; flex-direction:column; width:100%; }
   .dash .submission-stat { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid var(--d-border); }
   .dash .submission-stat:last-child { border-bottom:0; }
@@ -202,11 +213,9 @@
               <a class="cal-cell pick {% if c.is_today %}today{% endif %} {% if c.is_selected %}sel{% endif %}"
                  href="?y={{ cal.year }}&m={{ cal.month }}&d={{ c.date|date:'Y-m-d' }}">
                 <span class="num">{{ c.day }}</span>
-                <span class="dots">
-                  {% if c.has_lecture %}<i class="b"></i>{% endif %}
-                  {% if c.has_pending %}<i class="r"></i>{% endif %}
-                  {% if c.has_done %}<i class="g"></i>{% endif %}
-                  {% if c.has_todo %}<i class="p"></i>{% endif %}
+                <span class="chips">
+                  {% for it in c.items %}<span class="chip {{ it.cat }}">{{ it.title }}</span>{% endfor %}
+                  {% if c.more_count %}<span class="more">+{{ c.more_count }}개</span>{% endif %}
                 </span>
               </a>
             {% else %}
@@ -296,7 +305,7 @@
   </div>
 
   {# ── 오른쪽 ── #}
-  <div class="col">
+  <div class="col side">
     {% include "lms_ui/student/includes/dashboard/_todo_card.html" %}
     {% include "lms_ui/student/includes/dashboard/_team_card.html" %}
     {% include "lms_ui/student/includes/dashboard/_submission_status_card.html" %}

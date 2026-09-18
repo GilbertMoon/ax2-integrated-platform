@@ -1,30 +1,158 @@
 {% comment %}
 apps/common/templates/includes/notice_banner.html — 공통 담당 전담.
-Core notices 앱을 원본으로 조회한 공지(학생/튜터 대시보드 공용). context: notices(문자열 리스트).
+Core notices 앱을 원본으로 조회한 공지(학생/튜터 대시보드 공용).
+Core 자체 대시보드의 공지 바(templates/includes/notice_bar.html, static/js/notice-bar.js)와
+동일한 구조/동작(제목 순환 + 상세 모달 + 전체 목록 모달)을 그대로 따른다.
+context: notices_detail — [{pk, title, content, created_at(datetime)}, ...] 최신순.
 {% endcomment %}
-{% if notices %}
-<div class="notice-banner" id="notice">
-  <span class="tag"><i class="bi bi-megaphone-fill"></i> 공지</span>
-  <span class="body" id="noticeBody">{{ notices.0 }}</span>
-  <span class="nav">
-    <button type="button" id="noticePrev" aria-label="이전 공지"><i class="bi bi-chevron-left"></i></button>
-    <span id="noticeIdx">1 / {{ notices|length }}</span>
-    <button type="button" id="noticeNext" aria-label="다음 공지"><i class="bi bi-chevron-right"></i></button>
-  </span>
-</div>
-{{ notices|json_script:"noticeData" }}
-<script>
-(function () {
-  var el = document.getElementById("notice");
-  if (!el) return;
-  var data = [];
-  try { data = JSON.parse(document.getElementById("noticeData").textContent); } catch (e) { return; }
-  if (data.length < 2) return;
-  var i = 0;
-  var body = document.getElementById("noticeBody"), idx = document.getElementById("noticeIdx");
-  function render() { body.textContent = data[i]; idx.textContent = (i + 1) + " / " + data.length; }
-  document.getElementById("noticePrev").addEventListener("click", function () { i = (i - 1 + data.length) % data.length; render(); });
-  document.getElementById("noticeNext").addEventListener("click", function () { i = (i + 1) % data.length; render(); });
-})();
-</script>
+{% if notices_detail %}
+  <div class="notice-banner" id="noticeBanner" data-interval="3000">
+    <span class="notice-banner-label">
+      <i class="bi bi-megaphone-fill"></i> 공지
+    </span>
+    <div class="notice-banner-track">
+      {% for notice in notices_detail %}
+        <button type="button"
+                class="notice-banner-item {% if not forloop.first %}d-none{% endif %}"
+                data-bs-toggle="modal"
+                data-bs-target="#noticeDetailModal"
+                data-notice-template="notice-detail-{{ notice.pk }}">{{ notice.title }}</button>
+      {% endfor %}
+    </div>
+    <div class="notice-banner-controls">
+      {% if notices_detail|length > 1 %}
+        <button type="button" class="notice-banner-nav-btn notice-banner-prev" aria-label="이전 공지">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button type="button" class="notice-banner-nav-btn notice-banner-next" aria-label="다음 공지">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+        <span class="notice-banner-counter">
+          <span class="notice-banner-current">1</span> / {{ notices_detail|length }}
+        </span>
+      {% endif %}
+      <button type="button" class="notice-banner-more" data-bs-toggle="modal" data-bs-target="#noticeListModal">더보기</button>
+    </div>
+  </div>
+
+  {% for notice in notices_detail %}
+    <template id="notice-detail-{{ notice.pk }}">
+      <h6 class="fw-bold mb-2">{{ notice.title }}</h6>
+      <div class="small text-muted mb-3">{{ notice.created_at|date:"Y.m.d H:i" }}</div>
+      <div class="notice-detail-body">{{ notice.content|linebreaksbr }}</div>
+    </template>
+  {% endfor %}
+
+  <div class="modal fade" id="noticeDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header border-bottom px-4 py-3">
+          <h6 class="modal-title fw-bold"><i class="bi bi-megaphone-fill text-primary me-2"></i>공지 상세</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+        </div>
+        <div class="modal-body p-4" id="noticeDetailBody"></div>
+        <div class="modal-footer border-top-0 px-4 pb-3">
+          <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="noticeListModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header border-bottom px-4 py-3">
+          <h6 class="modal-title fw-bold"><i class="bi bi-megaphone-fill text-primary me-2"></i>전체 공지 목록</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+        </div>
+        <div class="modal-body p-0">
+          <div class="list-group list-group-flush small">
+            {% for notice in notices_detail %}
+              <button type="button"
+                      class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4 notice-list-item"
+                      data-notice-template="notice-detail-{{ notice.pk }}">
+                <span class="text-truncate">{{ notice.title }}</span>
+                <span class="text-muted small flex-shrink-0 ms-2">{{ notice.created_at|date:"m.d" }}</span>
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 px-4 pb-3">
+          <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // 공지 배너 - 자동 순환, 수동 이동, 상세/목록 모달 연결. Core static/js/notice-bar.js와 동일 로직.
+  (function () {
+    var bar = document.getElementById("noticeBanner");
+    if (!bar) return;
+
+    var items = Array.prototype.slice.call(bar.querySelectorAll(".notice-banner-item"));
+    var counter = bar.querySelector(".notice-banner-current");
+    var index = 0;
+    var timer = null;
+
+    function show(nextIndex) {
+      items[index].classList.add("d-none");
+      index = (nextIndex + items.length) % items.length;
+      items[index].classList.remove("d-none");
+      if (counter) counter.textContent = index + 1;
+    }
+
+    function restart() {
+      if (timer) clearInterval(timer);
+      if (items.length > 1) {
+        timer = setInterval(function () { show(index + 1); }, Number(bar.dataset.interval) || 3000);
+      }
+    }
+
+    var prevBtn = bar.querySelector(".notice-banner-prev");
+    var nextBtn = bar.querySelector(".notice-banner-next");
+    if (prevBtn) prevBtn.addEventListener("click", function () { show(index - 1); restart(); });
+    if (nextBtn) nextBtn.addEventListener("click", function () { show(index + 1); restart(); });
+
+    restart();
+
+    // 상세 모달 - 공지 배너 제목 또는 전체 목록 항목에서 넘어온 <template>을 그대로 복제한다.
+    var detailModalEl = document.getElementById("noticeDetailModal");
+    var detailBody = detailModalEl ? detailModalEl.querySelector("#noticeDetailBody") : null;
+
+    function fillDetail(templateId) {
+      var template = templateId ? document.getElementById(templateId) : null;
+      if (!detailBody) return;
+      detailBody.innerHTML = "";
+      if (template) detailBody.appendChild(template.content.cloneNode(true));
+    }
+
+    if (detailModalEl) {
+      detailModalEl.addEventListener("show.bs.modal", function (event) {
+        var button = event.relatedTarget;
+        if (button && button.dataset.noticeTemplate) fillDetail(button.dataset.noticeTemplate);
+      });
+    }
+
+    // 전체 목록 모달에서 항목을 클릭하면 목록을 닫고 상세 모달을 이어서 연다.
+    var listModalEl = document.getElementById("noticeListModal");
+    var pendingTemplateId = null;
+
+    if (listModalEl) {
+      listModalEl.querySelectorAll(".notice-list-item").forEach(function (item) {
+        item.addEventListener("click", function () {
+          pendingTemplateId = item.dataset.noticeTemplate;
+          bootstrap.Modal.getOrCreateInstance(listModalEl).hide();
+        });
+      });
+
+      listModalEl.addEventListener("hidden.bs.modal", function () {
+        if (!pendingTemplateId) return;
+        fillDetail(pendingTemplateId);
+        pendingTemplateId = null;
+        bootstrap.Modal.getOrCreateInstance(detailModalEl).show();
+      });
+    }
+  })();
+  </script>
 {% endif %}

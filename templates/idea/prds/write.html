@@ -3,15 +3,14 @@
 {% block title %}{{ prd.title }} | Idea Developer{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/write.css' %}?v=20260916-1"
+  <link href="{% static 'prds/css/write.css' %}?v=20260917-r3"
         rel="stylesheet">
-  {% comment %}PRD 화면은 다크모드 대응 CSS가 없어 라이트로 고정하고 토글을 숨긴다.{% endcomment %}
-  <script>document.documentElement.setAttribute('data-bs-theme', 'light');</script>
-  <style>.ax-theme-toggle { display: none !important; }</style>
 {% endblock %}
 {% block content %}
   <div id="prd-write-app"
+       class="idea-dev idea-dev--write"
        data-prd-id="{{ prd.id }}"
+       data-current-user-id="{{ request.user.external_user_id }}"
        data-detail-api="{{ detail_api_url }}"
        data-export-api="{% url 'prd_api:export-markdown' prd.id %}"
        data-participants-api="{{ participants_api_url }}"
@@ -183,10 +182,6 @@
         <button id="reopen-prd" class="btn btn-sm btn-warning d-none" type="button">
           <i class="bi bi-arrow-counterclockwise"></i> 다시 열기
         </button>
-        <a class="write-exit"
-           href="{% url 'ideas:home' %}"
-           aria-label="PRD 작성 화면 나가기"
-           title="나가기"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
       </div>
     </header>
     <nav class="write-stepper" aria-label="PRD 섹션 진행 단계">
@@ -473,7 +468,7 @@
   </form>
 {% endblock %}
 {% block modals %}
-  <div class="modal fade"
+  <div class="modal fade idea-dev-modal"
        id="prd-settings-modal"
        tabindex="-1"
        aria-labelledby="prd-settings-modal-title"
@@ -551,7 +546,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade"
+  <div class="modal fade idea-dev-modal"
        id="write-delete-confirm-modal"
        tabindex="-1"
        aria-labelledby="write-delete-confirm-title"
@@ -577,7 +572,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade"
+  <div class="modal fade idea-dev-modal"
        id="answer-conflict-modal"
        tabindex="-1"
        aria-labelledby="answer-conflict-title"
@@ -613,7 +608,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade"
+  <div class="modal fade idea-dev-modal"
        id="answer-held-conflict-modal"
        tabindex="-1"
        aria-labelledby="answer-held-conflict-title"
@@ -649,7 +644,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade"
+  <div class="modal fade idea-dev-modal"
        id="export-modal"
        tabindex="-1"
        aria-labelledby="export-modal-title"
@@ -663,7 +658,7 @@
             <p id="export-prd-title"></p>
           </div>
           <button type="button"
-                  class="btn-close btn-close-white"
+                  class="btn-close"
                   data-bs-dismiss="modal"
                   aria-label="닫기"></button>
         </div>
@@ -717,7 +712,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade"
+  <div class="modal fade idea-dev-modal"
        id="perspective-draft-modal"
        tabindex="-1"
        aria-labelledby="perspective-draft-modal-title"
@@ -756,8 +751,8 @@
 {% endblock %}
 {% block extra_js %}
   {{ block.super }}
-  <script src="{% static 'prds/js/write-participants.js' %}?v=20260909-1"></script>
-  <script src="{% static 'prds/js/write-comments.js' %}?v=20260906-2"></script>
+  <script src="{% static 'prds/js/write-participants.js' %}?v=20260917-3"></script>
+  <script src="{% static 'prds/js/write-comments.js' %}?v=20260917-3"></script>
   <script src="{% static 'prds/js/write-contributions.js' %}?v=20260906-1"></script>
-  <script src="{% static 'prds/js/write.js' %}?v=20260914-1"></script>
+  <script src="{% static 'prds/js/write.js' %}?v=20260917-3"></script>
 {% endblock %}

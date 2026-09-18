@@ -1,10 +1,13 @@
-/* Team 3 pages live inside the AX Console shell. Size full-screen workspaces
-   from the content area, not from the browser viewport behind the sidebar. */
-body:has(#prd-home-app, #prd-write-app, #brainstorm-root) #content-area {
+/*
+ * AX Console <-> Idea Developer layout adapter.
+ * Visual component rules belong to foundation.css or each page CSS.
+ */
+body:has(#prd-home-app, #new-prd-app, #prd-write-app, #brainstorm-root) #content-area {
   container-name: idea-content;
   container-type: inline-size;
 }
 
+/* Keep AX topbar untouched. Idea pages only control their content workspace. */
 @media (min-width: 992px) {
   body:has(#prd-write-app) #content-area > main,
   body:has(#brainstorm-root) #content-area > main {
@@ -38,9 +41,7 @@ body:has(#brainstorm-root) #content-area > main #brainstorm-root {
 }
 
 @container idea-content (max-width: 1040px) {
-  .home-content-layout {
-    grid-template-columns: 1fr;
-  }
+  .home-content-layout { grid-template-columns: 1fr; }
 
   .home-activity-sidebar {
     position: static;
@@ -50,16 +51,11 @@ body:has(#brainstorm-root) #content-area > main #brainstorm-root {
 
   .tutor-student-filter {
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: var(--idea-space-4);
   }
 
-  .write-toolbar {
-    flex-wrap: wrap;
-  }
-
-  .write-toolbar-meta {
-    display: none;
-  }
+  .write-toolbar { flex-wrap: wrap; }
+  .write-toolbar-meta { display: none; }
 
   .write-actions {
     width: 100%;
@@ -71,16 +67,12 @@ body:has(#brainstorm-root) #content-area > main #brainstorm-root {
     display: none;
   }
 
-  .brain-toolbar {
-    overflow-x: auto;
-  }
+  .brain-toolbar { overflow-x: auto; }
 }
 
-/* A 1024px laptop still has only about 780px after the desktop sidebar.
-   Stack the editor at the actual content width instead of squeezing two panes. */
 @container idea-content (max-width: 900px) {
   body:has(#prd-write-app) #content-area > main {
-    padding: 12px;
+    padding: var(--idea-space-3);
     overflow: visible;
   }
 
@@ -88,8 +80,8 @@ body:has(#brainstorm-root) #content-area > main #brainstorm-root {
     height: auto;
     min-height: calc(100dvh - var(--topbar-height) - 24px);
     overflow: visible;
-    border: 1px solid #e2e6ef;
-    border-radius: 14px;
+    border: 1px solid var(--idea-border-default);
+    border-radius: var(--idea-radius-lg);
   }
 
   #prd-write-app .write-workspace {
@@ -104,13 +96,11 @@ body:has(#brainstorm-root) #content-area > main #brainstorm-root {
 
   #prd-write-app .write-evaluation {
     overflow: visible;
-    border-top: 1px solid #e4e7ed;
+    border-top: 1px solid var(--idea-border-default);
     border-left: 0;
   }
 }
 
 @container idea-content (max-width: 720px) {
-  .home-activity-sidebar {
-    grid-template-columns: 1fr;
-  }
+  .home-activity-sidebar { grid-template-columns: 1fr; }
 }

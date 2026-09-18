@@ -5,11 +5,13 @@
 {% block extra_head %}
   {{ block.super }}
   <meta name="csrf-token" content="{{ csrf_token }}">
-  <link href="{% static 'idea/css/base.css' %}?v=20260914-2" rel="stylesheet">
-  <link href="{% static 'idea/css/integrated.css' %}?v=20260915-1"
-        rel="stylesheet">
+  <link href="{% static 'idea/css/foundation.css' %}?v=20260917-r2" rel="stylesheet">
+  <link href="{% static 'idea/css/base.css' %}?v=20260917-1" rel="stylesheet">
+  <link href="{% static 'idea/css/integrated.css' %}?v=20260917-1" rel="stylesheet">
+  <link href="{% static 'idea/css/interaction.css' %}?v=20260917-r2" rel="stylesheet">
 {% endblock %}
 {% block extra_js %}
   {{ block.super }}
-  <script src="{% static 'idea/js/controls.js' %}?v=20260904-1"></script>
+  <script src="{% static 'idea/js/controls.js' %}?v=20260917-4"></script>
+  <script src="{% static 'idea/js/dialogs.js' %}?v=20260917-4"></script>
 {% endblock %}

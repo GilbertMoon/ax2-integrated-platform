@@ -1,7 +1,8 @@
 """apps/core/views.py — 공유 뷰.
 
-과제 첨부 자료(AssignmentFile) 다운로드. 학생·튜터 공통이라 core 에 둔다.
-자료 자체는 코스 공개이므로 권한은 "로그인 + 학생 또는 튜터" 까지만 본다.
+과제 첨부 자료(AssignmentFile) 다운로드, 강의 교안(LessonMaterial) 다운로드.
+학생·튜터 공통이라 core 에 둔다. 자료 자체는 코스 공개이므로 권한은
+"로그인 + 학생 또는 튜터" 까지만 본다.
 """
 from pathlib import Path
 
@@ -13,7 +14,7 @@ from django.shortcuts import get_object_or_404
 
 from lms_modules.accounts_client import services as accounts
 from lms_modules.common.preview import _storage_name
-from lms_modules.core.models import AssignmentFile
+from lms_modules.core.models import AssignmentFile, LessonMaterial
 
 
 @login_required
@@ -34,4 +35,25 @@ def assignment_file_download(request, file_id):
         handle,
         as_attachment=True,
         filename=Path(attachment.file_name).name or "attachment",
+    )
+
+
+@login_required
+def lecture_material_download(request, material_id):
+    uid = request.user.id
+    if not (accounts.is_student(uid) or accounts.is_tutor(uid)):
+        raise PermissionDenied("접근 권한이 없습니다.")
+
+    material = get_object_or_404(
+        LessonMaterial, pk=material_id, kind=LessonMaterial.Kind.FILE
+    )
+    try:
+        handle = default_storage.open(_storage_name(material.file_url), "rb")
+    except (FileNotFoundError, OSError, ValueError):
+        raise Http404("저장된 강의 자료를 찾을 수 없습니다.") from None
+
+    return FileResponse(
+        handle,
+        as_attachment=True,
+        filename=Path(material.file_name).name or "material",
     )

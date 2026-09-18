@@ -50,6 +50,7 @@ from django.views.decorators.http import require_POST
 from lms_modules.accounts_client import services as accounts
 from lms_modules.common.preview import _storage_name
 from lms_modules.core.models import Assignment, AssignmentFile
+from lms_modules.notifications import services as lms_notifications
 from lms_modules.notifications.slack import (
     active_slack_user_ids,
     notify_channel,
@@ -307,6 +308,22 @@ def assignment_create(request):
             notify_channel(
                 title="새 과제가 등록되었습니다.",
                 message=f"과제명: {assignment.title}",
+            )
+
+            if assignment.is_team:
+                recipient_ids = {
+                    m.id
+                    for team in accounts.get_teams()
+                    for m in accounts.get_team_members(team.id) or []
+                }
+            else:
+                recipient_ids = {s.id for s in accounts.get_students()}
+            lms_notifications.notify_many(
+                user_ids=recipient_ids,
+                category=lms_notifications.Category.ASSIGNMENT_CREATED,
+                title="새 과제가 등록되었습니다.",
+                message=f"과제명: {assignment.title}",
+                link=reverse("lms:student:assignment-preview", args=[assignment.id]),
             )
 
             messages.success(

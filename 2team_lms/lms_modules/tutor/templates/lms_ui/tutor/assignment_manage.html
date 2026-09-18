@@ -154,10 +154,19 @@
         {% for a in deleted_assignments %}
           <div class="deleted-row">
             <span>{{ a.title }} <small>({{ a.deleted_at|date:"Y.m.d H:i" }} 삭제)</small></span>
-            <form method="post" action="{% url 'lms:tutor:assignment-restore' a.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-ghost btn-sm">실행취소</button>
-            </form>
+            <div class="d-flex gap-2">
+              <form method="post" action="{% url 'lms:tutor:assignment-restore' a.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost btn-sm">실행취소</button>
+              </form>
+              {% if a.submission_count == 0 %}
+                <form method="post" action="{% url 'lms:tutor:assignment-hard-delete' a.pk %}"
+                      onsubmit="return confirm('과제 \'{{ a.title }}\'을(를) 영구 삭제할까요? 이 작업은 되돌릴 수 없습니다.');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">영구삭제</button>
+                </form>
+              {% endif %}
+            </div>
           </div>
         {% endfor %}
       </div>

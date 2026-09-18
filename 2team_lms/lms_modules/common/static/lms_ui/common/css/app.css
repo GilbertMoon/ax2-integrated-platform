@@ -230,8 +230,8 @@ body {
   width: 34px;
   height: 34px;
   padding: 0;
-  border: none;
-  background: none;
+  border: 1px solid var(--color-outline);
+  background: var(--color-surface);
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -240,7 +240,7 @@ body {
   cursor: pointer;
   font-size: 16px;
 }
-.topbar-icon-btn:hover { background: var(--color-background); color: var(--color-text); }
+.topbar-icon-btn:hover { background: var(--color-background); color: var(--color-text); border-color: var(--color-primary); }
 
 /* 알림 종 배지·패널 (lms_ui/common/js/notifications.js) — Core static/css/custom.css .ax-notification-* 와 동일 값 */
 .ax-notification-badge {

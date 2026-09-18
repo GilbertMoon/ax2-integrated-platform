@@ -776,11 +776,7 @@
     // Update Player
     const playerContainer = document.getElementById('player-container');
     if (vid && vid.url) {
-      const vId = getYouTubeId(vid.url);
-      const embedUrl = vId ? `https://www.youtube-nocookie.com/embed/${vId}?rel=0` : vid.url;
-      playerContainer.innerHTML = `
-        <iframe src="${embedUrl}" title="${vid.title || lesson.title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-      `;
+      playerContainer.innerHTML = buildVideoPlayerHtml(vid.url, vid.title || lesson.title);
     } else {
       playerContainer.innerHTML = `
         <div class="player-placeholder">
@@ -855,11 +851,7 @@
     // Update Player
     const playerContainer = document.getElementById('player-container');
     if (lesson.videoUrl) {
-      const vId = getYouTubeId(lesson.videoUrl);
-      const embedUrl = vId ? `https://www.youtube-nocookie.com/embed/${vId}` : lesson.videoUrl;
-      playerContainer.innerHTML = `
-        <iframe src="${embedUrl}" title="${lesson.title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-      `;
+      playerContainer.innerHTML = buildVideoPlayerHtml(lesson.videoUrl, lesson.title);
     } else {
 
       playerContainer.innerHTML = `
@@ -953,6 +945,32 @@
     if (!url) return null;
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/i);
     return match ? match[1] : null;
+  }
+
+  function isGoogleDriveUrl(url) {
+    if (!url) return false;
+    return /(?:drive|docs)\.google\.com/i.test(url);
+  }
+
+  // 영상 URL 하나를 재생 영역(#player-container)에 넣을 HTML로 변환.
+  // 유튜브 → 임베드 iframe, 구글 드라이브 → 미리보기 미지원 안내 + 새 탭 열기 버튼,
+  // 그 외 → 기존처럼 iframe에 그대로 시도.
+  function buildVideoPlayerHtml(url, title) {
+    if (isGoogleDriveUrl(url)) {
+      return `
+        <div class="player-placeholder">
+          <div class="placeholder-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </div>
+          <h4 class="placeholder-title">구글 드라이브 영상</h4>
+          <p class="placeholder-desc">구글 드라이브 영상은 미리보기가 지원되지 않습니다. 아래 버튼을 눌러 새 탭에서 시청해주세요.</p>
+          <a href="${url}" target="_blank" rel="noopener" class="btn btn-primary">구글 드라이브에서 열기</a>
+        </div>
+      `;
+    }
+    const vId = getYouTubeId(url);
+    const embedUrl = vId ? `https://www.youtube-nocookie.com/embed/${vId}?rel=0` : url;
+    return `<iframe src="${embedUrl}" title="${title || ''}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
   }
 
 </script>

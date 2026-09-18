@@ -1,0 +1,578 @@
+
+/* Idea Developer — Interaction / Accessibility Cleanup v1
+   Applies only to Idea Developer surfaces and their body-level portals. */
+
+.idea-dev,
+.idea-dev-modal,
+.brain-editor-modal,
+.brain-assignee-menu,
+.idea-date-popover,
+.idea-ui-dialog,
+.idea-ui-toast {
+  font-family:
+    Pretendard,
+    "Noto Sans KR",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* ------------------------------------------------------------
+   Scrollbars
+   ------------------------------------------------------------ */
+
+.idea-dev,
+.idea-dev *,
+.idea-dev-modal,
+.idea-dev-modal *,
+.brain-editor-modal,
+.brain-editor-modal *,
+.brain-assignee-menu,
+.brain-assignee-menu *,
+.idea-date-popover,
+.idea-date-popover * {
+  scrollbar-width: thin;
+  scrollbar-color:
+    var(--idea-neutral-300, #cbd5e1)
+    transparent;
+}
+
+.idea-dev *::-webkit-scrollbar,
+.idea-dev-modal *::-webkit-scrollbar,
+.brain-editor-modal *::-webkit-scrollbar,
+.brain-assignee-menu *::-webkit-scrollbar,
+.idea-date-popover *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.idea-dev *::-webkit-scrollbar-track,
+.idea-dev-modal *::-webkit-scrollbar-track,
+.brain-editor-modal *::-webkit-scrollbar-track,
+.brain-assignee-menu *::-webkit-scrollbar-track,
+.idea-date-popover *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.idea-dev *::-webkit-scrollbar-thumb,
+.idea-dev-modal *::-webkit-scrollbar-thumb,
+.brain-editor-modal *::-webkit-scrollbar-thumb,
+.brain-assignee-menu *::-webkit-scrollbar-thumb,
+.idea-date-popover *::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    var(--idea-neutral-300, #cbd5e1);
+  background-clip: padding-box;
+}
+
+.idea-dev *::-webkit-scrollbar-thumb:hover,
+.idea-dev-modal *::-webkit-scrollbar-thumb:hover,
+.brain-editor-modal *::-webkit-scrollbar-thumb:hover,
+.brain-assignee-menu *::-webkit-scrollbar-thumb:hover,
+.idea-date-popover *::-webkit-scrollbar-thumb:hover {
+  background:
+    var(--idea-neutral-400, #94a3b8);
+  background-clip: padding-box;
+}
+
+/* ------------------------------------------------------------
+   Compact in-app alerts / toast-like banners
+   ------------------------------------------------------------ */
+
+.idea-dev--write .write-alert {
+  top: 16px;
+  right: 20px;
+  width: min(360px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, .12);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.idea-dev--write .write-alert.alert-success {
+  border-color: #a7f3d0;
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.idea-dev--write .write-alert.alert-danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.idea-dev--write .write-alert.alert-warning {
+  border-color: #fde68a;
+  color: #a16207;
+  background: #fffbeb;
+}
+
+/* Held = scope-excluding action, not positive */
+.idea-dev--write .write-question.is-held {
+  border-radius: 12px;
+  background: #fff7f7;
+}
+
+.idea-dev--write .write-question.is-held h3 {
+  color: #991b1b;
+  text-decoration-color: #fca5a5;
+}
+
+.idea-dev--write .question-held-panel {
+  border-color: #fecaca;
+  color: #991b1b;
+  background: #fef2f2;
+}
+
+.idea-dev--write .question-held-panel strong {
+  color: #991b1b;
+}
+
+.idea-dev--write .question-held-panel p {
+  color: #b45353;
+}
+
+.idea-dev--write .question-hold-button.active,
+.idea-dev--write .question-held-badge {
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+/* ------------------------------------------------------------
+   Common custom dialog
+   ------------------------------------------------------------ */
+
+.idea-ui-dialog-backdrop {
+  position: fixed;
+  z-index: 3000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .42);
+  backdrop-filter: blur(4px);
+}
+
+.idea-ui-dialog {
+  width: min(430px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--idea-border-default, #e2e8f0);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 26px 80px rgba(15, 23, 42, .25);
+}
+
+.idea-ui-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px 14px;
+}
+
+.idea-ui-dialog__eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--idea-color-primary, #4f46e5);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+.idea-ui-dialog__title {
+  margin: 0;
+  color: var(--idea-text-primary, #0f172a);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.idea-ui-dialog__close {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  color: var(--idea-text-muted, #64748b);
+  background: transparent;
+}
+
+.idea-ui-dialog__close:hover {
+  color: var(--idea-text-primary, #0f172a);
+  background: var(--idea-surface-muted, #f1f5f9);
+}
+
+.idea-ui-dialog__body {
+  padding: 0 22px 18px;
+  color: var(--idea-text-secondary, #334155);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.idea-ui-dialog__message {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.idea-ui-dialog__input {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--idea-border-default, #e2e8f0);
+  border-radius: 12px;
+  outline: 0;
+  color: var(--idea-text-primary, #0f172a);
+  background: var(--idea-surface-subtle, #f8fafc);
+  font-size: 14px;
+}
+
+.idea-ui-dialog__input:focus {
+  border-color: var(--idea-border-focus, #818cf8);
+  background: #fff;
+  box-shadow: var(--idea-focus-ring, 0 0 0 3px rgba(99, 102, 241, .12));
+}
+
+.idea-ui-dialog__error {
+  margin-top: 7px;
+  color: #b91c1c;
+  font-size: 11px;
+}
+
+.idea-ui-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 22px 20px;
+  border-top: 1px solid var(--idea-border-default, #e2e8f0);
+  background: var(--idea-surface-subtle, #f8fafc);
+}
+
+.idea-ui-dialog__button {
+  min-width: 82px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--idea-border-default, #e2e8f0);
+  border-radius: 12px;
+  color: var(--idea-text-secondary, #334155);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.idea-ui-dialog__button:hover {
+  background: var(--idea-surface-muted, #f1f5f9);
+}
+
+.idea-ui-dialog__button--primary {
+  border-color: var(--idea-color-primary, #4f46e5);
+  color: #fff;
+  background: var(--idea-color-primary, #4f46e5);
+}
+
+.idea-ui-dialog__button--primary:hover {
+  border-color: var(--idea-color-primary-hover, #4338ca);
+  background: var(--idea-color-primary-hover, #4338ca);
+}
+
+.idea-ui-dialog__button--danger {
+  border-color: #dc2626;
+  color: #fff;
+  background: #dc2626;
+}
+
+.idea-ui-dialog__button--danger:hover {
+  border-color: #b91c1c;
+  background: #b91c1c;
+}
+
+/* ------------------------------------------------------------
+   Common toast
+   ------------------------------------------------------------ */
+
+.idea-ui-toast-stack {
+  position: fixed;
+  z-index: 3100;
+  top: 16px;
+  right: 20px;
+  display: grid;
+  width: min(360px, calc(100vw - 32px));
+  gap: 8px;
+}
+
+.idea-ui-toast {
+  padding: 10px 12px;
+  border: 1px solid var(--idea-border-default, #e2e8f0);
+  border-radius: 12px;
+  color: var(--idea-text-secondary, #334155);
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, .12);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.idea-ui-toast--success {
+  border-color: #a7f3d0;
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.idea-ui-toast--danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.idea-ui-toast--warning {
+  border-color: #fde68a;
+  color: #a16207;
+  background: #fffbeb;
+}
+
+
+/* ============================================================
+   v2 — compact write/comment feedback
+   ============================================================ */
+
+.idea-dev--write .comment-panel-alert,
+.idea-dev--write .write-participant-alert {
+  margin: 10px 12px 0;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  box-shadow: none;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.idea-dev--write .comment-panel-alert.alert-success,
+.idea-dev--write .write-participant-alert.success {
+  border-color: #a7f3d0;
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.idea-dev--write .comment-panel-alert.alert-warning,
+.idea-dev--write .write-participant-alert.warning {
+  border-color: #fde68a;
+  color: #a16207;
+  background: #fffbeb;
+}
+
+.idea-dev--write .comment-panel-alert.alert-danger,
+.idea-dev--write .write-participant-alert.danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.idea-dev--write .write-participant-alert.info {
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+/* Date picker: year/month chooser must be visually exclusive from day grid. */
+.idea-date-popover .idea-date-month-panel:not([hidden]) ~ .idea-date-weekdays,
+.idea-date-popover .idea-date-month-panel:not([hidden]) ~ .idea-date-days,
+.idea-date-popover .idea-date-month-panel:not([hidden]) ~ .idea-date-foot {
+  display: none !important;
+}
+
+/* A little more compact than the first pass. */
+.idea-date-popover {
+  width: min(304px, calc(100vw - 24px));
+}
+
+.idea-date-month-panel {
+  max-height: min(360px, calc(100vh - 80px));
+  overflow-y: auto;
+}
+
+
+/* ============================================================
+   Baseline cleanup v1 — shared portal / pagination / scrollbar
+   ============================================================ */
+
+.idea-dev,
+.idea-dev-modal,
+.idea-ui-dialog,
+.idea-ui-toast,
+.brain-editor-modal,
+.brain-assignee-menu,
+.idea-date-popover {
+  font-family:
+    var(--idea-font-family,
+      Pretendard,
+      "Noto Sans KR",
+      "Apple SD Gothic Neo",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif);
+}
+
+/* Chromium scrollbar end-buttons look like clipped grey arrows.
+   Hide only inside Idea surfaces. AX global scrollbars are untouched. */
+.idea-dev *::-webkit-scrollbar-button,
+.idea-dev-modal *::-webkit-scrollbar-button,
+.idea-ui-dialog *::-webkit-scrollbar-button,
+.brain-editor-modal *::-webkit-scrollbar-button,
+.brain-assignee-menu *::-webkit-scrollbar-button,
+.idea-date-popover *::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.idea-dev *::-webkit-scrollbar-corner,
+.idea-dev-modal *::-webkit-scrollbar-corner,
+.brain-editor-modal *::-webkit-scrollbar-corner,
+.brain-assignee-menu *::-webkit-scrollbar-corner,
+.idea-date-popover *::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Bootstrap pagination defaults were still visible in body-level Idea modals. */
+.idea-dev .pagination,
+.idea-dev-modal .pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.idea-dev .pagination .page-item,
+.idea-dev-modal .pagination .page-item {
+  margin: 0;
+}
+
+.idea-dev .pagination .page-link,
+.idea-dev-modal .pagination .page-link {
+  display: inline-grid;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  margin: 0 !important;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--idea-border-default, #e2e8f0);
+  border-radius: 9px !important;
+  color: var(--idea-text-secondary, #475569);
+  background: var(--idea-surface-default, #fff);
+  box-shadow: none;
+  font-size: var(--idea-font-size-caption, 12px);
+  font-weight: var(--idea-font-weight-semibold, 600);
+  line-height: 1;
+}
+
+.idea-dev .pagination .page-link:hover,
+.idea-dev-modal .pagination .page-link:hover {
+  border-color: var(--idea-indigo-200, #c7d2fe);
+  color: var(--idea-color-primary, #4f46e5);
+  background: var(--idea-color-primary-soft, #eef2ff);
+}
+
+.idea-dev .pagination .page-item.active .page-link,
+.idea-dev-modal .pagination .page-item.active .page-link {
+  border-color: var(--idea-color-primary, #4f46e5);
+  color: #fff;
+  background: var(--idea-color-primary, #4f46e5);
+}
+
+/* Human avatar baseline. Project/service icons keep their own rounded-square shape. */
+.idea-dev--home .participant-avatar,
+.idea-dev--home .home-recent-avatar,
+.idea-dev--home .tutor-student-avatar,
+.idea-dev--new .selected-participant-avatar,
+.idea-dev--new .participant-result-avatar,
+.idea-dev--write .write-member,
+.idea-dev--write .participant-person-avatar,
+.idea-dev-modal .home-recent-avatar,
+.idea-dev--brainstorm .brain-person b,
+.idea-dev--brainstorm .brain-assignee-trigger > b,
+.brain-assignee-menu > div > button > b,
+.brain-editor-author b {
+  border-radius: 50% !important;
+  line-height: 1;
+}
+
+
+/* ============================================================
+   Refine Round 2 — shared Idea surface polish
+   AX global styles are intentionally untouched.
+   ============================================================ */
+
+.idea-dev .btn i,
+.idea-dev-modal .btn i,
+.idea-ui-dialog i {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Floating overlays need breathing room from the viewport edges. */
+.idea-dev-modal .modal-dialog {
+  margin: 20px auto;
+}
+
+.idea-dev-modal .modal-content {
+  overflow: hidden;
+  border: 1px solid var(--idea-border-default, #e2e8f0);
+  border-radius: var(--idea-radius-xl, 16px);
+  box-shadow: var(--idea-shadow-overlay, 0 20px 56px rgba(15, 23, 42, .16));
+}
+
+.idea-ui-dialog-backdrop {
+  padding: 24px;
+}
+
+.idea-ui-dialog {
+  width: min(420px, calc(100vw - 48px));
+  border-radius: var(--idea-radius-xl, 16px);
+  box-shadow: var(--idea-shadow-overlay, 0 20px 56px rgba(15, 23, 42, .16));
+}
+
+.idea-ui-dialog__header,
+.idea-ui-dialog__body,
+.idea-ui-dialog__footer {
+  padding-inline: 20px;
+}
+
+.idea-ui-dialog__header {
+  padding-top: 18px;
+  padding-bottom: 14px;
+}
+
+.idea-ui-dialog__body {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.idea-ui-dialog__footer {
+  gap: 8px;
+  padding-top: 12px;
+  padding-bottom: 16px;
+}
+
+.idea-ui-dialog__button {
+  min-height: 38px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Keep portal scrollbars discreet. */
+.idea-dev-modal *::-webkit-scrollbar,
+.idea-ui-dialog *::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}

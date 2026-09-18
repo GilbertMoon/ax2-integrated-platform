@@ -1,0 +1,882 @@
+/*
+ * Idea Developer Foundation v1.1 — Visual Polish
+ * ------------------------------------------------------------
+ * Shared visual decisions for Idea Developer only.
+ * AX global styles are intentionally untouched.
+ * Dark-mode-specific Idea styling is deferred to the next phase.
+ */
+
+:root {
+  /* Typography */
+  --idea-font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --idea-font-size-display: 2rem;       /* 32 */
+  --idea-font-size-title-1: 1.5rem;     /* 24 */
+  --idea-font-size-title-2: 1.25rem;    /* 20 */
+  --idea-font-size-heading: 1.125rem;   /* 18 */
+  --idea-font-size-body-lg: 1rem;       /* 16 */
+  --idea-font-size-body: .875rem;       /* 14 */
+  --idea-font-size-label: .8125rem;     /* 13 */
+  --idea-font-size-caption: .75rem;     /* 12 */
+  --idea-font-size-overline: .6875rem;  /* 11 */
+  --idea-font-weight-regular: 400;
+  --idea-font-weight-medium: 500;
+  --idea-font-weight-semibold: 600;
+  --idea-font-weight-bold: 700;
+  --idea-line-height-tight: 1.3;
+  --idea-line-height-title: 1.4;
+  --idea-line-height-body: 1.57;
+  --idea-line-height-caption: 1.5;
+
+  /* Brand / primary */
+  --idea-indigo-50: #eef2ff;
+  --idea-indigo-100: #e0e7ff;
+  --idea-indigo-200: #c7d2fe;
+  --idea-indigo-300: #a5b4fc;
+  --idea-indigo-400: #818cf8;
+  --idea-indigo-500: #6366f1;
+  --idea-indigo-600: #4f46e5;
+  --idea-indigo-700: #4338ca;
+  --idea-indigo-800: #3730a3;
+  --idea-indigo-900: #312e81;
+
+  /* Neutral */
+  --idea-neutral-0: #ffffff;
+  --idea-neutral-25: #fcfcfd;
+  --idea-neutral-50: #f8fafc;
+  --idea-neutral-100: #f1f5f9;
+  --idea-neutral-200: #e2e8f0;
+  --idea-neutral-300: #cbd5e1;
+  --idea-neutral-400: #94a3b8;
+  --idea-neutral-500: #64748b;
+  --idea-neutral-600: #475569;
+  --idea-neutral-700: #334155;
+  --idea-neutral-800: #1e293b;
+  --idea-neutral-900: #0f172a;
+
+  /* Semantic */
+  --idea-color-primary: var(--idea-indigo-600);
+  --idea-color-primary-hover: var(--idea-indigo-700);
+  --idea-color-primary-pressed: var(--idea-indigo-800);
+  --idea-color-primary-soft: var(--idea-indigo-50);
+  --idea-color-primary-subtle: var(--idea-indigo-100);
+
+  --idea-color-success: #059669;
+  --idea-color-success-soft: #ecfdf5;
+  --idea-color-success-border: #a7f3d0;
+  --idea-color-warning: #d97706;
+  --idea-color-warning-soft: #fffbeb;
+  --idea-color-warning-border: #fde68a;
+  --idea-color-danger: #dc2626;
+  --idea-color-danger-soft: #fef2f2;
+  --idea-color-danger-border: #fecaca;
+  --idea-color-info: #2563eb;
+  --idea-color-info-soft: #eff6ff;
+
+  /* Product workflow status — deliberately separate from generic success/error */
+  --idea-status-progress: #059669;
+  --idea-status-progress-soft: #ecfdf5;
+  --idea-status-progress-border: #a7f3d0;
+  --idea-status-completed: var(--idea-indigo-600);
+  --idea-status-completed-soft: var(--idea-indigo-50);
+  --idea-status-completed-border: var(--idea-indigo-200);
+  --idea-status-held: #d97706;
+  --idea-status-held-soft: #fffbeb;
+  --idea-status-held-border: #fde68a;
+  --idea-status-dropped: #64748b;
+  --idea-status-dropped-soft: #f1f5f9;
+  --idea-status-dropped-border: #cbd5e1;
+
+  /* Time-sensitive / novelty */
+  --idea-color-new: #e85d3f;
+  --idea-color-new-soft: #fff1ed;
+  --idea-color-new-border: #fec7b7;
+  --idea-color-deadline-today: #dc2626;
+  --idea-color-deadline-today-soft: #fef2f2;
+
+  /* Surfaces */
+  --idea-bg-page: #f7f8fc;
+  --idea-surface-default: var(--idea-neutral-0);
+  --idea-surface-subtle: var(--idea-neutral-50);
+  --idea-surface-muted: var(--idea-neutral-100);
+  --idea-text-primary: var(--idea-neutral-800);
+  --idea-text-secondary: var(--idea-neutral-600);
+  --idea-text-muted: var(--idea-neutral-500);
+  --idea-text-disabled: var(--idea-neutral-400);
+  --idea-text-inverse: var(--idea-neutral-0);
+  --idea-border-default: var(--idea-neutral-200);
+  --idea-border-strong: var(--idea-neutral-300);
+  --idea-border-focus: var(--idea-indigo-400);
+
+  /* Spacing — 4 px rhythm */
+  --idea-space-0: 0;
+  --idea-space-1: 4px;
+  --idea-space-2: 8px;
+  --idea-space-3: 12px;
+  --idea-space-4: 16px;
+  --idea-space-5: 20px;
+  --idea-space-6: 24px;
+  --idea-space-8: 32px;
+  --idea-space-10: 40px;
+  --idea-space-12: 48px;
+  --idea-space-16: 64px;
+
+  /* Radius */
+  --idea-radius-xs: 6px;
+  --idea-radius-sm: 8px;
+  --idea-radius-md: 10px;
+  --idea-radius-lg: 14px;
+  --idea-radius-xl: 16px;
+  --idea-radius-full: 9999px;
+
+  /* Elevation */
+  --idea-shadow-none: none;
+  --idea-shadow-1: 0 1px 2px rgba(15, 23, 42, .045), 0 3px 10px rgba(15, 23, 42, .025);
+  --idea-shadow-2: 0 6px 18px rgba(15, 23, 42, .065);
+  --idea-shadow-3: 0 14px 32px rgba(15, 23, 42, .085);
+  --idea-shadow-overlay: 0 20px 56px rgba(15, 23, 42, .16);
+  --idea-focus-ring: 0 0 0 3px rgba(99, 102, 241, .16);
+
+  /* Avatar palette */
+  --idea-avatar-0-fg: #4338ca; --idea-avatar-0-bg: #e0e7ff;
+  --idea-avatar-1-fg: #0369a1; --idea-avatar-1-bg: #e0f2fe;
+  --idea-avatar-2-fg: #047857; --idea-avatar-2-bg: #d1fae5;
+  --idea-avatar-3-fg: #a16207; --idea-avatar-3-bg: #fef3c7;
+  --idea-avatar-4-fg: #be123c; --idea-avatar-4-bg: #ffe4e6;
+  --idea-avatar-5-fg: #a21caf; --idea-avatar-5-bg: #fae8ff;
+  --idea-avatar-6-fg: #c2410c; --idea-avatar-6-bg: #ffedd5;
+  --idea-avatar-7-fg: #5b21b6; --idea-avatar-7-bg: #ede9fe;
+}
+
+/* ============================================================
+   Scope
+   ============================================================ */
+.idea-dev,
+.idea-dev-modal {
+  --bs-primary: #4f46e5;
+  --bs-primary-rgb: 79, 70, 229;
+  --studio-primary: var(--idea-color-primary);
+  --studio-primary-dark: var(--idea-indigo-800);
+  --studio-primary-soft: var(--idea-color-primary-soft);
+  --studio-ink: var(--idea-text-primary);
+  --studio-muted: var(--idea-text-muted);
+  --studio-border: var(--idea-border-default);
+  --studio-canvas: var(--idea-bg-page);
+  --studio-card: var(--idea-surface-default);
+  --studio-shadow: var(--idea-shadow-3);
+  --studio-radius: var(--idea-radius-lg);
+
+  color: var(--idea-text-primary);
+  font-family: var(--idea-font-family);
+  font-size: var(--idea-font-size-body);
+  line-height: var(--idea-line-height-body);
+  letter-spacing: -.012em;
+}
+
+.idea-dev *,
+.idea-dev-modal * {
+  box-sizing: border-box;
+}
+
+/* Generic links only. Buttons/interactive controls own their own colors. */
+.idea-dev a:not(.btn),
+.idea-dev-modal a:not(.btn) {
+  color: var(--idea-color-primary);
+}
+
+.idea-dev a:not(.btn):hover,
+.idea-dev-modal a:not(.btn):hover {
+  color: var(--idea-color-primary-hover);
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.idea-dev .btn,
+.idea-dev-modal .btn {
+  min-height: 40px;
+  border-radius: var(--idea-radius-md);
+  font-size: var(--idea-font-size-label);
+  font-weight: var(--idea-font-weight-semibold);
+  line-height: 1.2;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.idea-dev .btn-sm,
+.idea-dev-modal .btn-sm {
+  min-height: 34px;
+  border-radius: var(--idea-radius-sm);
+  font-size: var(--idea-font-size-caption);
+}
+
+.idea-dev .btn.btn-primary,
+.idea-dev-modal .btn.btn-primary {
+  border-color: var(--idea-color-primary);
+  color: var(--idea-text-inverse);
+  background: var(--idea-color-primary);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, .15);
+}
+
+.idea-dev .btn.btn-primary:hover,
+.idea-dev .btn.btn-primary:focus-visible,
+.idea-dev-modal .btn.btn-primary:hover,
+.idea-dev-modal .btn.btn-primary:focus-visible {
+  border-color: var(--idea-color-primary-hover);
+  color: var(--idea-text-inverse);
+  background: var(--idea-color-primary-hover);
+}
+
+.idea-dev .btn.btn-primary:active,
+.idea-dev-modal .btn.btn-primary:active {
+  border-color: var(--idea-color-primary-pressed);
+  color: var(--idea-text-inverse);
+  background: var(--idea-color-primary-pressed);
+}
+
+.idea-dev .btn.btn-primary:disabled,
+.idea-dev .btn.btn-primary.disabled,
+.idea-dev-modal .btn.btn-primary:disabled,
+.idea-dev-modal .btn.btn-primary.disabled {
+  border-color: var(--idea-indigo-200);
+  color: rgba(255,255,255,.92);
+  background: var(--idea-indigo-300);
+  box-shadow: none;
+  opacity: 1;
+}
+
+.idea-dev .btn-outline-primary,
+.idea-dev-modal .btn-outline-primary {
+  border-color: var(--idea-indigo-200);
+  color: var(--idea-color-primary);
+  background: var(--idea-surface-default);
+}
+
+.idea-dev .btn-outline-primary:hover,
+.idea-dev .btn-outline-primary:focus-visible,
+.idea-dev-modal .btn-outline-primary:hover,
+.idea-dev-modal .btn-outline-primary:focus-visible {
+  border-color: var(--idea-indigo-300);
+  color: var(--idea-color-primary-hover);
+  background: var(--idea-color-primary-soft);
+}
+
+.idea-dev .btn-light,
+.idea-dev-modal .btn-light,
+.idea-dev .btn-outline-secondary,
+.idea-dev-modal .btn-outline-secondary {
+  border-color: var(--idea-border-default);
+  color: var(--idea-text-secondary);
+  background: var(--idea-surface-default);
+}
+
+.idea-dev .btn-light:hover,
+.idea-dev-modal .btn-light:hover,
+.idea-dev .btn-outline-secondary:hover,
+.idea-dev-modal .btn-outline-secondary:hover {
+  border-color: var(--idea-border-strong);
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-subtle);
+}
+
+/* ============================================================
+   Forms
+   ============================================================ */
+.idea-dev .form-control,
+.idea-dev .form-select,
+.idea-dev-modal .form-control,
+.idea-dev-modal .form-select {
+  min-height: 44px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-md);
+  color: var(--idea-text-primary);
+  background-color: var(--idea-surface-default);
+  font-size: var(--idea-font-size-body);
+  font-weight: var(--idea-font-weight-regular);
+  box-shadow: none;
+}
+
+.idea-dev .form-control::placeholder,
+.idea-dev-modal .form-control::placeholder {
+  color: var(--idea-text-disabled);
+}
+
+.idea-dev .form-control:focus,
+.idea-dev .form-select:focus,
+.idea-dev-modal .form-control:focus,
+.idea-dev-modal .form-select:focus {
+  border-color: var(--idea-border-focus);
+  box-shadow: var(--idea-focus-ring);
+}
+
+.idea-dev .form-label,
+.idea-dev-modal .form-label {
+  color: var(--idea-text-primary);
+  font-size: var(--idea-font-size-label);
+  font-weight: var(--idea-font-weight-semibold);
+}
+
+.idea-dev .form-text,
+.idea-dev-modal .form-text {
+  color: var(--idea-text-muted);
+  font-size: var(--idea-font-size-caption);
+  line-height: var(--idea-line-height-caption);
+}
+
+.idea-dev .card,
+.idea-dev-modal .card {
+  border-color: var(--idea-border-default);
+}
+
+/* ============================================================
+   Alerts
+   ============================================================ */
+.idea-dev .alert,
+.idea-dev-modal .alert {
+  margin-bottom: var(--idea-space-4);
+  padding: 11px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--idea-radius-md);
+  font-size: var(--idea-font-size-body);
+  line-height: var(--idea-line-height-body);
+  box-shadow: none;
+}
+
+.idea-dev .alert-success,
+.idea-dev-modal .alert-success {
+  border-color: var(--idea-color-success-border);
+  color: #065f46;
+  background: var(--idea-color-success-soft);
+}
+
+.idea-dev .alert-warning,
+.idea-dev-modal .alert-warning {
+  border-color: var(--idea-color-warning-border);
+  color: #92400e;
+  background: var(--idea-color-warning-soft);
+}
+
+.idea-dev .alert-danger,
+.idea-dev-modal .alert-danger {
+  border-color: var(--idea-color-danger-border);
+  color: #991b1b;
+  background: var(--idea-color-danger-soft);
+}
+
+/* ============================================================
+   Shared surfaces
+   ============================================================ */
+.idea-dev :is(
+  .home-kpi,
+  .home-activity-card,
+  .idea-card-hover,
+  .new-panel,
+  .prd-type-card,
+  .new-form-card,
+  .write-section,
+  .write-score-card,
+  .diagnosis-card,
+  .ai-coach-panel,
+  .comment-card,
+  .contribution-card
+) {
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-default);
+}
+
+.idea-dev :is(
+  .home-kpi,
+  .home-activity-card,
+  .idea-card-hover,
+  .new-form-card,
+  .write-section,
+  .write-score-card,
+  .diagnosis-card,
+  .ai-coach-panel,
+  .comment-card,
+  .contribution-card
+) {
+  border-radius: var(--idea-radius-lg);
+  box-shadow: var(--idea-shadow-1);
+}
+
+.idea-dev .new-panel {
+  border-radius: var(--idea-radius-xl);
+  box-shadow: var(--idea-shadow-2);
+}
+
+.idea-dev .prd-type-card {
+  border-radius: var(--idea-radius-lg);
+}
+
+/* ============================================================
+   Shared modal surface
+   ============================================================ */
+.idea-dev-modal .modal-content,
+body:has(.idea-dev) :is(
+  .recent-activity-modal-content,
+  .trash-modal-content,
+  .delete-confirm-content,
+  .prd-settings-content,
+  .write-delete-confirm-content,
+  .export-modal-content,
+  .perspective-draft-modal-content
+) {
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, .9);
+  border-radius: var(--idea-radius-xl);
+  background: var(--idea-surface-default);
+  box-shadow: var(--idea-shadow-overlay);
+}
+
+.idea-dev-modal .modal-header {
+  border-bottom-color: var(--idea-border-default);
+}
+
+.idea-dev-modal .modal-footer {
+  border-top-color: var(--idea-border-default);
+}
+
+.idea-dev-modal .prd-settings-content:has(.idea-date-popover:not([hidden])) {
+  overflow: visible;
+}
+
+/* ============================================================
+   Workflow statuses
+   ============================================================ */
+.idea-dev .prd-status-badge,
+.idea-dev .write-status,
+.idea-dev .write-status-control {
+  border: 1px solid transparent;
+  font-weight: var(--idea-font-weight-semibold);
+}
+
+.idea-dev :is(.prd-status-badge.status-in-progress, .write-status[data-status="in_progress"], .write-status-control[data-status="in_progress"]) {
+  border-color: var(--idea-status-progress-border);
+  color: var(--idea-status-progress);
+  background-color: var(--idea-status-progress-soft);
+}
+
+.idea-dev :is(.prd-status-badge.status-completed, .write-status[data-status="completed"], .write-status-control[data-status="completed"]) {
+  border-color: var(--idea-status-completed-border);
+  color: var(--idea-status-completed);
+  background-color: var(--idea-status-completed-soft);
+}
+
+.idea-dev :is(.prd-status-badge.status-held, .write-status[data-status="held"], .write-status-control[data-status="held"]) {
+  border-color: var(--idea-status-held-border);
+  color: var(--idea-status-held);
+  background-color: var(--idea-status-held-soft);
+}
+
+.idea-dev :is(.prd-status-badge.status-dropped, .write-status[data-status="dropped"], .write-status-control[data-status="dropped"]) {
+  border-color: var(--idea-status-dropped-border);
+  color: var(--idea-status-dropped);
+  background-color: var(--idea-status-dropped-soft);
+}
+
+.idea-dev [data-prd-status-option="in_progress"] .status-option-dot,
+.idea-dev .status-current-dot.in-progress { background: var(--idea-status-progress); }
+.idea-dev [data-prd-status-option="completed"] .status-option-dot,
+.idea-dev .status-current-dot.completed { background: var(--idea-status-completed); }
+.idea-dev [data-prd-status-option="held"] .status-option-dot,
+.idea-dev .status-current-dot.held { background: var(--idea-status-held); }
+.idea-dev [data-prd-status-option="dropped"] .status-option-dot,
+.idea-dev .status-current-dot.dropped { background: var(--idea-status-dropped); }
+
+.idea-dev .prd-new-badge {
+  border: 1px solid var(--idea-color-new-border);
+  color: var(--idea-color-new);
+  background: var(--idea-color-new-soft);
+}
+
+.idea-dev .deadline-alert-badge.today {
+  border: 1px solid var(--idea-color-danger-border);
+  color: var(--idea-color-deadline-today);
+  background: var(--idea-color-deadline-today-soft);
+}
+
+.idea-dev .prd-card-deadline.is-today,
+.idea-dev .write-deadline.is-today {
+  color: var(--idea-color-deadline-today);
+  font-weight: var(--idea-font-weight-semibold);
+}
+
+.idea-dev .prd-card-deadline.is-overdue,
+.idea-dev .write-deadline.is-overdue {
+  color: var(--idea-color-danger);
+  font-weight: var(--idea-font-weight-semibold);
+}
+
+/* ============================================================
+   Shared avatar colors
+   ============================================================ */
+.idea-dev .avatar-color-0 { color: var(--idea-avatar-0-fg) !important; background: var(--idea-avatar-0-bg) !important; }
+.idea-dev .avatar-color-1 { color: var(--idea-avatar-1-fg) !important; background: var(--idea-avatar-1-bg) !important; }
+.idea-dev .avatar-color-2 { color: var(--idea-avatar-2-fg) !important; background: var(--idea-avatar-2-bg) !important; }
+.idea-dev .avatar-color-3 { color: var(--idea-avatar-3-fg) !important; background: var(--idea-avatar-3-bg) !important; }
+.idea-dev .avatar-color-4 { color: var(--idea-avatar-4-fg) !important; background: var(--idea-avatar-4-bg) !important; }
+.idea-dev .avatar-color-5 { color: var(--idea-avatar-5-fg) !important; background: var(--idea-avatar-5-bg) !important; }
+.idea-dev .avatar-color-6 { color: var(--idea-avatar-6-fg) !important; background: var(--idea-avatar-6-bg) !important; }
+.idea-dev .avatar-color-7 { color: var(--idea-avatar-7-fg) !important; background: var(--idea-avatar-7-bg) !important; }
+
+.idea-dev :is(.progress, .progress-bar) {
+  border-radius: var(--idea-radius-full);
+}
+
+/* ============================================================
+   Idea Date Picker
+   ============================================================ */
+.idea-date-field {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.idea-native-date-input {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.idea-date-trigger {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--idea-space-3);
+  padding: 9px 12px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-md);
+  color: var(--idea-text-secondary);
+  background: var(--idea-surface-default);
+  font: inherit;
+  font-size: var(--idea-font-size-body);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.idea-date-trigger:hover {
+  border-color: var(--idea-border-strong);
+}
+
+.idea-date-trigger:focus-visible,
+.idea-date-trigger[aria-expanded="true"] {
+  border-color: var(--idea-border-focus);
+  outline: 0;
+  box-shadow: var(--idea-focus-ring);
+}
+
+.idea-date-trigger:disabled {
+  color: var(--idea-text-disabled);
+  background: var(--idea-surface-muted);
+  cursor: not-allowed;
+}
+
+.idea-date-trigger .bi-calendar3 {
+  color: var(--idea-text-muted);
+}
+
+.idea-date-popover {
+  position: absolute;
+  z-index: 1090;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(320px, calc(100vw - 32px));
+  padding: 12px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-lg);
+  background: var(--idea-surface-default);
+  box-shadow: var(--idea-shadow-3);
+}
+
+.idea-date-popover[hidden] { display: none; }
+
+.idea-date-head {
+  display: grid;
+  grid-template-columns: 32px minmax(0,1fr) minmax(0,1fr) 32px;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.idea-date-nav {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: var(--idea-radius-sm);
+  color: var(--idea-text-secondary);
+  background: transparent;
+}
+
+.idea-date-nav:hover { background: var(--idea-surface-muted); }
+
+.idea-date-select {
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-sm);
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+  font: inherit;
+  font-size: var(--idea-font-size-caption);
+  font-weight: var(--idea-font-weight-semibold);
+}
+
+.idea-date-weekdays,
+.idea-date-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.idea-date-weekdays {
+  margin-bottom: 4px;
+  color: var(--idea-text-muted);
+  font-size: 11px;
+  font-weight: var(--idea-font-weight-semibold);
+  text-align: center;
+}
+
+.idea-date-weekdays span { padding: 4px 0; }
+
+.idea-date-day {
+  display: grid;
+  aspect-ratio: 1;
+  min-width: 0;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  color: var(--idea-text-secondary);
+  background: transparent;
+  font: inherit;
+  font-size: var(--idea-font-size-caption);
+}
+
+.idea-date-day:hover:not(:disabled) {
+  color: var(--idea-color-primary-hover);
+  background: var(--idea-color-primary-soft);
+}
+
+.idea-date-day.is-outside { color: var(--idea-text-disabled); }
+.idea-date-day.is-today {
+  box-shadow: inset 0 0 0 1px var(--idea-indigo-300);
+  color: var(--idea-color-primary);
+  font-weight: var(--idea-font-weight-semibold);
+}
+.idea-date-day.is-selected {
+  color: var(--idea-text-inverse);
+  background: var(--idea-color-primary);
+  box-shadow: none;
+  font-weight: var(--idea-font-weight-bold);
+}
+.idea-date-day:disabled {
+  color: var(--idea-neutral-300);
+  cursor: not-allowed;
+}
+
+.idea-date-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--idea-border-default);
+}
+
+.idea-date-foot button {
+  min-height: 30px;
+  padding: 5px 9px;
+  border: 0;
+  border-radius: var(--idea-radius-sm);
+  color: var(--idea-text-muted);
+  background: transparent;
+  font: inherit;
+  font-size: var(--idea-font-size-caption);
+  font-weight: var(--idea-font-weight-semibold);
+}
+
+.idea-date-foot button:hover {
+  color: var(--idea-color-primary);
+  background: var(--idea-color-primary-soft);
+}
+
+/* ============================================================
+   Async confirm / prompt dialog
+   ============================================================ */
+.idea-dialog-layer {
+  position: fixed;
+  z-index: 3000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .46);
+  backdrop-filter: blur(4px);
+}
+
+.idea-dialog-layer[hidden] { display: none; }
+
+.idea-dialog {
+  width: min(440px, 100%);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: var(--idea-radius-xl);
+  background: var(--idea-surface-default);
+  box-shadow: var(--idea-shadow-overlay);
+}
+
+.idea-dialog-head {
+  padding: 22px 22px 10px;
+}
+
+.idea-dialog-eyebrow {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--idea-color-primary);
+  font-size: var(--idea-font-size-overline);
+  font-weight: var(--idea-font-weight-bold);
+  letter-spacing: .1em;
+}
+
+.idea-dialog h2 {
+  margin: 0;
+  color: var(--idea-text-primary);
+  font-size: var(--idea-font-size-title-2);
+  font-weight: var(--idea-font-weight-bold);
+  letter-spacing: -.025em;
+}
+
+.idea-dialog-body {
+  padding: 4px 22px 8px;
+}
+
+.idea-dialog-message {
+  margin: 0;
+  color: var(--idea-text-secondary);
+  font-size: var(--idea-font-size-body);
+  line-height: 1.65;
+  white-space: pre-line;
+}
+
+.idea-dialog-input {
+  width: 100%;
+  min-height: 92px;
+  margin-top: 14px;
+  padding: 12px 13px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-md);
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+  font: inherit;
+  font-size: var(--idea-font-size-body);
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.idea-dialog-input:focus {
+  border-color: var(--idea-border-focus);
+  outline: 0;
+  box-shadow: var(--idea-focus-ring);
+}
+
+.idea-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 22px 22px;
+}
+
+.idea-dialog-actions .btn { min-width: 92px; }
+
+.idea-dialog.is-warning .idea-dialog-eyebrow { color: var(--idea-color-warning); }
+.idea-dialog.is-danger .idea-dialog-eyebrow { color: var(--idea-color-danger); }
+
+/* ============================================================
+   Common focus
+   ============================================================ */
+.idea-dev :is(
+  .home-exit,
+  .home-trash-icon,
+  .new-back,
+  .write-exit,
+  .write-member-manage
+):focus-visible {
+  outline: 0;
+  box-shadow: var(--idea-focus-ring);
+}
+
+@media (max-width: 575.98px) {
+  .idea-date-popover {
+    position: fixed;
+    top: auto;
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    width: auto;
+  }
+
+  .idea-dialog-layer { padding: 16px; }
+}
+
+
+/* ============================================================
+   Baseline cleanup v1 — Korean product UI typography
+   ============================================================ */
+
+.idea-dev,
+.idea-dev-modal {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.idea-dev button,
+.idea-dev input,
+.idea-dev textarea,
+.idea-dev select,
+.idea-dev-modal button,
+.idea-dev-modal input,
+.idea-dev-modal textarea,
+.idea-dev-modal select {
+  font-family: var(--idea-font-family);
+}
+
+.idea-dev input,
+.idea-dev textarea,
+.idea-dev select,
+.idea-dev-modal input,
+.idea-dev-modal textarea,
+.idea-dev-modal select {
+  font-weight: var(--idea-font-weight-regular);
+}
+
+.idea-dev .btn,
+.idea-dev-modal .btn {
+  font-weight: var(--idea-font-weight-semibold);
+}
+
+.idea-dev .badge,
+.idea-dev-modal .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-weight: var(--idea-font-weight-semibold);
+}

@@ -3,13 +3,12 @@
 {% block title %}PRD 홈 | 아이디어 디벨로퍼{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/home.css' %}?v=20260915-1" rel="stylesheet">
-  {% comment %}PRD 화면은 다크모드 대응 CSS가 없어 라이트로 고정하고 토글을 숨긴다.{% endcomment %}
-  <script>document.documentElement.setAttribute('data-bs-theme', 'light');</script>
-  <style>.ax-theme-toggle { display: none !important; }</style>
+  <link href="{% static 'prds/css/home.css' %}?v=20260917-r3"
+        rel="stylesheet">
 {% endblock %}
 {% block content %}
   <div id="prd-home-app"
+       class="idea-dev idea-dev--home"
        data-api-url="{{ home_api_url }}"
        data-tutor-students-api-url="{{ tutor_students_api_url }}"
        data-recent-activity-api-url="{{ recent_activity_api_url }}"
@@ -65,30 +64,35 @@
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
             <div>
               <h2 id="prd-list-title" class="visually-hidden">PRD 목록</h2>
-              <div id="standard-home-navigation"
-                   class="home-scope-tabs"
-                   role="tablist"
-                   aria-label="PRD 참여 역할">
-                <button class="home-scope-tab active"
-                        type="button"
-                        role="tab"
-                        aria-selected="true"
-                        data-scope="mine">
-                  <i class="bi bi-folder2-open"></i><span>내 PRD</span>
-                </button>
-                <button class="home-scope-tab"
-                        type="button"
-                        role="tab"
-                        aria-selected="false"
-                        data-scope="viewer">
-                  <i class="bi bi-eye"></i><span>뷰어로 참여한 PRD</span>
-                </button>
-                <button class="home-trash-icon"
+              <div class="home-scope-navigation">
+                <div id="standard-home-navigation"
+                     class="home-scope-tabs"
+                     role="tablist"
+                     aria-label="PRD 참여 역할">
+                  <button class="home-scope-tab active"
+                          type="button"
+                          role="tab"
+                          aria-selected="true"
+                          data-scope="mine">
+                    <i class="bi bi-folder2-open"></i>
+                    <span>내 PRD</span>
+                  </button>
+                  <button class="home-scope-tab"
+                          type="button"
+                          role="tab"
+                          aria-selected="false"
+                          data-scope="viewer">
+                    <i class="bi bi-eye"></i>
+                    <span>뷰어로 참여한 PRD</span>
+                  </button>
+                </div>
+                <button class="home-trash-action"
                         type="button"
                         data-bs-toggle="modal"
                         data-bs-target="#prd-trash-modal"
-                        aria-label="삭제한 PRD 열기">
-                  <i class="bi bi-trash3"></i><span>삭제한 PRD</span>
+                        aria-label="휴지통 열기">
+                  <i class="bi bi-trash3"></i>
+                  <span>휴지통</span>
                 </button>
               </div>
               <div id="tutor-home-heading" class="tutor-home-heading d-none">
@@ -145,7 +149,7 @@
                 <option value="">모든 상태</option>
                 <option value="in_progress">진행 중</option>
                 <option value="completed">완료</option>
-                <option value="held">홀딩</option>
+                <option value="held">보류</option>
                 <option value="dropped">드랍</option>
               </select>
               <select id="home-sort" class="form-select form-select-sm" aria-label="정렬">
@@ -238,7 +242,7 @@
   </div>
 {% endblock %}
 {% block modals %}
-  <div class="modal fade"
+  <div class="modal fade idea-dev-modal"
        id="prd-trash-modal"
        tabindex="-1"
        aria-labelledby="prd-trash-modal-title"
@@ -271,7 +275,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade"
+  <div class="modal fade idea-dev-modal"
        id="home-delete-confirm-modal"
        tabindex="-1"
        aria-labelledby="home-delete-confirm-title"
@@ -295,7 +299,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade"
+  <div class="modal fade idea-dev-modal"
        id="recent-activity-modal"
        tabindex="-1"
        aria-labelledby="recent-activity-modal-title"
@@ -336,5 +340,5 @@
   </div>
 {% endblock %}
 {% block extra_js %}
-  {{ block.super }}<script src="{% static 'prds/js/home.js' %}?v=20260915-1"></script>
+  {{ block.super }}<script src="{% static 'prds/js/home.js' %}?v=20260917-r3"></script>
 {% endblock %}

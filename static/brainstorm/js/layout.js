@@ -205,6 +205,7 @@
     regionBounds: regionBounds,
     regionCenter: regionCenter,
     fitBoardView: fitBoardView,
+    canvasContentSize: canvasContentSize,
     hitContext: hitContext,
     laneColors: laneColors
   };

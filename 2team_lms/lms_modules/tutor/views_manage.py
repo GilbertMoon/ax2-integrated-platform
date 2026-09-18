@@ -323,7 +323,7 @@ def assignment_create(request):
                 category=lms_notifications.Category.ASSIGNMENT_CREATED,
                 title="새 과제가 등록되었습니다.",
                 message=f"과제명: {assignment.title}",
-                link=reverse("lms:student:assignment-preview", args=[assignment.id]),
+                link=reverse("lms:student:assignment-submit", args=[assignment.id]),
             )
 
             messages.success(

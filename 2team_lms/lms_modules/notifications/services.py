@@ -1,26 +1,20 @@
-"""LMS 알림 — Core `notifications.Notification` 을 원본으로 하되 LMS 것만 걸러서 본다.
+"""LMS 알림 — Core notifications.Notification과 완전히 분리된 전용 테이블(LmsNotification)만 쓴다.
 
-Core와 LMS는 같은 프로세스·같은 `default` DB에서 알림 테이블 하나를 공유한다
-(Core 자체 알림 카테고리는 전부 평가시스템 전용: 라운드/팀/결과 등). LMS 쪽에서
-만드는 알림은 항상 `link` 를 "/lms/" 로 시작하게 채워서 남기고, 조회할 때 그
-prefix 로 필터링해 Core 알림과 섞이지 않게 한다. Core 모델(notifications/models.py)
-자체는 건드리지 않는다 — 이 모듈 밖에서는 절대 import 하지 말 것.
-
-지연 import: 앱 레지스트리 준비 전 순환참조를 피하기 위함 — notices_client와 동일 패턴.
+Core 자체 알림 벨(notifications.services.recent_notifications)은 recipient의
+전체 알림을 필터 없이 보여주기 때문에, 한때 Core Notification 테이블을 같이 썼을 때
+LMS 알림이 Core 화면에도 그대로 섞여 보이는 문제가 있었다. 테이블 자체를
+lms_modules.common.models.LmsNotification 으로 떼어내서 그 문제를 원천적으로 없앤다
+(Core notices 앱을 "원본으로 읽기만" 하는 notices_client와는 반대 방향 —
+여기는 우리가 "쓰는" 쪽이라 공유 테이블을 쓸 수 없다).
 """
 
 from django.utils import timezone
 
-LMS_LINK_PREFIX = "/lms/"
+from lms_modules.common.models import LmsNotification
 
 
 class Category:
-    """LMS 쪽에서 만드는 알림의 category 값.
-
-    Core `Notification.Category`(TextChoices)는 건드릴 수 없고, choices는
-    DB 레벨로 강제되지 않는 CharField라 새 값을 그냥 써도 저장/조회엔 문제없다
-    (Core 관리자 화면에서 라벨이 안 예쁘게 나올 수 있다는 것만 트레이드오프).
-    """
+    """LMS 쪽에서 만드는 알림의 category 값. 자유 문자열 — 우리 테이블이라 제약 없다."""
 
     ASSIGNMENT_GRADED = "LMS_ASSIGNMENT_GRADED"
     ASSIGNMENT_CREATED = "LMS_ASSIGNMENT_CREATED"
@@ -29,10 +23,8 @@ class Category:
 
 
 def notify(*, user_id, category, title, message="", link=""):
-    """학생 한 명에게 LMS 알림 하나 생성. link는 항상 "/lms/"로 시작해야 벨에 잡힌다."""
-    from notifications.models import Notification
-
-    Notification.objects.create(
+    """학생 한 명에게 LMS 알림 하나 생성."""
+    LmsNotification.objects.create(
         recipient_id=user_id,
         category=category,
         title=title,
@@ -44,11 +36,10 @@ def notify(*, user_id, category, title, message="", link=""):
 def notify_many(*, user_ids, category, title, message="", link=""):
     """여러 명에게 알림 생성 — 실제로 존재하는 유저에게만 보낸다.
 
-    accounts_client(get_students/get_team_members 등)가 반환하는 id는 우리 쪽
-    Notification.recipient(FK)가 참조하는 accounts_user와 항상 100% 일치한다는
-    보장이 없다 (예: DEV_SKIP_AUTH 개발/테스트 모드의 가짜 fixture id). 존재하지
-    않는 id로 그냥 create()하면 FK 제약 위반으로 과제 등록/채점 같은 핵심
-    동작 자체가 같이 죽어버리므로, 여기서 한 번 걸러서 그런 위험을 없앤다.
+    accounts_client(get_students/get_team_members 등)가 반환하는 id가 accounts_user와
+    100% 일치한다는 보장은 없다 (예: DEV_SKIP_AUTH 개발/테스트 모드의 가짜 fixture id).
+    FK가 아니라 존재하지 않아도 저장은 되지만, 아무도 못 볼 유령 알림을 만들 이유는
+    없으니 여기서 걸러낸다.
     """
     from accounts.models import User
 
@@ -59,9 +50,7 @@ def notify_many(*, user_ids, category, title, message="", link=""):
 
 
 def _lms_notifications(user):
-    from notifications.models import Notification
-
-    return Notification.objects.filter(recipient=user, link__startswith=LMS_LINK_PREFIX)
+    return LmsNotification.objects.filter(recipient_id=user.id)
 
 
 def unread_count(user):

@@ -28,7 +28,10 @@ def nav(request):
     match = getattr(request, "resolver_match", None)
     
     if getattr(settings, "DEV_SKIP_AUTH", False):
-        if request.path.startswith("/tutor/"):
+        # 튜터 URL은 "/tutor/"가 아니라 바깥쪽 "/lms/" 프리픽스 아래
+        # "/lms/tutor/"로 물려 있다 (2team_lms/lms/urls.py) — startswith("/tutor/")는
+        # 여기서 절대 참이 될 수 없어 항상 STUDENT로 떨어지던 버그.
+        if "/tutor/" in request.path:
             role = "TUTOR"
         else:
             role = "STUDENT"

@@ -35,6 +35,7 @@ from lms_modules.notices_client.notices import active_notices_data
 from .identity import external_student_id
 
 UPCOMING_LIMIT = 5
+RECENT_LECTURES_LIMIT = 3
 
 
 @login_required
@@ -124,6 +125,11 @@ def dashboard(request):
         })
     upcoming = upcoming[:UPCOMING_LIMIT]
 
+    # ── 최근 강의 목록 (최근 등록된 순) ──
+    recent_lectures = list(
+        Lesson.objects.order_by("-created_at")[:RECENT_LECTURES_LIMIT]
+    )
+
     assignments = list(Assignment.objects.all())
 
     # ── 내 과제 현황 ──
@@ -188,6 +194,7 @@ def dashboard(request):
             "day_lectures": day_lectures,
             "day_assignments": day_assignments,
             "upcoming": upcoming,
+            "recent_lectures": recent_lectures,
             "assign_stats": {
                 "total": total, "submitted": submitted, "graded": graded,
                 "todo": total - submitted, "pct": progress_pct,

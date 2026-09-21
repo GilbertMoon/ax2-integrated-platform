@@ -177,7 +177,7 @@
 
       tr.innerHTML = `
         <td>
-          <span class="lesson-title-link">${lesson.title}</span>
+          <a class="lesson-title-link" href="/lms/lecture/${lesson.id}/" target="_blank" rel="noopener" title="학생 화면 미리보기">${lesson.title}</a>
         </td>
         <td>${matHtml}</td>
         <td>${videoCellHtml}</td>

@@ -228,7 +228,9 @@ table.lesson-table tr.date-group-header:hover td { background: var(--surface-mut
 .lesson-title-link {
   font-weight: 700;
   color: var(--accent-text);
+  text-decoration: none;
 }
+.lesson-title-link:hover { text-decoration: underline; }
 
 /* Table Thumb Cell */
 .video-cell {

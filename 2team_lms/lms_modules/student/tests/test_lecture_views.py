@@ -1,5 +1,6 @@
 import json
 from datetime import date
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
@@ -59,3 +60,44 @@ class StudentLectureDateGroupingTests(TestCase):
         )
         resp = self.client.get(reverse("lms:student:lecture-detail", args=[self.l1.id]))
         self.assertEqual(len(self._data(resp)), 2)
+
+
+class LectureDetailTutorPreviewTests(TestCase):
+    """튜터가 강의 관리 화면에서 "학생 눈에는 어떻게 보이는지" 미리보기로 들어올 수 있어야 한다."""
+
+    databases = {"default", "assignment_lms"}
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            approval_status="approved", is_active=True, is_onboarded=True,
+            email="preview-user@example.com",
+        )
+        self.client.force_login(self.user)
+        self.lecture = Lecture.get_singleton()
+        self.lesson = Lesson.objects.create(
+            lecture=self.lecture, title="1주차", lesson_date=date(2026, 9, 4)
+        )
+
+    def test_tutor_can_view_student_lecture_page(self):
+        with patch("lms_modules.student.views_lecture.accounts.is_tutor", return_value=True), \
+             patch("lms_modules.student.views_lecture.accounts.is_student", return_value=False):
+            resp = self.client.get(
+                reverse("lms:student:lecture-detail", args=[self.lesson.id])
+            )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_student_can_still_view(self):
+        with patch("lms_modules.student.views_lecture.accounts.is_tutor", return_value=False), \
+             patch("lms_modules.student.views_lecture.accounts.is_student", return_value=True):
+            resp = self.client.get(
+                reverse("lms:student:lecture-detail", args=[self.lesson.id])
+            )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_neither_role_is_forbidden(self):
+        with patch("lms_modules.student.views_lecture.accounts.is_tutor", return_value=False), \
+             patch("lms_modules.student.views_lecture.accounts.is_student", return_value=False):
+            resp = self.client.get(
+                reverse("lms:student:lecture-detail", args=[self.lesson.id])
+            )
+        self.assertEqual(resp.status_code, 403)

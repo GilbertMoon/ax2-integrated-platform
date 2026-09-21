@@ -171,6 +171,13 @@ h1.page-title {
 }
 .tab-btn:hover { background: var(--surface-muted); color: var(--text); }
 .tab-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+.tab-count {
+  display: inline-block;
+  margin-left: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.75;
+}
 
 /* Table Style */
 .table-responsive {
@@ -201,6 +208,27 @@ table.lesson-table td {
 }
 table.lesson-table tr:last-child td { border-bottom: none; }
 table.lesson-table tr:hover td { background: #fafbff; }
+
+/* Date group header row (always expanded — replaces the old collapsed date column) */
+table.lesson-table tr.date-group-header td {
+  background: var(--surface-muted);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-strong);
+}
+table.lesson-table tr.date-group-header:hover td { background: var(--surface-muted); }
+.date-group-count {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.lesson-title-link {
+  font-weight: 700;
+  color: var(--accent-text);
+}
 
 /* Table Thumb Cell */
 .video-cell {

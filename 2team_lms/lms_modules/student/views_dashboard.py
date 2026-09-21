@@ -30,7 +30,7 @@ from lms_modules.accounts_client import services as accounts
 from lms_modules.core.models import Assignment, Lesson, Submission, Todo
 from lms_modules.github_sync import services as github_services
 from lms_modules.github_sync.models import StudentGithubAccount
-from lms_modules.notices_client.notices import active_notice_texts
+from lms_modules.notices_client.notices import active_notices_data
 
 from .identity import external_student_id
 
@@ -176,7 +176,7 @@ def dashboard(request):
         request,
         "lms_ui/student/dashboard.html",
         {
-            "notices": active_notice_texts(),
+            "notices_detail": active_notices_data(),
             "cal": {
                 "year": year, "month": month, "weeks": weeks,
                 "prev": {"y": prev_y, "m": prev_m},

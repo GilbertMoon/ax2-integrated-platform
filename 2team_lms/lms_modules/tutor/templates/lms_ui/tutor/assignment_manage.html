@@ -79,7 +79,7 @@
 
   /* toast (Django messages) */
   .tt-toast-wrap{position:fixed;right:22px;bottom:22px;display:flex;flex-direction:column;gap:8px;z-index:1090;}
-  .tt-toast{background:var(--text);color:#fff;padding:12px 16px;border-radius:12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:12px;box-shadow:0 12px 32px rgba(0,0,0,.25);max-width:340px;}
+  .tt-toast{background:var(--color-text, #1c2130);color:#fff;padding:12px 16px;border-radius:12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:12px;box-shadow:0 12px 32px rgba(0,0,0,.25);max-width:340px;}
   .tt-toast form{display:inline;}
   .tt-toast .tt-toast-undo{color:#9db4ff;font-weight:700;background:none;border:none;font-family:inherit;font-size:13px;padding:0;cursor:pointer;}
 
@@ -154,10 +154,19 @@
         {% for a in deleted_assignments %}
           <div class="deleted-row">
             <span>{{ a.title }} <small>({{ a.deleted_at|date:"Y.m.d H:i" }} 삭제)</small></span>
-            <form method="post" action="{% url 'lms:tutor:assignment-restore' a.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-ghost btn-sm">실행취소</button>
-            </form>
+            <div class="d-flex gap-2">
+              <form method="post" action="{% url 'lms:tutor:assignment-restore' a.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost btn-sm">실행취소</button>
+              </form>
+              {% if a.submission_count == 0 %}
+                <form method="post" action="{% url 'lms:tutor:assignment-hard-delete' a.pk %}"
+                      onsubmit="return confirm('과제 \'{{ a.title }}\'을(를) 영구 삭제할까요? 이 작업은 되돌릴 수 없습니다.');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">영구삭제</button>
+                </form>
+              {% endif %}
+            </div>
           </div>
         {% endfor %}
       </div>

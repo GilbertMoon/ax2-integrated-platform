@@ -50,6 +50,7 @@ from django.views.decorators.http import require_POST
 from lms_modules.accounts_client import services as accounts
 from lms_modules.common.preview import _storage_name
 from lms_modules.core.models import Assignment, AssignmentFile
+from lms_modules.notifications import services as lms_notifications
 from lms_modules.notifications.slack import (
     active_slack_user_ids,
     notify_channel,
@@ -275,6 +276,7 @@ def assignment_list(request):
             "deleted_assignments": (
                 Assignment.all_objects
                 .deleted()
+                .annotate(submission_count=Count("submissions"))
                 .order_by("-deleted_at")
             ),
         },
@@ -307,6 +309,22 @@ def assignment_create(request):
             notify_channel(
                 title="새 과제가 등록되었습니다.",
                 message=f"과제명: {assignment.title}",
+            )
+
+            if assignment.is_team:
+                recipient_ids = {
+                    m.id
+                    for team in accounts.get_teams()
+                    for m in accounts.get_team_members(team.id) or []
+                }
+            else:
+                recipient_ids = {s.id for s in accounts.get_students()}
+            lms_notifications.notify_many(
+                user_ids=recipient_ids,
+                category=lms_notifications.Category.ASSIGNMENT_CREATED,
+                title="새 과제가 등록되었습니다.",
+                message=f"과제명: {assignment.title}",
+                link=reverse("lms:student:assignment-submit", args=[assignment.id]),
             )
 
             messages.success(
@@ -475,6 +493,41 @@ def assignment_restore(request, pk):
     messages.success(
         request,
         f"과제 '{assignment.title}' 삭제를 취소했습니다.",
+    )
+
+    return redirect(
+        "lms:tutor:assignment-list"
+    )
+
+
+@tutor_required
+@require_POST
+def assignment_hard_delete(request, pk):
+    """영구 삭제 — 제출물이 하나도 없는, 이미 소프트 삭제된 과제만 대상.
+
+    Submission.assignment 가 on_delete=CASCADE라 제출물이 있는 과제를 영구
+    삭제하면 채점 이력까지 같이 날아간다 — 그런 사고를 막기 위해 제출물 0건인
+    경우로만 제한한다 (잘못 만들고 아무도 제출 전에 지운 과제 정리용).
+    """
+
+    assignment = get_object_or_404(
+        Assignment.all_objects.deleted(),
+        pk=pk,
+    )
+
+    if assignment.submissions.exists():
+        messages.error(
+            request,
+            f"과제 '{assignment.title}'에는 제출물이 있어 영구 삭제할 수 없습니다.",
+        )
+        return redirect("lms:tutor:assignment-list")
+
+    title = assignment.title
+    assignment.hard_delete()
+
+    messages.success(
+        request,
+        f"과제 '{title}'을(를) 영구 삭제했습니다. 이 작업은 되돌릴 수 없습니다.",
     )
 
     return redirect(

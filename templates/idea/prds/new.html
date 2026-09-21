@@ -3,23 +3,16 @@
 {% block title %}새 PRD 만들기 | 아이디어 디벨로퍼{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/new.css' %}?v=20260915-1" rel="stylesheet">
-  {% comment %}PRD 화면은 다크모드 대응 CSS가 없어 라이트로 고정하고 토글을 숨긴다.{% endcomment %}
-  <script>document.documentElement.setAttribute('data-bs-theme', 'light');</script>
-  <style>.ax-theme-toggle { display: none !important; }</style>
+  <link href="{% static 'prds/css/new.css' %}?v=20260917-6" rel="stylesheet">
 {% endblock %}
 {% block breadcrumb %}
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item">
-        <a href="{% url 'ideas:home' %}">PRD</a>
-      </li>
-      <li class="breadcrumb-item active">새 PRD 만들기</li>
-    </ol>
-  </nav>
+  <a class="idea-breadcrumb-link" href="{% url 'ideas:home' %}">PRD</a>
+  <span class="idea-breadcrumb-separator" aria-hidden="true">/</span>
+  <span>새 PRD 만들기</span>
 {% endblock %}
 {% block content %}
   <div id="new-prd-app"
+       class="idea-dev idea-dev--new"
        data-create-api="{{ create_api_url }}"
        data-team-api="{{ team_api_url }}"
        data-search-api="{{ search_api_url }}"
@@ -29,7 +22,9 @@
       <div class="col-xl-10 col-xxl-9">
         <div id="new-alert" class="alert d-none" role="alert"></div>
         <div class="new-heading d-flex align-items-center gap-3 mb-4">
-          <a class="new-back" href="{% url 'ideas:home' %}" aria-label="홈으로 돌아가기"><i class="bi bi-arrow-left"></i></a>
+          <a class="new-back" href="{% url 'ideas:home' %}" aria-label="홈으로 돌아가기">
+            <i class="bi bi-arrow-left"></i>
+          </a>
           <div>
             <span class="new-eyebrow">CREATE PRODUCT BRIEF</span>
             <h1 class="mb-1">새 PRD 만들기</h1>
@@ -38,10 +33,12 @@
         </div>
         <ol class="new-stepper list-unstyled d-flex mb-4" aria-label="생성 단계">
           <li id="step-indicator-1" class="active">
-            <span>1</span> 유형 선택
+            <span>1</span>
+            <b>유형 선택</b>
           </li>
           <li id="step-indicator-2">
-            <span>2</span> 기본 정보
+            <span>2</span>
+            <b>기본 정보</b>
           </li>
         </ol>
         <section id="new-step-1" class="new-panel" aria-labelledby="type-heading">
@@ -61,7 +58,9 @@
                   </div>
                   <h3 class="h6 fw-bold">신규 프로젝트</h3>
                   <p class="small text-secondary mb-0">새로운 서비스와 비즈니스 가설을 처음부터 설계합니다.</p>
-                  <span class="type-check"><i class="bi bi-check-lg"></i></span>
+                  <span class="type-check" aria-hidden="true">
+                    <i class="bi bi-check-lg"></i>
+                  </span>
                 </div>
               </button>
             </div>
@@ -75,7 +74,9 @@
                   </div>
                   <h3 class="h6 fw-bold">신규 기능</h3>
                   <p class="small text-secondary mb-0">기존 서비스에 명확한 사용자 가치를 더합니다.</p>
-                  <span class="type-check"><i class="bi bi-check-lg"></i></span>
+                  <span class="type-check" aria-hidden="true">
+                    <i class="bi bi-check-lg"></i>
+                  </span>
                 </div>
               </button>
             </div>
@@ -89,7 +90,9 @@
                   </div>
                   <h3 class="h6 fw-bold">기능 개선</h3>
                   <p class="small text-secondary mb-0">현재 경험의 사용성, 성능 또는 정책을 개선합니다.</p>
-                  <span class="type-check"><i class="bi bi-check-lg"></i></span>
+                  <span class="type-check" aria-hidden="true">
+                    <i class="bi bi-check-lg"></i>
+                  </span>
                 </div>
               </button>
             </div>
@@ -128,7 +131,7 @@
                          autocomplete="off">
                   <div class="form-text">줄바꿈 없이 핵심 목적을 간결하게 적어 주세요.</div>
                 </div>
-                <div class="mb-4">
+                <div class="mb-4 new-deadline-group">
                   <label for="prd-deadline" class="form-label fw-semibold">목표 마감일</label>
                   <input id="prd-deadline" type="date" class="form-control new-date-input">
                 </div>
@@ -151,7 +154,7 @@
                 </fieldset>
               </div>
             </div>
-            <div class="d-flex justify-content-between mt-4">
+            <div class="new-form-actions d-flex justify-content-between mt-4">
               <button id="back-to-types" type="button" class="btn btn-outline-secondary">이전</button>
               <button id="create-prd" type="submit" class="btn btn-primary px-4">PRD 생성</button>
             </div>
@@ -159,20 +162,25 @@
         </section>
       </div>
     </div>
-    {% comment %}참여자 목록은 폼 맨 아래라 드롭다운으로 열면 화면 밖으로 잘린다. 모달로 띄운다.{% endcomment %}
     <div id="participant-picker"
-         class="modal fade"
-         tabindex="-1"
+         class="participant-picker-popover d-none"
+         role="dialog"
+         aria-modal="false"
          aria-labelledby="participant-picker-title"
          aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered participant-picker-dialog">
-        <div class="modal-content participant-picker-content">
-          <div class="modal-header">
-            <h2 id="participant-picker-title" class="modal-title h6 fw-semibold mb-0">참여자 추가</h2>
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="닫기"></button>
+      <div class="participant-picker-dialog">
+        <div class="participant-picker-content">
+          <div class="participant-picker-header">
+            <div>
+              <span class="participant-modal-eyebrow">PARTICIPANTS</span>
+              <h2 id="participant-picker-title" class="participant-picker-title mb-0">참여자 추가</h2>
+            </div>
+            <button id="participant-picker-close"
+                    type="button"
+                    class="participant-picker-close"
+                    aria-label="닫기">
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
           </div>
           <div class="participant-search-box">
             <i class="bi bi-search" aria-hidden="true"></i>
@@ -190,7 +198,14 @@
             <section class="participant-picker-section">
               <p class="participant-picker-label">내가 속한 팀</p>
               <button id="add-team" class="team-add-row" type="button" disabled>
-                <span class="team-add-icon"><i class="bi bi-people-fill"></i></span><span class="team-add-copy"><strong id="team-name">현재 팀</strong><small id="team-description">팀 정보를 불러오는 중입니다.</small></span><span id="team-add-state" class="team-add-state">불러오는 중</span>
+                <span class="team-add-icon">
+                  <i class="bi bi-people-fill"></i>
+                </span>
+                <span class="team-add-copy">
+                  <strong id="team-name">현재 팀</strong>
+                  <small id="team-description">팀 정보를 불러오는 중입니다.</small>
+                </span>
+                <span id="team-add-state" class="team-add-state">불러오는 중</span>
               </button>
             </section>
             <div class="participant-picker-divider"></div>
@@ -209,5 +224,6 @@
   </div>
 {% endblock %}
 {% block extra_js %}
-  {{ block.super }}<script src="{% static 'prds/js/new.js' %}?v=20260915-1"></script>
+  {{ block.super }}
+  <script src="{% static 'prds/js/new.js' %}?v=20260917-6"></script>
 {% endblock %}

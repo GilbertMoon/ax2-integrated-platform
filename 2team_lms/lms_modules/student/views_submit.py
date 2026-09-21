@@ -14,6 +14,7 @@ from lms_modules import transaction
 from django.db.models import Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from lms_modules.accounts_client import services as accounts
@@ -32,6 +33,7 @@ from lms_modules.common.preview import (
 )
 from lms_modules.core.models import Assignment, Submission, SubmissionFile
 from lms_modules.github_sync import services as github_services
+from lms_modules.notifications import services as lms_notifications
 from lms_modules.notifications.slack import notify_dm_ax
 
 # github_fetch: 제출 링크 검증 (GitHub 단일 파일 링크만 허용)
@@ -334,6 +336,18 @@ def assignment_submit(request, assignment_id):
             "과제가 지각 제출되었습니다." if submitted_late else "과제가 제출되었습니다."
         )
         notify_dm_ax(request.user.id, submit_msg, f"과제명: {assignment.title}")
+        if assignment.is_team:
+            teammate_ids = [
+                m.id for m in accounts.get_team_members(team.id) or []
+                if m.id != request.user.id
+            ]
+            lms_notifications.notify_many(
+                user_ids=teammate_ids,
+                category=lms_notifications.Category.TEAM_SUBMITTED,
+                title="팀 과제가 제출되었습니다.",
+                message=f"과제명: {assignment.title}",
+                link=reverse("lms:student:assignment-preview", args=[assignment.id]),
+            )
         messages.success(request, submit_msg)
         return redirect("lms:student:assignment-preview", assignment_id=assignment.id)
 

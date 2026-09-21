@@ -64,6 +64,11 @@ urlpatterns = [
         views_manage.assignment_restore,
         name="assignment-restore",
     ),
+    path(
+        "assignments/<int:pk>/hard-delete/",
+        views_manage.assignment_hard_delete,
+        name="assignment-hard-delete",
+    ),
 
     # 제출 현황
     path(

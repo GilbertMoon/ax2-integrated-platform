@@ -25,6 +25,9 @@ apps/common/templates/includes/topbar.html — 공통 담당 전담 (LAYOUT.md �
   <div class="utils">
 
     {% if user.is_authenticated %}
+      <button type="button" class="topbar-icon-btn" id="axNotificationBell" title="알림" aria-label="알림">
+        <i class="bi bi-bell"></i>
+      </button>
       <div class="user-chip d-flex align-items-center gap-2 rounded-pill border"{% if nav_role %} title="{{ nav_role }}"{% endif %}>
         <span class="member-avatar avatar-xs">{{ display_name|slice:":1" }}</span>
         <span class="fw-semibold small">{{ display_name }}</span>

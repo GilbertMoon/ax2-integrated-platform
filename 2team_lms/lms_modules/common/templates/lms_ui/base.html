@@ -93,6 +93,9 @@
       })();
     </script>
   {% endif %}
+  {% if user.is_authenticated %}
+    <script src="{% static 'lms_ui/common/js/notifications.js' %}"></script>
+  {% endif %}
   {% block extra_script %}{% endblock %}
 </body>
 </html>

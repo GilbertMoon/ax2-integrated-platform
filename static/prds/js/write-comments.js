@@ -96,7 +96,14 @@
       }
 
       async function deleteComment(comment) {
-        if (!window.confirm("이 코멘트를 삭제하시겠습니까?")) return;
+        const confirmed = await window.IdeaUI.confirm({
+          title: "코멘트를 삭제할까요?",
+          message: "삭제한 코멘트는 현재 화면에서 복원할 수 없습니다.",
+          confirmText: "삭제",
+          cancelText: "취소",
+          tone: "danger"
+        });
+        if (!confirmed) return;
         try {
           await api(commentsApi + comment.id + "/", {
             method: "DELETE",
@@ -137,8 +144,21 @@
             author,
             element("span", "comment-kind", typeLabels[comment.comment_type] || comment.comment_type)
           );
-          card.append(head, element("p", "comment-content", comment.content));
-          card.append(element("span", "comment-question", questionLabel(comment.section_question_id)));
+          card.append(head);
+          card.append(
+            element(
+              "span",
+              "comment-question",
+              questionLabel(comment.section_question_id)
+            )
+          );
+          card.append(
+            element(
+              "p",
+              "comment-content",
+              comment.content
+            )
+          );
           if (comment.can_modify) {
             const actions = element("div", "comment-actions");
             const edit = element("button", "btn btn-sm btn-light", "수정");

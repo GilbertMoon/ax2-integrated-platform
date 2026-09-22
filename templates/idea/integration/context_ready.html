@@ -1,3 +1,28 @@
 {% extends "idea/integrated_base.html" %}
+{% load static %}
 {% block title %}회차 확인 | Idea Developer{% endblock %}
-{% block content %}<div class="alert alert-success" role="status">회차와 팀 소속이 확인되었습니다.</div>{% endblock %}
+{% block content %}
+  <section class="idea-dev idea-integration-state"
+           aria-labelledby="idea-integration-title">
+    <div class="idea-integration-card">
+      <header class="idea-integration-head">
+        <img class="idea-brand-mark"
+             src="{% static 'idea/assets/brand/id-mark-primary.svg' %}"
+             alt=""
+             aria-hidden="true">
+        <div>
+          <span>IDEA DEVELOPER</span>
+          <h1 id="idea-integration-title">작업 환경이 준비되었습니다.</h1>
+        </div>
+      </header>
+      <div class="idea-integration-body">
+        <div class="idea-integration-status is-success" role="status">
+          <i><span class="idea-icon idea-icon-check2-circle"></span></i>
+          <div>
+            <strong>회차와 팀 소속을 확인했습니다.</strong><span>현재 회차 정보를 기준으로 Idea Developer를 사용할 수 있습니다.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

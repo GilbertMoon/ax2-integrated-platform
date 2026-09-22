@@ -294,9 +294,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 16px;
   align-items: center;
-  gap: var(--idea-space-2);
+  gap: var(--idea-space-3);
   width: 100%;
-  padding: var(--idea-space-2);
+  min-height: 40px;
+  padding: 9px 12px;
   border: 0;
   border-radius: var(--idea-radius-sm);
   color: var(--idea-text-secondary);
@@ -321,8 +322,8 @@
 .idea-dev .studio-select-option.is-selected,
 .idea-dev-modal .studio-select-option.is-selected,
 .studio-main .studio-select-option.is-selected {
-  color: var(--idea-color-primary-hover);
-  background: var(--idea-color-primary-subtle);
+  color: var(--idea-text-primary);
+  background: var(--idea-color-primary-soft);
 }
 
 .idea-dev .studio-select-option:disabled,
@@ -335,14 +336,14 @@
 .idea-dev .studio-select-option i,
 .idea-dev-modal .studio-select-option i,
 .studio-main .studio-select-option i {
-  color: var(--idea-indigo-500);
+  color: var(--idea-color-primary);
   opacity: 0;
 }
 
 .idea-dev .studio-select-option.is-selected i,
 .idea-dev-modal .studio-select-option.is-selected i,
 .studio-main .studio-select-option.is-selected i {
-  opacity: 1;
+  opacity: .72;
 }
 
 .idea-dev .studio-select-shell:has(.form-select-sm) .studio-select-button,
@@ -399,4 +400,257 @@
   .studio-brand small { display: none; }
   .studio-container { padding-inline: 15px; }
   .studio-main { padding-top: 21px; }
+}
+
+/* ============================================================
+   Idea Developer v3.7 — Brand lockup / intentional empty states
+   ============================================================ */
+.idea-dev .idea-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--idea-text-secondary);
+  font-size: var(--idea-font-size-caption);
+  font-weight: var(--idea-font-weight-semibold);
+  letter-spacing: 0;
+}
+.idea-dev .idea-brand-lockup .idea-brand-mark,
+.idea-dev .idea-brand-mark {
+  display: block;
+  width: 26px;
+  height: 20px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+.idea-dev .idea-brand-lockup > strong {
+  color: var(--idea-text-primary);
+  font-size: var(--idea-font-size-label);
+  font-weight: var(--idea-font-weight-bold);
+  letter-spacing: -.02em;
+}
+.idea-dev .idea-brand-lockup > span {
+  color: var(--idea-color-primary);
+  font-size: 11px;
+  font-weight: var(--idea-font-weight-bold);
+  letter-spacing: .09em;
+}
+.idea-dev .idea-brand-separator {
+  width: 1px;
+  height: 12px;
+  margin-inline: 1px;
+  background: var(--idea-border-strong);
+}
+
+.idea-dev .idea-empty-state,
+.idea-dev-modal .idea-empty-state {
+  display: flex;
+  min-height: 260px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--idea-gap-sm);
+  padding: var(--idea-space-8) var(--idea-space-6);
+  color: var(--idea-text-muted);
+  text-align: center;
+}
+.idea-dev .idea-empty-illustration,
+.idea-dev-modal .idea-empty-illustration {
+  display: block;
+  width: min(220px, 56vw);
+  height: auto;
+  margin: -10px auto 0;
+}
+.idea-dev .idea-empty-illustration.is-compact,
+.idea-dev-modal .idea-empty-illustration.is-compact {
+  width: 128px;
+}
+.idea-dev .idea-empty-kicker,
+.idea-dev-modal .idea-empty-kicker {
+  color: var(--idea-color-primary);
+  font-size: 11px;
+  font-weight: var(--idea-font-weight-bold);
+  letter-spacing: .12em;
+}
+.idea-dev .idea-empty-title,
+.idea-dev-modal .idea-empty-title {
+  margin: 0;
+  color: var(--idea-text-primary);
+  font-size: var(--idea-font-size-heading);
+  font-weight: var(--idea-font-weight-bold);
+  letter-spacing: -.025em;
+}
+.idea-dev .idea-empty-copy,
+.idea-dev-modal .idea-empty-copy {
+  max-width: 440px;
+  margin: 0 0 var(--idea-space-2);
+  color: var(--idea-text-muted);
+  font-size: var(--idea-font-size-caption);
+  line-height: 1.65;
+}
+.idea-dev .idea-empty-compact,
+.idea-dev-modal .idea-empty-compact {
+  display: flex;
+  min-height: 150px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--idea-space-6);
+  color: var(--idea-text-muted);
+  text-align: center;
+}
+.idea-dev .idea-empty-compact > .idea-empty-icon,
+.idea-dev-modal .idea-empty-compact > .idea-empty-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 3px;
+  place-items: center;
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-lg);
+  color: var(--idea-color-primary);
+  background: var(--idea-color-primary-soft);
+}
+.idea-dev .idea-empty-compact > .idea-empty-icon .idea-icon,
+.idea-dev-modal .idea-empty-compact > .idea-empty-icon .idea-icon {
+  width: 19px;
+  height: 19px;
+}
+.idea-dev .idea-empty-compact > strong,
+.idea-dev-modal .idea-empty-compact > strong {
+  color: var(--idea-text-primary);
+  font-size: var(--idea-font-size-label);
+  font-weight: var(--idea-font-weight-semibold);
+}
+.idea-dev .idea-empty-compact > span:not(.idea-empty-icon),
+.idea-dev-modal .idea-empty-compact > span:not(.idea-empty-icon) {
+  max-width: 340px;
+  color: var(--idea-text-muted);
+  font-size: var(--idea-font-size-caption);
+}
+
+/* Integration states live under Idea Developer, but do not alter AX common error pages. */
+.idea-dev.idea-integration-state {
+  width: min(720px, 100%);
+  margin: 24px auto 0;
+}
+.idea-dev .idea-integration-card {
+  overflow: hidden;
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-xl);
+  background: var(--idea-surface-default);
+  box-shadow: var(--idea-shadow-raised);
+}
+.idea-dev .idea-integration-head {
+  display: flex;
+  align-items: center;
+  gap: var(--idea-gap-md);
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--idea-border-subtle);
+}
+.idea-dev .idea-integration-head .idea-brand-mark {
+  width: 34px;
+  height: 26px;
+}
+.idea-dev .idea-integration-head > div {
+  min-width: 0;
+}
+.idea-dev .idea-integration-head span {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--idea-color-primary);
+  font-size: 11px;
+  font-weight: var(--idea-font-weight-bold);
+  letter-spacing: .12em;
+}
+.idea-dev .idea-integration-head h1 {
+  margin: 0;
+  color: var(--idea-text-primary);
+  font-size: var(--idea-font-size-title-1);
+  font-weight: var(--idea-font-weight-bold);
+  letter-spacing: -.03em;
+}
+.idea-dev .idea-integration-body {
+  padding: 28px 24px 24px;
+}
+.idea-dev .idea-integration-body > p {
+  margin: 0 0 20px;
+  color: var(--idea-text-muted);
+  font-size: var(--idea-font-size-body);
+}
+.idea-dev .idea-integration-status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--idea-gap-md);
+  padding: 14px 16px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-lg);
+  background: var(--idea-surface-subtle);
+}
+.idea-dev .idea-integration-status > i {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: var(--idea-radius-md);
+  color: var(--idea-color-primary);
+  background: var(--idea-color-primary-soft);
+}
+.idea-dev .idea-integration-status strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--idea-text-primary);
+  font-size: var(--idea-font-size-label);
+}
+.idea-dev .idea-integration-status span {
+  color: var(--idea-text-muted);
+  font-size: var(--idea-font-size-caption);
+}
+.idea-dev .idea-integration-status.is-warning > i {
+  color: var(--idea-color-warning);
+  background: var(--idea-color-warning-soft);
+}
+.idea-dev .idea-integration-status.is-success > i {
+  color: var(--idea-color-success);
+  background: var(--idea-color-success-soft);
+}
+.idea-dev .idea-round-list {
+  display: grid;
+  gap: var(--idea-gap-sm);
+  margin: 0 0 20px;
+}
+.idea-dev .idea-round-option {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  gap: var(--idea-gap-md);
+  padding: 12px 14px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-lg);
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+}
+.idea-dev .idea-round-option:hover,
+.idea-dev .idea-round-option:has(input:checked) {
+  border-color: var(--idea-indigo-300);
+  background: var(--idea-color-primary-soft);
+}
+.idea-dev .idea-round-option:has(input:focus-visible) {
+  box-shadow: var(--idea-focus-ring);
+}
+
+/* Idea modal header close controls keep a deliberate inset from the edge. */
+.idea-dev-modal .modal-header {
+  gap: var(--idea-gap-lg);
+}
+.idea-dev-modal .modal-header > :not(.btn-close) {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.idea-dev-modal .modal-header > .btn-close {
+  flex: 0 0 auto;
+  margin: 0 0 0 12px;
 }

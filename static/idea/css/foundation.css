@@ -1,9 +1,9 @@
 /*
- * Idea Developer Foundation v1.1 — Visual Polish
+ * Idea Developer Foundation v2 — ID Origin UI System
  * ------------------------------------------------------------
  * Shared visual decisions for Idea Developer only.
  * AX global styles are intentionally untouched.
- * Dark-mode-specific Idea styling is deferred to the next phase.
+ * Includes Idea-scoped dark tokens; AX global styling remains untouched.
  */
 
 :root {
@@ -17,7 +17,7 @@
   --idea-font-size-body: .875rem;       /* 14 */
   --idea-font-size-label: .8125rem;     /* 13 */
   --idea-font-size-caption: .75rem;     /* 12 */
-  --idea-font-size-overline: .6875rem;  /* 11 */
+  --idea-font-size-overline: .75rem;    /* 12 — alias of caption */
   --idea-font-weight-regular: 400;
   --idea-font-weight-medium: 500;
   --idea-font-weight-semibold: 600;
@@ -29,83 +29,85 @@
 
   /* Brand / primary */
   --idea-indigo-50: #eef2ff;
-  --idea-indigo-100: #e0e7ff;
+  --idea-indigo-100: #eef2ff;
   --idea-indigo-200: #c7d2fe;
   --idea-indigo-300: #a5b4fc;
   --idea-indigo-400: #818cf8;
-  --idea-indigo-500: #6366f1;
+  --idea-indigo-500: #4f46e5;
   --idea-indigo-600: #4f46e5;
   --idea-indigo-700: #4338ca;
   --idea-indigo-800: #3730a3;
   --idea-indigo-900: #312e81;
 
-  /* Neutral */
+  /* Neutral — ID Origin cool gray */
   --idea-neutral-0: #ffffff;
-  --idea-neutral-25: #fcfcfd;
-  --idea-neutral-50: #f8fafc;
-  --idea-neutral-100: #f1f5f9;
-  --idea-neutral-200: #e2e8f0;
-  --idea-neutral-300: #cbd5e1;
-  --idea-neutral-400: #94a3b8;
-  --idea-neutral-500: #64748b;
-  --idea-neutral-600: #475569;
-  --idea-neutral-700: #334155;
-  --idea-neutral-800: #1e293b;
-  --idea-neutral-900: #0f172a;
+  --idea-neutral-50: #f7f8fc;
+  --idea-neutral-100: #f2f4f8;
+  --idea-neutral-200: #e7eaf0;
+  --idea-neutral-300: #d2d7e1;
+  --idea-neutral-400: #aab2c1;
+  --idea-neutral-500: #818b9d;
+  --idea-neutral-600: #667085;
+  --idea-neutral-700: #4c5668;
+  --idea-neutral-800: #303a4d;
+  --idea-neutral-900: #172033;
+  --idea-neutral-950: #101725;
 
-  /* Semantic */
-  --idea-color-primary: var(--idea-indigo-600);
-  --idea-color-primary-hover: var(--idea-indigo-700);
-  --idea-color-primary-pressed: var(--idea-indigo-800);
-  --idea-color-primary-soft: var(--idea-indigo-50);
-  --idea-color-primary-subtle: var(--idea-indigo-100);
+  /* Semantic — tuned to ID Origin */
+  --idea-color-primary: #4f46e5;
+  --idea-color-primary-hover: #4338ca;
+  --idea-color-primary-pressed: #3730a3;
+  --idea-color-primary-soft: #eef2ff;
+  --idea-color-primary-subtle: #c7d2fe;
 
-  --idea-color-success: #059669;
-  --idea-color-success-soft: #ecfdf5;
-  --idea-color-success-border: #a7f3d0;
-  --idea-color-warning: #d97706;
-  --idea-color-warning-soft: #fffbeb;
-  --idea-color-warning-border: #fde68a;
-  --idea-color-danger: #dc2626;
-  --idea-color-danger-soft: #fef2f2;
-  --idea-color-danger-border: #fecaca;
-  --idea-color-info: #2563eb;
-  --idea-color-info-soft: #eff6ff;
+  --idea-color-success: #18704d;
+  --idea-color-success-soft: #e8f4ed;
+  --idea-color-success-border: #b7d8c6;
+  --idea-color-warning: #8b5b10;
+  --idea-color-warning-soft: #fff3d6;
+  --idea-color-warning-border: #efd79e;
+  --idea-color-danger: #b63239;
+  --idea-color-danger-soft: #fcebec;
+  --idea-color-danger-border: #edbdc0;
+  --idea-color-info: #4f46e5;
+  --idea-color-info-soft: #eef2ff;
 
-  /* Product workflow status — deliberately separate from generic success/error */
-  --idea-status-progress: #059669;
-  --idea-status-progress-soft: #ecfdf5;
-  --idea-status-progress-border: #a7f3d0;
-  --idea-status-completed: var(--idea-indigo-600);
-  --idea-status-completed-soft: var(--idea-indigo-50);
-  --idea-status-completed-border: var(--idea-indigo-200);
-  --idea-status-held: #d97706;
-  --idea-status-held-soft: #fffbeb;
-  --idea-status-held-border: #fde68a;
-  --idea-status-dropped: #64748b;
-  --idea-status-dropped-soft: #f1f5f9;
-  --idea-status-dropped-border: #cbd5e1;
+  /* Product workflow status */
+  --idea-status-progress: #18704d;
+  --idea-status-progress-soft: #e8f4ed;
+  --idea-status-progress-border: #b7d8c6;
+  --idea-status-completed: #4f46e5;
+  --idea-status-completed-soft: #eef2ff;
+  --idea-status-completed-border: #c7d2fe;
+  --idea-status-held: #8b5b10;
+  --idea-status-held-soft: #fff3d6;
+  --idea-status-held-border: #efd79e;
+  --idea-status-dropped: #596376;
+  --idea-status-dropped-soft: #edf0f4;
+  --idea-status-dropped-border: #d2d7e1;
 
   /* Time-sensitive / novelty */
   --idea-color-new: #e85d3f;
   --idea-color-new-soft: #fff1ed;
   --idea-color-new-border: #fec7b7;
-  --idea-color-deadline-today: #dc2626;
-  --idea-color-deadline-today-soft: #fef2f2;
+  --idea-color-deadline-today: #b63239;
+  --idea-color-deadline-today-soft: #fcebec;
 
   /* Surfaces */
   --idea-bg-page: #f7f8fc;
-  --idea-surface-default: var(--idea-neutral-0);
-  --idea-surface-subtle: var(--idea-neutral-50);
-  --idea-surface-muted: var(--idea-neutral-100);
-  --idea-text-primary: var(--idea-neutral-800);
-  --idea-text-secondary: var(--idea-neutral-600);
-  --idea-text-muted: var(--idea-neutral-500);
-  --idea-text-disabled: var(--idea-neutral-400);
-  --idea-text-inverse: var(--idea-neutral-0);
-  --idea-border-default: var(--idea-neutral-200);
-  --idea-border-strong: var(--idea-neutral-300);
-  --idea-border-focus: var(--idea-indigo-400);
+  --idea-surface-default: #ffffff;
+  --idea-surface-subtle: #f2f4f8;
+  --idea-surface-muted: #edf0f4;
+  --idea-text-primary: #172033;
+  --idea-text-secondary: #4c5668;
+  --idea-text-muted: #667085;
+  --idea-text-placeholder: #818b9d;
+  --idea-text-disabled: #aab2c1;
+  --idea-text-inverse: #ffffff;
+  --idea-border-subtle: #eef0f4;
+  --idea-border-default: #e7eaf0;
+  --idea-border-strong: #d2d7e1;
+  --idea-border-focus: #4f46e5;
 
   /* Spacing — 4 px rhythm */
   --idea-space-0: 0;
@@ -120,31 +122,56 @@
   --idea-space-12: 48px;
   --idea-space-16: 64px;
 
-  /* Radius */
-  --idea-radius-xs: 6px;
-  --idea-radius-sm: 8px;
-  --idea-radius-md: 10px;
-  --idea-radius-lg: 14px;
+  /* Gap — intentionally narrower than spacing scale */
+  --idea-gap-xs: 4px;
+  --idea-gap-sm: 8px;
+  --idea-gap-md: 12px;
+  --idea-gap-lg: 16px;
+  --idea-gap-xl: 24px;
+
+  /* Radius — ID Origin geometry */
+  --idea-radius-xs: 4px;
+  --idea-radius-sm: 6px;
+  --idea-radius-md: 8px;
+  --idea-radius-lg: 12px;
   --idea-radius-xl: 16px;
   --idea-radius-full: 9999px;
 
-  /* Elevation */
+  /* Control / icon sizing */
+  --idea-control-height-chip: 28px;
+  --idea-control-height-sm: 36px;
+  --idea-control-height-md: 40px;
+  --idea-control-height-lg: 44px;
+  --idea-hit-target-min: 32px;
+  --idea-icon-size-sm: 16px;
+  --idea-icon-size-md: 20px;
+  --idea-icon-size-lg: 24px;
+
+  /* Dense workspace sizing */
+  --idea-kanban-column-width: 280px;
+  --idea-scrollbar-size: 8px;
+
+  /* Elevation — border first, shadow only when raised */
   --idea-shadow-none: none;
-  --idea-shadow-1: 0 1px 2px rgba(15, 23, 42, .045), 0 3px 10px rgba(15, 23, 42, .025);
-  --idea-shadow-2: 0 6px 18px rgba(15, 23, 42, .065);
-  --idea-shadow-3: 0 14px 32px rgba(15, 23, 42, .085);
-  --idea-shadow-overlay: 0 20px 56px rgba(15, 23, 42, .16);
-  --idea-focus-ring: 0 0 0 3px rgba(99, 102, 241, .16);
+  --idea-shadow-card: 0 1px 2px rgba(23, 32, 51, .04);
+  --idea-shadow-raised: 0 4px 12px rgba(23, 32, 51, .06);
+  --idea-shadow-floating: 0 10px 28px rgba(23, 32, 51, .10);
+  --idea-shadow-overlay: 0 20px 48px rgba(23, 32, 51, .14);
+  --idea-shadow-1: var(--idea-shadow-card);
+  --idea-shadow-2: var(--idea-shadow-raised);
+  --idea-shadow-3: var(--idea-shadow-floating);
+  --idea-focus-ring: 0 0 0 3px rgba(79, 70, 229, .16);
 
   /* Avatar palette */
-  --idea-avatar-0-fg: #4338ca; --idea-avatar-0-bg: #e0e7ff;
+  --idea-avatar-0-fg: #4338ca; --idea-avatar-0-bg: #eef2ff;
   --idea-avatar-1-fg: #0369a1; --idea-avatar-1-bg: #e0f2fe;
-  --idea-avatar-2-fg: #047857; --idea-avatar-2-bg: #d1fae5;
-  --idea-avatar-3-fg: #a16207; --idea-avatar-3-bg: #fef3c7;
+  --idea-avatar-2-fg: #18704d; --idea-avatar-2-bg: #e8f4ed;
+  --idea-avatar-3-fg: #8b5b10; --idea-avatar-3-bg: #fff3d6;
   --idea-avatar-4-fg: #be123c; --idea-avatar-4-bg: #ffe4e6;
   --idea-avatar-5-fg: #a21caf; --idea-avatar-5-bg: #fae8ff;
   --idea-avatar-6-fg: #c2410c; --idea-avatar-6-bg: #ffedd5;
   --idea-avatar-7-fg: #5b21b6; --idea-avatar-7-bg: #ede9fe;
+  --idea-avatar-current-fg: #1769e0; --idea-avatar-current-bg: #eaf2ff;
 }
 
 /* ============================================================
@@ -155,7 +182,7 @@
   --bs-primary: #4f46e5;
   --bs-primary-rgb: 79, 70, 229;
   --studio-primary: var(--idea-color-primary);
-  --studio-primary-dark: var(--idea-indigo-800);
+  --studio-primary-dark: var(--idea-color-primary-pressed);
   --studio-primary-soft: var(--idea-color-primary-soft);
   --studio-ink: var(--idea-text-primary);
   --studio-muted: var(--idea-text-muted);
@@ -169,7 +196,7 @@
   font-family: var(--idea-font-family);
   font-size: var(--idea-font-size-body);
   line-height: var(--idea-line-height-body);
-  letter-spacing: -.012em;
+  letter-spacing: -.01em;
 }
 
 .idea-dev *,
@@ -193,7 +220,7 @@
    ============================================================ */
 .idea-dev .btn,
 .idea-dev-modal .btn {
-  min-height: 40px;
+  min-height: var(--idea-control-height-md);
   border-radius: var(--idea-radius-md);
   font-size: var(--idea-font-size-label);
   font-weight: var(--idea-font-weight-semibold);
@@ -203,7 +230,7 @@
 
 .idea-dev .btn-sm,
 .idea-dev-modal .btn-sm {
-  min-height: 34px;
+  min-height: var(--idea-control-height-sm);
   border-radius: var(--idea-radius-sm);
   font-size: var(--idea-font-size-caption);
 }
@@ -332,7 +359,7 @@
 .idea-dev .alert,
 .idea-dev-modal .alert {
   margin-bottom: var(--idea-space-4);
-  padding: 11px 14px;
+  padding: var(--idea-space-3) var(--idea-space-4);
   border: 1px solid transparent;
   border-radius: var(--idea-radius-md);
   font-size: var(--idea-font-size-body);
@@ -553,7 +580,7 @@ body:has(.idea-dev) :is(
   align-items: center;
   justify-content: space-between;
   gap: var(--idea-space-3);
-  padding: 9px 12px;
+  padding: var(--idea-space-2) var(--idea-space-3);
   border: 1px solid var(--idea-border-default);
   border-radius: var(--idea-radius-md);
   color: var(--idea-text-secondary);
@@ -582,7 +609,7 @@ body:has(.idea-dev) :is(
   cursor: not-allowed;
 }
 
-.idea-date-trigger .bi-calendar3 {
+.idea-date-trigger .idea-icon-calendar3 {
   color: var(--idea-text-muted);
 }
 
@@ -605,8 +632,8 @@ body:has(.idea-dev) :is(
   display: grid;
   grid-template-columns: 32px minmax(0,1fr) minmax(0,1fr) 32px;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
+  gap: var(--idea-gap-sm);
+  margin-bottom: 8px;
 }
 
 .idea-date-nav {
@@ -640,13 +667,13 @@ body:has(.idea-dev) :is(
 .idea-date-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 2px;
+  gap: var(--idea-gap-xs);
 }
 
 .idea-date-weekdays {
   margin-bottom: 4px;
   color: var(--idea-text-muted);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-semibold);
   text-align: center;
 }
@@ -660,7 +687,7 @@ body:has(.idea-dev) :is(
   place-items: center;
   padding: 0;
   border: 0;
-  border-radius: 9px;
+  border-radius: var(--idea-radius-md);
   color: var(--idea-text-secondary);
   background: transparent;
   font: inherit;
@@ -693,15 +720,15 @@ body:has(.idea-dev) :is(
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-top: 10px;
-  padding-top: 10px;
+  gap: var(--idea-gap-sm);
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--idea-border-default);
 }
 
 .idea-date-foot button {
   min-height: 30px;
-  padding: 5px 9px;
+  padding: var(--idea-space-1) var(--idea-space-2);
   border: 0;
   border-radius: var(--idea-radius-sm);
   color: var(--idea-text-muted);
@@ -742,14 +769,14 @@ body:has(.idea-dev) :is(
 }
 
 .idea-dialog-head {
-  padding: 22px 22px 10px;
+  padding: 20px 20px 8px;
 }
 
 .idea-dialog-eyebrow {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: var(--idea-color-primary);
-  font-size: var(--idea-font-size-overline);
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-bold);
   letter-spacing: .1em;
 }
@@ -763,7 +790,7 @@ body:has(.idea-dev) :is(
 }
 
 .idea-dialog-body {
-  padding: 4px 22px 8px;
+  padding: 4px 20px 8px;
 }
 
 .idea-dialog-message {
@@ -777,8 +804,8 @@ body:has(.idea-dev) :is(
 .idea-dialog-input {
   width: 100%;
   min-height: 92px;
-  margin-top: 14px;
-  padding: 12px 13px;
+  margin-top: 12px;
+  padding: var(--idea-space-3);
   border: 1px solid var(--idea-border-default);
   border-radius: var(--idea-radius-md);
   color: var(--idea-text-primary);
@@ -798,8 +825,8 @@ body:has(.idea-dev) :is(
 .idea-dialog-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  padding: 16px 22px 22px;
+  gap: var(--idea-gap-sm);
+  padding: 16px 20px 20px;
 }
 
 .idea-dialog-actions .btn { min-width: 92px; }
@@ -879,4 +906,514 @@ body:has(.idea-dev) :is(
   justify-content: center;
   line-height: 1;
   font-weight: var(--idea-font-weight-semibold);
+}
+
+/* ============================================================
+   Idea Developer dark mode — scoped to Idea surfaces only.
+   AX global tokens/components remain untouched.
+   ============================================================ */
+[data-bs-theme="dark"] .idea-dev,
+[data-bs-theme="dark"] .idea-dev-modal,
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-assignee-menu,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-ai-panel,
+[data-bs-theme="dark"] .brain-floating-toolbar,
+[data-bs-theme="dark"] .brain-drag-preview {
+  --idea-indigo-50: #1d2340;
+  --idea-indigo-100: #252d55;
+  --idea-indigo-200: #434f8f;
+  --idea-indigo-300: #6977c8;
+  --idea-indigo-400: #9aa5ff;
+  --idea-indigo-500: #a5b4fc;
+  --idea-indigo-600: #9aa5ff;
+  --idea-indigo-700: #818cf8;
+  --idea-indigo-800: #6977c8;
+  --idea-indigo-900: #535fa8;
+
+  --idea-neutral-0: #111827;
+  --idea-neutral-50: #141c29;
+  --idea-neutral-100: #192333;
+  --idea-neutral-200: #222e40;
+  --idea-neutral-300: #344156;
+  --idea-neutral-400: #647188;
+  --idea-neutral-500: #8c98aa;
+  --idea-neutral-600: #aab4c4;
+  --idea-neutral-700: #c7cfda;
+  --idea-neutral-800: #e4e9f0;
+  --idea-neutral-900: #f6f8fb;
+  --idea-neutral-950: #ffffff;
+
+  --idea-color-primary: #9aa5ff;
+  --idea-color-primary-hover: #b8c4ff;
+  --idea-color-primary-pressed: #818cf8;
+  --idea-color-primary-soft: #252d55;
+  --idea-color-primary-subtle: #434f8f;
+
+  --idea-color-success: #75d6aa;
+  --idea-color-success-soft: #153a2e;
+  --idea-color-success-border: #285e49;
+  --idea-color-warning: #f1c870;
+  --idea-color-warning-soft: #3a2d16;
+  --idea-color-warning-border: #65502a;
+  --idea-color-danger: #ff9297;
+  --idea-color-danger-soft: #472126;
+  --idea-color-danger-border: #74373d;
+  --idea-color-info: #a5b4fc;
+  --idea-color-info-soft: #252d55;
+
+  --idea-status-progress: #75d6aa;
+  --idea-status-progress-soft: #153a2e;
+  --idea-status-progress-border: #285e49;
+  --idea-status-completed: #a5b4fc;
+  --idea-status-completed-soft: #252d55;
+  --idea-status-completed-border: #434f8f;
+  --idea-status-held: #f1c870;
+  --idea-status-held-soft: #3a2d16;
+  --idea-status-held-border: #65502a;
+  --idea-status-dropped: #aab4c4;
+  --idea-status-dropped-soft: #222e40;
+  --idea-status-dropped-border: #344156;
+
+  --idea-color-new: #ff927b;
+  --idea-color-new-soft: #452820;
+  --idea-color-new-border: #704438;
+  --idea-color-deadline-today: #ff9297;
+  --idea-color-deadline-today-soft: #472126;
+
+  --idea-bg-page: #101722;
+  --idea-surface-default: #182230;
+  --idea-surface-subtle: #202c3c;
+  --idea-surface-muted: #273447;
+  --idea-text-primary: #f2f5f9;
+  --idea-text-secondary: #d0d7e2;
+  --idea-text-muted: #a7b2c2;
+  --idea-text-placeholder: #8793a5;
+  --idea-text-disabled: #758196;
+  --idea-text-inverse: #111827;
+  --idea-border-subtle: #263244;
+  --idea-border-default: #303d50;
+  --idea-border-strong: #46546a;
+  --idea-border-focus: #9aa5ff;
+
+  /* Dark avatar palette keeps identity colors distinct without light-mode chips glowing on dark surfaces. */
+  --idea-avatar-0-fg: #c4cbff; --idea-avatar-0-bg: #2a315b;
+  --idea-avatar-1-fg: #8ed8f7; --idea-avatar-1-bg: #173746;
+  --idea-avatar-2-fg: #8ee0b8; --idea-avatar-2-bg: #183a2e;
+  --idea-avatar-3-fg: #f1d38a; --idea-avatar-3-bg: #40331d;
+  --idea-avatar-4-fg: #ffadb9; --idea-avatar-4-bg: #45242d;
+  --idea-avatar-5-fg: #e5a9f2; --idea-avatar-5-bg: #402542;
+  --idea-avatar-6-fg: #f8b183; --idea-avatar-6-bg: #452c1f;
+  --idea-avatar-7-fg: #cbb8ff; --idea-avatar-7-bg: #332854;
+  --idea-avatar-current-fg: #c4cbff; --idea-avatar-current-bg: #29345e;
+
+  /* Scoped Bootstrap compatibility tokens for Idea-only controls. */
+  --bs-body-color: var(--idea-text-primary);
+  --bs-body-bg: var(--idea-bg-page);
+  --bs-secondary-color: var(--idea-text-muted);
+  --bs-tertiary-bg: var(--idea-surface-subtle);
+  --bs-border-color: var(--idea-border-default);
+  --bs-emphasis-color: var(--idea-text-primary);
+  --bs-form-control-bg: var(--idea-surface-default);
+  --bs-dropdown-bg: var(--idea-surface-default);
+  --bs-dropdown-link-color: var(--idea-text-secondary);
+  --bs-dropdown-link-hover-bg: var(--idea-surface-subtle);
+  --bs-dropdown-link-hover-color: var(--idea-text-primary);
+  --bs-modal-bg: var(--idea-surface-default);
+
+  --idea-shadow-card: 0 1px 2px rgba(0, 0, 0, .20);
+  --idea-shadow-raised: 0 6px 18px rgba(0, 0, 0, .22);
+  --idea-shadow-floating: 0 14px 32px rgba(0, 0, 0, .32);
+  --idea-shadow-overlay: 0 24px 58px rgba(0, 0, 0, .42);
+  --idea-focus-ring: 0 0 0 3px rgba(154, 165, 255, .22);
+
+  color-scheme: dark;
+  color: var(--idea-text-primary);
+}
+
+[data-bs-theme="dark"] .idea-dev .btn.btn-primary,
+[data-bs-theme="dark"] .idea-dev-modal .btn.btn-primary {
+  color: #101722;
+  box-shadow: 0 5px 14px rgba(129, 140, 248, .18);
+}
+[data-bs-theme="dark"] .idea-dev .form-control,
+[data-bs-theme="dark"] .idea-dev .form-select,
+[data-bs-theme="dark"] .idea-dev-modal .form-control,
+[data-bs-theme="dark"] .idea-dev-modal .form-select {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default);
+  background-color: var(--idea-surface-default);
+}
+[data-bs-theme="dark"] .idea-dev .form-control::placeholder,
+[data-bs-theme="dark"] .idea-dev-modal .form-control::placeholder {
+  color: var(--idea-text-placeholder);
+}
+[data-bs-theme="dark"] .idea-dev .idea-empty-illustration,
+[data-bs-theme="dark"] .idea-dev-modal .idea-empty-illustration,
+[data-bs-theme="dark"] .idea-dev--brainstorm .brain-canvas-empty img,
+[data-bs-theme="dark"] .idea-dev--brainstorm .brain-inventory-empty img,
+[data-bs-theme="dark"] .idea-dev--write .evaluation-empty--review > img,
+[data-bs-theme="dark"] .idea-dev--write .comment-empty img {
+  filter: saturate(.92) brightness(.94);
+}
+
+
+/* ============================================================
+   Idea Developer v3.8 — shared dark-mode readability layer
+   ============================================================ */
+[data-bs-theme="dark"] .idea-dev .dropdown-menu,
+[data-bs-theme="dark"] .idea-dev-modal .dropdown-menu {
+  color: var(--idea-text-secondary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-default);
+  box-shadow: var(--idea-shadow-floating);
+}
+[data-bs-theme="dark"] .idea-dev .dropdown-item,
+[data-bs-theme="dark"] .idea-dev-modal .dropdown-item { color: var(--idea-text-secondary); }
+[data-bs-theme="dark"] .idea-dev .dropdown-item:hover,
+[data-bs-theme="dark"] .idea-dev .dropdown-item:focus,
+[data-bs-theme="dark"] .idea-dev-modal .dropdown-item:hover,
+[data-bs-theme="dark"] .idea-dev-modal .dropdown-item:focus {
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-subtle);
+}
+[data-bs-theme="dark"] .idea-dev .dropdown-divider,
+[data-bs-theme="dark"] .idea-dev-modal .dropdown-divider { border-color: var(--idea-border-default); }
+[data-bs-theme="dark"] .idea-dev select option,
+[data-bs-theme="dark"] .idea-dev-modal select option {
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+}
+[data-bs-theme="dark"] .idea-dev .btn-close,
+[data-bs-theme="dark"] .idea-dev-modal .btn-close {
+  filter: invert(1) grayscale(100%) brightness(1.65);
+  opacity: .72;
+}
+[data-bs-theme="dark"] .idea-dev .btn-close:hover,
+[data-bs-theme="dark"] .idea-dev-modal .btn-close:hover { opacity: 1; }
+
+/* Modal/portal avatars are outside some page roots, so they also consume the shared palette. */
+.idea-dev-modal .avatar-color-0 { color: var(--idea-avatar-0-fg) !important; background: var(--idea-avatar-0-bg) !important; }
+.idea-dev-modal .avatar-color-1 { color: var(--idea-avatar-1-fg) !important; background: var(--idea-avatar-1-bg) !important; }
+.idea-dev-modal .avatar-color-2 { color: var(--idea-avatar-2-fg) !important; background: var(--idea-avatar-2-bg) !important; }
+.idea-dev-modal .avatar-color-3 { color: var(--idea-avatar-3-fg) !important; background: var(--idea-avatar-3-bg) !important; }
+.idea-dev-modal .avatar-color-4 { color: var(--idea-avatar-4-fg) !important; background: var(--idea-avatar-4-bg) !important; }
+.idea-dev-modal .avatar-color-5 { color: var(--idea-avatar-5-fg) !important; background: var(--idea-avatar-5-bg) !important; }
+.idea-dev-modal .avatar-color-6 { color: var(--idea-avatar-6-fg) !important; background: var(--idea-avatar-6-bg) !important; }
+.idea-dev-modal .avatar-color-7 { color: var(--idea-avatar-7-fg) !important; background: var(--idea-avatar-7-bg) !important; }
+
+
+/* ============================================================
+   Idea Developer v3.9 — dark readability & interaction system
+   Scope: Idea Developer only. AX global layout remains untouched.
+   ============================================================ */
+[data-bs-theme="dark"] .idea-dev,
+[data-bs-theme="dark"] .idea-dev-modal,
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-assignee-menu,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-ai-panel,
+[data-bs-theme="dark"] .brain-floating-toolbar,
+[data-bs-theme="dark"] .brain-drag-preview,
+[data-bs-theme="dark"] .idea-date-popover,
+[data-bs-theme="dark"] .idea-ui-dialog {
+  --idea-color-primary: #6064DD;
+  --idea-color-primary-hover: #6569DF;
+  --idea-color-primary-pressed: #565ACB;
+  --idea-color-primary-soft: #252A4A;
+  --idea-color-primary-subtle: #3C4375;
+  --idea-indigo-300: #6673AE;
+  --idea-indigo-400: #8E98EE;
+
+  --idea-bg-page: #0F1722;
+  --idea-surface-default: #17212F;
+  --idea-surface-subtle: #1D2938;
+  --idea-surface-muted: #243244;
+  --idea-text-primary: #F8FAFC;
+  --idea-text-secondary: #D7DEE8;
+  --idea-text-muted: #AAB6C5;
+  --idea-text-placeholder: #8592A6;
+  --idea-text-disabled: #6F7C90;
+  --idea-text-inverse: #FFFFFF;
+  --idea-border-subtle: #263446;
+  --idea-border-default: #334155;
+  --idea-border-strong: #475569;
+  --idea-border-focus: #7E87EB;
+
+  --idea-color-success: #7DD3A7;
+  --idea-color-success-soft: #183A2C;
+  --idea-color-success-border: #2D644C;
+  --idea-color-warning: #E7C16C;
+  --idea-color-warning-soft: #3A2D18;
+  --idea-color-warning-border: #6B542B;
+  --idea-color-danger: #FF9DA3;
+  --idea-color-danger-soft: #47242A;
+  --idea-color-danger-border: #784047;
+  --idea-color-info: #AEB8FF;
+  --idea-color-info-soft: #252A4A;
+
+  --idea-status-progress: #7DD3A7;
+  --idea-status-progress-soft: #183A2C;
+  --idea-status-progress-border: #2D644C;
+  --idea-status-completed: #AEB8FF;
+  --idea-status-completed-soft: #252A4A;
+  --idea-status-completed-border: #4B568E;
+  --idea-status-held: #E7C16C;
+  --idea-status-held-soft: #3A2D18;
+  --idea-status-held-border: #6B542B;
+  --idea-status-dropped: #B3BECC;
+  --idea-status-dropped-soft: #243244;
+  --idea-status-dropped-border: #475569;
+
+  --idea-focus-ring: 0 0 0 3px rgba(126, 135, 235, .26);
+  --idea-shadow-card: 0 1px 2px rgba(0, 0, 0, .24);
+  --idea-shadow-raised: 0 8px 22px rgba(0, 0, 0, .26);
+  --idea-shadow-floating: 0 18px 44px rgba(0, 0, 0, .38);
+  --idea-shadow-overlay: 0 24px 64px rgba(0, 0, 0, .48);
+
+  color-scheme: dark;
+}
+
+/* Primary actions: use a medium brand indigo with white ink instead of a
+   glowing pastel button. This keeps hierarchy without fighting the content. */
+[data-bs-theme="dark"] .idea-dev .btn.btn-primary,
+[data-bs-theme="dark"] .idea-dev-modal .btn.btn-primary,
+[data-bs-theme="dark"] .idea-ui-dialog .btn.btn-primary {
+  color: #FFFFFF !important;
+  border-color: #6064DD !important;
+  background: #6064DD !important;
+  box-shadow: 0 4px 12px rgba(49, 46, 129, .24);
+}
+[data-bs-theme="dark"] .idea-dev .btn.btn-primary:hover,
+[data-bs-theme="dark"] .idea-dev-modal .btn.btn-primary:hover,
+[data-bs-theme="dark"] .idea-ui-dialog .btn.btn-primary:hover {
+  color: #FFFFFF !important;
+  border-color: #6569DF !important;
+  background: #6569DF !important;
+}
+[data-bs-theme="dark"] .idea-dev .btn.btn-primary:active,
+[data-bs-theme="dark"] .idea-dev-modal .btn.btn-primary:active,
+[data-bs-theme="dark"] .idea-ui-dialog .btn.btn-primary:active {
+  border-color: #565ACB !important;
+  background: #565ACB !important;
+}
+[data-bs-theme="dark"] .idea-dev .btn.btn-outline-primary,
+[data-bs-theme="dark"] .idea-dev-modal .btn.btn-outline-primary {
+  color: #C9CFFF;
+  border-color: #4B568E;
+  background: transparent;
+}
+[data-bs-theme="dark"] .idea-dev .btn.btn-outline-primary:hover,
+[data-bs-theme="dark"] .idea-dev-modal .btn.btn-outline-primary:hover {
+  color: #F0F2FF;
+  border-color: #6673AE;
+  background: #252A4A;
+}
+[data-bs-theme="dark"] .idea-dev :is(.btn-light,.btn-outline-secondary),
+[data-bs-theme="dark"] .idea-dev-modal :is(.btn-light,.btn-outline-secondary) {
+  color: var(--idea-text-secondary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-subtle);
+}
+[data-bs-theme="dark"] .idea-dev :is(.btn-light,.btn-outline-secondary):hover,
+[data-bs-theme="dark"] .idea-dev-modal :is(.btn-light,.btn-outline-secondary):hover {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-strong);
+  background: var(--idea-surface-muted);
+}
+[data-bs-theme="dark"] .idea-dev .btn:disabled,
+[data-bs-theme="dark"] .idea-dev-modal .btn:disabled {
+  color: #768398 !important;
+  border-color: #2B384A !important;
+  background: #1B2635 !important;
+  opacity: 1;
+}
+
+/* Progress track stays visible at 0%. The value itself is never fabricated. */
+[data-bs-theme="dark"] .idea-dev .progress,
+[data-bs-theme="dark"] .idea-dev-modal .progress {
+  min-height: 7px;
+  border: 1px solid #36465C;
+  background: #2A394D;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.22);
+}
+[data-bs-theme="dark"] .idea-dev .progress-bar,
+[data-bs-theme="dark"] .idea-dev-modal .progress-bar {
+  background: linear-gradient(90deg, #6064DD 0%, #7E87EB 100%);
+  box-shadow: 0 0 8px rgba(96,100,221,.26);
+}
+
+/* Date picker is portaled directly under body. Without an explicit dark scope
+   it inherits the light :root tokens even though the New page is dark. */
+[data-bs-theme="dark"] .idea-date-popover {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-default);
+  box-shadow: var(--idea-shadow-floating);
+}
+[data-bs-theme="dark"] .idea-date-popover .idea-date-select,
+[data-bs-theme="dark"] .idea-date-popover .idea-date-month-panel {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-subtle);
+}
+[data-bs-theme="dark"] .idea-date-popover .idea-date-nav,
+[data-bs-theme="dark"] .idea-date-popover .idea-date-period,
+[data-bs-theme="dark"] .idea-date-popover .idea-date-action,
+[data-bs-theme="dark"] .idea-date-popover .idea-date-month-button {
+  color: var(--idea-text-secondary);
+}
+[data-bs-theme="dark"] .idea-date-popover .idea-date-nav:hover,
+[data-bs-theme="dark"] .idea-date-popover .idea-date-period:hover,
+[data-bs-theme="dark"] .idea-date-popover .idea-date-period[aria-expanded="true"],
+[data-bs-theme="dark"] .idea-date-popover .idea-date-month-button:hover {
+  color: #E1E5FF;
+  background: #252A4A;
+}
+[data-bs-theme="dark"] .idea-date-popover .idea-date-weekdays span { color: var(--idea-text-muted); }
+[data-bs-theme="dark"] .idea-date-popover .idea-date-day { color: var(--idea-text-secondary); }
+[data-bs-theme="dark"] .idea-date-popover .idea-date-day.is-outside { color: var(--idea-text-disabled); }
+[data-bs-theme="dark"] .idea-date-popover .idea-date-day:hover:not(:disabled) {
+  color: #E1E5FF;
+  background: #252A4A;
+}
+[data-bs-theme="dark"] .idea-date-popover .idea-date-day.is-today {
+  color: #C9CFFF;
+  box-shadow: inset 0 0 0 1px #6673AE;
+}
+[data-bs-theme="dark"] .idea-date-popover .idea-date-day.is-selected {
+  color: #FFFFFF;
+  background: #6064DD;
+  box-shadow: none;
+}
+[data-bs-theme="dark"] .idea-date-popover .idea-date-foot { border-color: var(--idea-border-default); }
+[data-bs-theme="dark"] .idea-date-popover .idea-date-action:hover,
+[data-bs-theme="dark"] .idea-date-popover .idea-date-action.is-primary {
+  color: #E1E5FF;
+  background: #252A4A;
+}
+[data-bs-theme="dark"] .idea-date-popover .idea-date-action.is-primary:hover {
+  color: #FFFFFF;
+  background: #6064DD;
+}
+
+
+/* Semantic notices use readable ink in dark mode. */
+[data-bs-theme="dark"] .idea-dev .alert-success,
+[data-bs-theme="dark"] .idea-dev-modal .alert-success { color: #A7E7CA; }
+[data-bs-theme="dark"] .idea-dev .alert-warning,
+[data-bs-theme="dark"] .idea-dev-modal .alert-warning { color: #F4D69A; }
+[data-bs-theme="dark"] .idea-dev .alert-danger,
+[data-bs-theme="dark"] .idea-dev-modal .alert-danger { color: #FFB0B5; }
+
+/* ============================================================
+   Idea Developer v4.0 — shared dark interaction states
+   ============================================================ */
+[data-bs-theme="dark"] .idea-dev,
+[data-bs-theme="dark"] .idea-dev-modal,
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-assignee-menu,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-ai-panel {
+  --idea-interactive-hover: #243244;
+  --idea-interactive-pressed: #2B3A4F;
+  --idea-interactive-selected: #252A4A;
+}
+
+/* Hover/focus must never reintroduce light surfaces in dark mode. */
+[data-bs-theme="dark"] .idea-dev :is(.form-control,.form-select):hover,
+[data-bs-theme="dark"] .idea-dev-modal :is(.form-control,.form-select):hover {
+  border-color: var(--idea-border-strong);
+  background-color: var(--idea-surface-subtle);
+}
+[data-bs-theme="dark"] .idea-dev :is(.form-control,.form-select):focus,
+[data-bs-theme="dark"] .idea-dev-modal :is(.form-control,.form-select):focus {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-focus);
+  background-color: var(--idea-surface-default);
+  box-shadow: var(--idea-focus-ring);
+}
+[data-bs-theme="dark"] .idea-dev button:focus-visible,
+[data-bs-theme="dark"] .idea-dev a:focus-visible,
+[data-bs-theme="dark"] .idea-dev-modal button:focus-visible,
+[data-bs-theme="dark"] .idea-dev-modal a:focus-visible,
+[data-bs-theme="dark"] .brain-editor-modal button:focus-visible,
+[data-bs-theme="dark"] .brain-assignee-menu button:focus-visible,
+[data-bs-theme="dark"] .brain-ai-panel button:focus-visible {
+  outline: 2px solid var(--idea-border-focus);
+  outline-offset: 2px;
+}
+[data-bs-theme="dark"] .idea-dev .dropdown-item:active,
+[data-bs-theme="dark"] .idea-dev-modal .dropdown-item:active {
+  color: var(--idea-text-primary);
+  background: var(--idea-interactive-pressed);
+}
+
+/* ============================================================
+   Idea Developer v5.1 — shared interaction stabilization
+   Scope: Idea-only modal/offcanvas close controls and dark modal edges.
+   ============================================================ */
+.idea-dev .btn-close,
+.idea-dev-modal .btn-close {
+  position: relative;
+  display: grid;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 !important;
+  place-items: center;
+  border: 0;
+  border-radius: var(--idea-radius-sm);
+  color: var(--idea-text-muted);
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+.idea-dev .btn-close::before,
+.idea-dev .btn-close::after,
+.idea-dev-modal .btn-close::before,
+.idea-dev-modal .btn-close::after {
+  position: absolute;
+  width: 15px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+}
+.idea-dev .btn-close::before,
+.idea-dev-modal .btn-close::before { transform: rotate(45deg); }
+.idea-dev .btn-close::after,
+.idea-dev-modal .btn-close::after { transform: rotate(-45deg); }
+.idea-dev .btn-close:hover,
+.idea-dev-modal .btn-close:hover {
+  color: var(--idea-text-primary);
+  background-color: var(--idea-surface-muted) !important;
+  filter: none !important;
+}
+.idea-dev .btn-close:focus-visible,
+.idea-dev-modal .btn-close:focus-visible {
+  outline: 2px solid var(--idea-border-focus);
+  outline-offset: 2px;
+}
+[data-bs-theme="dark"] .idea-dev-modal .modal-content,
+[data-bs-theme="dark"] body:has(.idea-dev) :is(
+  .recent-activity-modal-content,
+  .trash-modal-content,
+  .delete-confirm-content,
+  .prd-settings-content,
+  .write-delete-confirm-content,
+  .export-modal-content,
+  .perspective-draft-modal-content
+) {
+  border-color: var(--idea-border-default) !important;
+  background: var(--idea-surface-default);
+}
+[data-bs-theme="dark"] .idea-dev-modal .modal-header {
+  border-bottom-color: var(--idea-border-subtle) !important;
+}
+[data-bs-theme="dark"] .idea-dev-modal .modal-footer {
+  border-top-color: var(--idea-border-subtle) !important;
 }

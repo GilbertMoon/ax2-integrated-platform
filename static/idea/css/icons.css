@@ -1,0 +1,196 @@
+/*
+ * Idea Developer D/Icon integration v3.1
+ * Exact SVG assets exported from Figma: D / 03 Icon Library — 65.
+ * Illustrations are intentionally NOT included.
+ */
+
+.idea-dev .idea-icon,
+.idea-dev-modal .idea-icon,
+.brain-floating-toolbar .idea-icon,
+.brain-assignee-menu .idea-icon,
+.idea-ui-dialog .idea-icon,
+.idea-date-popover .idea-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 1em;
+  height: 1em;
+  font-size: var(--idea-icon-size-sm);
+  line-height: 1;
+  vertical-align: -0.125em;
+  background-image: none;
+  background-color: currentColor;
+  -webkit-mask: var(--idea-icon-src) center / contain no-repeat;
+  mask: var(--idea-icon-src) center / contain no-repeat;
+}
+
+.idea-dev .btn .idea-icon,
+.idea-dev-modal .btn .idea-icon,
+.idea-dev input + .idea-icon,
+.idea-dev .form-control + .idea-icon {
+  font-size: var(--idea-icon-size-sm);
+}
+
+.idea-dev .idea-icon-sm,
+.idea-dev-modal .idea-icon-sm { font-size: 14px !important; }
+.idea-dev .idea-icon-md,
+.idea-dev-modal .idea-icon-md { font-size: var(--idea-icon-size-sm) !important; }
+.idea-dev .idea-icon-lg,
+.idea-dev-modal .idea-icon-lg { font-size: var(--idea-icon-size-md) !important; }
+.idea-dev .idea-icon-xl,
+.idea-dev-modal .idea-icon-xl { font-size: var(--idea-icon-size-lg) !important; }
+
+/* Icon-only controls keep a comfortable hit area. */
+.idea-dev button:has(> .idea-icon:only-child),
+.idea-dev a:has(> .idea-icon:only-child),
+.idea-dev-modal button:has(> .idea-icon:only-child) {
+  min-width: var(--idea-control-height-sm);
+  min-height: var(--idea-control-height-sm);
+  align-items: center;
+  justify-content: center;
+}
+
+/* Brainstorm: 16px dense actions, 20px zoom/version controls. */
+.idea-dev--brainstorm .brain-toolbar .idea-icon,
+.idea-dev--brainstorm .brain-topbar .idea-icon,
+.idea-dev--brainstorm .brain-view-tabs .idea-icon {
+  font-size: var(--idea-icon-size-sm);
+}
+.idea-dev--brainstorm .brain-zoom .idea-icon,
+.idea-dev--brainstorm .brain-version-toggle .idea-icon {
+  font-size: var(--idea-icon-size-md);
+}
+.idea-dev--brainstorm .brain-zoom-minus {
+  display: inline-grid;
+  place-items: center;
+  width: var(--idea-icon-size-md);
+  height: var(--idea-icon-size-md);
+  font: 600 20px/1 Pretendard, sans-serif;
+  color: var(--idea-text-primary);
+}
+
+/* Human avatars stay circular; service/project marks stay rounded-square. */
+.idea-dev .avatar,
+.idea-dev [class*="avatar"] {
+  border-radius: var(--idea-radius-full);
+}
+
+.idea-icon-arrow-clockwise { --idea-icon-src: url("../icons/arrow-clockwise.svg"); }
+.idea-icon-arrow-counterclockwise { --idea-icon-src: url("../icons/arrow-counterclockwise.svg"); }
+.idea-icon-arrow-left { --idea-icon-src: url("../icons/arrow-left.svg"); }
+.idea-icon-arrows-move { --idea-icon-src: url("../icons/arrows-move.svg"); }
+.idea-icon-bar-chart { --idea-icon-src: url("../icons/bar-chart.svg"); }
+.idea-icon-bezier2 { --idea-icon-src: url("../icons/bezier2.svg"); }
+.idea-icon-bounding-box { --idea-icon-src: url("../icons/bounding-box.svg"); }
+.idea-icon-box-arrow-right { --idea-icon-src: url("../icons/box-arrow-right.svg"); }
+.idea-icon-calendar-check { --idea-icon-src: url("../icons/calendar-check.svg"); }
+.idea-icon-calendar2-week { --idea-icon-src: url("../icons/calendar2-week.svg"); }
+.idea-icon-calendar3 { --idea-icon-src: url("../icons/calendar3.svg"); }
+.idea-icon-card-checklist { --idea-icon-src: url("../icons/card-checklist.svg"); }
+.idea-icon-chat-dots { --idea-icon-src: url("../icons/chat-dots.svg"); }
+.idea-icon-chat-square-text { --idea-icon-src: url("../icons/chat-square-text.svg"); }
+.idea-icon-check-lg { --idea-icon-src: url("../icons/check-lg.svg"); }
+.idea-icon-check2 { --idea-icon-src: url("../icons/check2.svg"); }
+.idea-icon-check2-circle { --idea-icon-src: url("../icons/check2.svg"); }
+.idea-icon-chevron-down { --idea-icon-src: url("../icons/chevron-down.svg"); }
+.idea-icon-chevron-left { --idea-icon-src: url("../icons/chevron-left.svg"); }
+.idea-icon-chevron-right { --idea-icon-src: url("../icons/chevron-right.svg"); }
+.idea-icon-chevron-up { --idea-icon-src: url("../icons/chevron-up.svg"); }
+.idea-icon-clipboard { --idea-icon-src: url("../icons/clipboard.svg"); }
+.idea-icon-cloud-check { --idea-icon-src: url("../icons/cloud-check.svg"); }
+.idea-icon-cloud-slash { --idea-icon-src: url("../icons/cloud-slash.svg"); }
+.idea-icon-code-slash { --idea-icon-src: url("../icons/code-slash.svg"); }
+.idea-icon-collection { --idea-icon-src: url("../icons/collection.svg"); }
+.idea-icon-cursor { --idea-icon-src: url("../icons/cursor.svg"); }
+.idea-icon-diagram-3 { --idea-icon-src: url("../icons/diagram-3.svg"); }
+.idea-icon-download { --idea-icon-src: url("../icons/download.svg"); }
+.idea-icon-eye { --idea-icon-src: url("../icons/eye.svg"); }
+.idea-icon-file-earmark-arrow-down { --idea-icon-src: url("../icons/file-earmark-arrow-down.svg"); }
+.idea-icon-file-earmark-text { --idea-icon-src: url("../icons/file-earmark-text.svg"); }
+.idea-icon-folder2-open { --idea-icon-src: url("../icons/folder2-open.svg"); }
+.idea-icon-gear { --idea-icon-src: url("../icons/gear.svg"); }
+.idea-icon-graph-up-arrow { --idea-icon-src: url("../icons/graph-up-arrow.svg"); }
+.idea-icon-grid-3x3-gap { --idea-icon-src: url("../icons/grid-3x3-gap.svg"); }
+.idea-icon-house-door { --idea-icon-src: url("../icons/house-door.svg"); }
+.idea-icon-info-circle { --idea-icon-src: url("../icons/info-circle.svg"); }
+.idea-icon-journal-richtext { --idea-icon-src: url("../icons/journal-richtext.svg"); }
+.idea-icon-kanban { --idea-icon-src: url("../icons/kanban.svg"); }
+.idea-icon-lightbulb { --idea-icon-src: url("../icons/lightbulb.svg"); }
+.idea-icon-lightbulb-fill { --idea-icon-src: url("../icons/lightbulb-fill.svg"); }
+.idea-icon-lightning-charge { --idea-icon-src: url("../icons/lightning-charge.svg"); }
+.idea-icon-list { --idea-icon-src: url("../icons/list.svg"); }
+.idea-icon-list-check { --idea-icon-src: url("../icons/list-check.svg"); }
+.idea-icon-list-ul { --idea-icon-src: url("../icons/list-ul.svg"); }
+.idea-icon-lock { --idea-icon-src: url("../icons/lock.svg"); }
+.idea-icon-magic { --idea-icon-src: url("../icons/magic.svg"); }
+.idea-icon-pause-circle { --idea-icon-src: url("../icons/pause.svg"); }
+.idea-icon-pencil-square { --idea-icon-src: url("../icons/pencil-square.svg"); }
+.idea-icon-people-fill { --idea-icon-src: url("../icons/people-fill.svg"); }
+.idea-icon-person { --idea-icon-src: url("../icons/person.svg"); }
+.idea-icon-person-check { --idea-icon-src: url("../icons/person-check.svg"); }
+.idea-icon-person-video3 { --idea-icon-src: url("../icons/person-video3.svg"); }
+.idea-icon-pin-angle { --idea-icon-src: url("../icons/pin-angle.svg"); }
+.idea-icon-plus-lg { --idea-icon-src: url("../icons/plus-lg.svg"); }
+.idea-icon-quote { --idea-icon-src: url("../icons/quote.svg"); }
+.idea-icon-rocket-takeoff { --idea-icon-src: url("../icons/rocket-takeoff.svg"); }
+.idea-icon-search { --idea-icon-src: url("../icons/search.svg"); }
+.idea-icon-send { --idea-icon-src: url("../icons/send.svg"); }
+.idea-icon-signpost-split { --idea-icon-src: url("../icons/signpost-split.svg"); }
+.idea-icon-stars { --idea-icon-src: url("../icons/stars.svg"); }
+.idea-icon-three-dots { --idea-icon-src: url("../icons/three-dots.svg"); }
+.idea-icon-trash3 { --idea-icon-src: url("../icons/trash3.svg"); }
+.idea-icon-x-lg { --idea-icon-src: url("../icons/x-lg.svg"); }
+
+
+/* ============================================================
+   ID v3.2 — context-aware icon treatment
+   ============================================================ */
+/* The Figma library does not contain a hand-pan glyph; hand.svg is the one local extension. */
+.idea-icon-hand { --idea-icon-src: url("../icons/hand.svg"); }
+
+/* Icons follow component foreground, but sit one emphasis step below adjacent text. */
+.idea-dev .btn .idea-icon,
+.idea-dev-modal .btn .idea-icon,
+.idea-dev .studio-select-button .idea-icon,
+.idea-dev .studio-select-option .idea-icon,
+.idea-dev .brain-tool .idea-icon,
+.idea-dev .brain-floating-toolbar .idea-icon {
+  color: currentColor;
+  opacity: .72;
+  filter: none;
+}
+.idea-dev .btn-primary .idea-icon,
+.idea-dev-modal .btn-primary .idea-icon,
+.idea-dev .btn-danger .idea-icon,
+.idea-dev-modal .btn-danger .idea-icon,
+.idea-dev .brain-add .idea-icon,
+.idea-dev .brain-classification-trigger .idea-icon {
+  color: currentColor;
+  opacity: .84;
+  filter: none;
+}
+
+/* Disabled icons keep the same foreground relationship as disabled text. */
+.idea-dev button:disabled .idea-icon,
+.idea-dev .btn:disabled .idea-icon,
+.idea-dev-modal button:disabled .idea-icon {
+  opacity: .48;
+}
+
+
+
+/* ============================================================
+   ID v3.6 — date picker chevrons
+   ============================================================ */
+/* The calendar popover is portaled to <body>, outside .idea-dev.
+   Include it in the icon mask system and give month/year navigation
+   a readable light-mode foreground. */
+.idea-date-popover .idea-date-nav {
+  color: var(--idea-text-secondary, #4C5668) !important;
+}
+.idea-date-popover .idea-date-nav .idea-icon {
+  color: currentColor !important;
+  opacity: .78;
+}
+.idea-date-popover .idea-date-nav:hover {
+  color: var(--idea-color-primary, #4F46E5) !important;
+}

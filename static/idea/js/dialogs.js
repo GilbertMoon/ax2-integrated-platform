@@ -12,7 +12,7 @@
 
   function firstErrorDetail(value) {
     if (!value) return "";
-    if (typeof value === "string") return value.trim();
+    if (typeof value === "astring") return value.trim();
 
     if (Array.isArray(value)) {
       for (var i = 0; i < value.length; i += 1) {
@@ -68,7 +68,7 @@
       var close = element("button", "idea-ui-dialog__close");
       close.type = "button";
       close.setAttribute("aria-label", "닫기");
-      close.innerHTML = '<i class="bi bi-x-lg"></i>';
+      close.innerHTML = '<i class="idea-icon idea-icon-x-lg"></i>';
 
       header.append(heading, close);
 

@@ -10,6 +10,18 @@
       var contributionList = document.getElementById("contribution-list");
       var contributionAlert = document.getElementById("contribution-alert");
 
+
+      function contributionEmpty(title, copy) {
+        var state = element("div", "contribution-empty");
+        var icon = element("i", "idea-icon idea-icon-bar-chart");
+        state.append(
+          icon,
+          element("strong", "", title),
+          element("span", "", copy)
+        );
+        return state;
+      }
+
       function showContributionAlert(message, kind) {
         contributionAlert.className = "alert alert-" + (kind || "danger") + " contribution-alert";
         contributionAlert.textContent = message;
@@ -22,7 +34,7 @@
       function renderContributions(data) {
         contributionList.replaceChildren();
         if (!data.items.length) {
-          contributionList.append(element("div", "contribution-empty", "아직 생성된 기여도 평가가 없습니다."));
+          contributionList.append(contributionEmpty("아직 생성된 기여도 평가가 없습니다.", "완료 시점의 평가 데이터가 생성되면 팀원별 기여도를 이곳에서 확인할 수 있어요."));
           return;
         }
         data.items.forEach(function (evaluation) {
@@ -64,7 +76,7 @@
       async function loadContributions() {
         if (!contributionsApi || !getDetail()?.permissions.can_view_contributions) return;
         try { renderContributions(await api(contributionsApi)); }
-        catch (error) { contributionList.replaceChildren(element("div", "contribution-empty", "기여도 결과를 불러오지 못했습니다.")); showContributionAlert(error.message); }
+        catch (error) { contributionList.replaceChildren(contributionEmpty("기여도 결과를 불러오지 못했습니다.", "잠시 후 다시 열어 최신 평가 결과를 확인해 주세요.")); showContributionAlert(error.message); }
       }
 
       document.getElementById("write-contribution-panel").addEventListener("show.bs.offcanvas", loadContributions);

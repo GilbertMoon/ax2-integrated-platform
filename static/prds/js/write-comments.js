@@ -8,6 +8,7 @@
       var participantAvatar = options.participantAvatar;
       var commentsApi = options.commentsApi;
       var getDetail = options.getDetail;
+      var emptyIllustration = options.emptyIllustration || "";
       var commentList = document.getElementById("comment-list");
       var commentForm = document.getElementById("comment-form");
       var commentInput = document.getElementById("comment-input");
@@ -17,6 +18,22 @@
       var commentPagination = document.getElementById("comment-pagination");
       var commentPage = 1;
       var commentPageSize = 10;
+
+
+      function commentEmpty(title, copy) {
+        var state = element("div", "comment-empty");
+        if (emptyIllustration) {
+          var image = document.createElement("img");
+          image.src = emptyIllustration;
+          image.alt = "";
+          state.append(image);
+        }
+        state.append(
+          element("strong", "", title),
+          element("span", "", copy)
+        );
+        return state;
+      }
 
       function showCommentAlert(message, kind) {
         commentPanelAlert.className = "alert alert-" + (kind || "danger") + " comment-panel-alert";
@@ -125,7 +142,7 @@
         count.classList.toggle("d-none", data.pagination.total_items === 0);
         commentList.replaceChildren();
         if (!data.items.length) {
-          commentList.append(element("div", "comment-empty", "아직 등록된 코멘트가 없습니다.\n첫 의견을 남겨보세요."));
+          commentList.append(commentEmpty("아직 등록된 코멘트가 없습니다.", "PRD 전체나 질문을 선택해 팀과 첫 의견을 나눠보세요."));
           renderCommentPagination(data.pagination);
           return;
         }
@@ -185,7 +202,7 @@
           }
           renderComments(data);
         } catch (error) {
-          commentList.replaceChildren(element("div", "comment-empty", "코멘트를 불러오지 못했습니다."));
+          commentList.replaceChildren(commentEmpty("코멘트를 불러오지 못했습니다.", "잠시 후 다시 열어 최신 코멘트를 확인해 주세요."));
           showCommentAlert(error.message);
         }
       }

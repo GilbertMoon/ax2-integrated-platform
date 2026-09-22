@@ -1,9 +1,13 @@
 import json
 from collections import OrderedDict
 
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 
+from lms_modules.accounts_client import services as accounts
 from lms_modules.core.models import Lecture
+
 from .views_dashboard import student_required
 
 
@@ -65,9 +69,18 @@ def student_lecture_list_view(request):
     return render(request, "lms_ui/student/lecture_list.html", {"lecture": lecture, "lessons": lessons})
 
 
-@student_required
+@login_required
 def student_lecture_detail_view(request, lesson_id):
-    """단일 강의 영상 재생 및 교안 확인 페이지 (날짜 단위)."""
+    """단일 강의 영상 재생 및 교안 확인 페이지 (날짜 단위).
+
+    학생 화면이지만 튜터도 볼 수 있다 — 강의·교안 관리 화면에서 튜터가
+    "학생 눈에는 어떻게 보이는지" 미리보기 용도로 클릭해 들어온다.
+    개인화 데이터(성적·제출 현황 등)를 전혀 안 쓰는 화면이라 공개해도 안전하다.
+    """
+    uid = request.user.id
+    if not (accounts.is_student(uid) or accounts.is_tutor(uid)):
+        raise PermissionDenied("접근 권한이 없습니다.")
+
     lecture = Lecture.get_singleton()
     groups = _lessons_by_date(lecture)
 

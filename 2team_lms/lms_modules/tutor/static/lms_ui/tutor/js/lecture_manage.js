@@ -13,17 +13,6 @@
   let currentTab = "all";
   let deletedLessonBackup = null;
 
-  window.toggleRows = function (dateStr) {
-    const rows = document.querySelectorAll(`.child-row-${dateStr}`);
-    rows.forEach((r) => {
-      if (r.style.display === "none") {
-        r.style.display = "table-row";
-      } else {
-        r.style.display = "none";
-      }
-    });
-  };
-
   function loadLessons() {
     lessons.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
     renderTable();
@@ -96,7 +85,17 @@
     return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
   }
 
+  function updateTabCounts() {
+    const okCount = lessons.filter((l) => l.videos && l.videos.length > 0).length;
+    const waitCount = lessons.length - okCount;
+    document.getElementById("tab-count-all").textContent = lessons.length;
+    document.getElementById("tab-count-ok").textContent = okCount;
+    document.getElementById("tab-count-wait").textContent = waitCount;
+  }
+
   function renderTable() {
+    updateTabCounts();
+
     const tbody = document.getElementById("lesson-table-body");
     tbody.innerHTML = "";
 
@@ -118,22 +117,31 @@
     });
 
     if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 36px; color: var(--text-muted);">조건에 맞는 차시가 없습니다.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 36px; color: var(--text-muted);">조건에 맞는 차시가 없습니다.</td></tr>`;
       return;
     }
 
     // Sort by date (descending)
     filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    const dateSpans = {};
+    const dateCounts = {};
     filtered.forEach((lesson) => {
-      dateSpans[lesson.date] = (dateSpans[lesson.date] || 0) + 1;
+      dateCounts[lesson.date] = (dateCounts[lesson.date] || 0) + 1;
     });
 
-    let renderedDates = {};
-    let dailyIndex = {};
+    const renderedDates = new Set();
 
     filtered.forEach((lesson) => {
+      if (!renderedDates.has(lesson.date)) {
+        renderedDates.add(lesson.date);
+        const header = document.createElement("tr");
+        header.className = "date-group-header";
+        header.innerHTML = `
+          <td colspan="4">${lesson.date} <span class="date-group-count">${dateCounts[lesson.date]}건</span></td>
+        `;
+        tbody.appendChild(header);
+      }
+
       const tr = document.createElement("tr");
 
       // Video Status & Thumbnail (uses videos array now)
@@ -160,12 +168,6 @@
         `;
       }
 
-      // Blog status
-      const blogHtml =
-        lesson.blogUrl && lesson.blogUrl.trim()
-          ? `<a href="${lesson.blogUrl}" target="_blank" style="color:var(--accent-text); font-weight:600; text-decoration:underline;">링크</a>`
-          : `<span style="color:var(--text-faint);">-</span>`;
-
       // Material chip
       const matCount = lesson.materials ? lesson.materials.length : 0;
       const matHtml =
@@ -173,35 +175,9 @@
           ? `<span class="badge mat-chip">${matCount}건</span>`
           : `<span style="color:var(--text-faint); font-size:12px;">없음</span>`;
 
-      let dateCellHtml = "";
-      const span = dateSpans[lesson.date];
-
-      if (!renderedDates[lesson.date]) {
-        let toggleBtn = "";
-        if (span > 1) {
-          toggleBtn = `<br><button class="btn btn-sm btn-outline" style="margin-top: 8px; font-size: 11px; padding: 4px 8px; color: var(--accent-text);" onclick="toggleRows('${lesson.date}')">▼ ${span - 1}개 더보기</button>`;
-        }
-        dateCellHtml = `<td style="color:var(--text); font-size:13px; font-weight:800; border-right:1px solid var(--border); text-align:center; vertical-align:middle; background:#f8fafc;">${lesson.date} ${toggleBtn}</td>`;
-        renderedDates[lesson.date] = true;
-        dailyIndex[lesson.date] = 1;
-      } else {
-        dailyIndex[lesson.date]++;
-        dateCellHtml = `<td style="border-right:1px solid var(--border); background:#fcfcfc; text-align:center;"><span style="color:var(--border-strong);">↳</span></td>`;
-      }
-
-      const currentDailyIndex = dailyIndex[lesson.date];
-
-      const rowClass = currentDailyIndex > 1 ? `child-row-${lesson.date}` : "";
-      const displayStyle = currentDailyIndex > 1 ? "display: none;" : "";
-
-      tr.className = rowClass;
-      tr.style.cssText = displayStyle;
-
       tr.innerHTML = `
-        ${dateCellHtml}
-
         <td>
-          <span style="font-weight:700; color:var(--text);">${lesson.title}</span>
+          <a class="lesson-title-link" href="/lms/lecture/${lesson.id}/" target="_blank" rel="noopener" title="학생 화면 미리보기">${lesson.title}</a>
         </td>
         <td>${matHtml}</td>
         <td>${videoCellHtml}</td>

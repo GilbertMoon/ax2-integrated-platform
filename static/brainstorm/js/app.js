@@ -11,6 +11,9 @@
   var h = window.React.createElement;
   var apiBase = root.dataset.apiBase;
   var prdTitle = root.dataset.prdTitle || "PRD";
+  var brandMarkUrl = root.dataset.brandMarkUrl || "";
+  var firstPageIllustration = root.dataset.firstPageIllustration || "";
+  var ideaDocumentIllustration = root.dataset.ideaDocumentIllustration || "";
   var interval = Math.min(5000, Math.max(2000, Number(root.dataset.pollingIntervalMs || 2000)));
   function nextPollDelay() {
     // Slack 링크처럼 여러 사용자가 동시에 들어와도 폴링 요청이 한 시각에 몰리지 않게 한다.
@@ -18,7 +21,7 @@
   }
   var csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
   var activeCanvasId = null;
-  var DEFAULT_CANVAS_ZOOM = .55;
+  var DEFAULT_CANVAS_ZOOM = .62;
   var layout = window.BrainstormLayout;
   var apiClientFactory = window.BrainstormApiClient;
   if (!layout || !apiClientFactory) {
@@ -54,6 +57,7 @@
     var toolPair = window.React.useState("select"), tool = toolPair[0], setTool = toolPair[1];
     var boardPair = window.React.useState("canvas"), boardView = boardPair[0], setBoardView = boardPair[1];
     var sourcePair = window.React.useState(null), source = sourcePair[0], setSource = sourcePair[1];
+    var sourceDirectionPair = window.React.useState(null), sourceDirection = sourceDirectionPair[0], setSourceDirection = sourceDirectionPair[1];
     var focusPair = window.React.useState(null), focused = focusPair[0], setFocused = focusPair[1];
     var selectedPair = window.React.useState([]), selected = selectedPair[0], setSelected = selectedPair[1];
     // 연결선이 많아지면 서로 어지럽게 교차한다. 메모를 가리키거나 고른 동안만
@@ -68,7 +72,7 @@
     var openAnswersPair = window.React.useState({}), openAnswers = openAnswersPair[0], setOpenAnswers = openAnswersPair[1];
     var editorPair = window.React.useState(null), editor = editorPair[0], setEditor = editorPair[1];
     var assigneeMenuPair = window.React.useState(null), assigneeMenu = assigneeMenuPair[0], setAssigneeMenu = assigneeMenuPair[1];
-    var heldExpandedPair = window.React.useState(true), heldExpanded = heldExpandedPair[0], setHeldExpanded = heldExpandedPair[1];
+    var heldExpandedPair = window.React.useState(false), heldExpanded = heldExpandedPair[0], setHeldExpanded = heldExpandedPair[1];
     var versionsOpenPair = window.React.useState(true), versionsOpen = versionsOpenPair[0], setVersionsOpen = versionsOpenPair[1];
     var questionsOpenPair = window.React.useState(false), questionsOpen = questionsOpenPair[0], setQuestionsOpen = questionsOpenPair[1];
     var questionSearchPair = window.React.useState(""), questionSearch = questionSearchPair[0], setQuestionSearch = questionSearchPair[1];
@@ -96,6 +100,14 @@
     var boardDropTargetPair = window.React.useState(null),
       boardDropTarget = boardDropTargetPair[0],
       setBoardDropTarget = boardDropTargetPair[1];
+
+    var unclassifiedPair = window.React.useState(false),
+      unclassifiedExpanded = unclassifiedPair[0],
+      setUnclassifiedExpanded = unclassifiedPair[1];
+
+    var connectPointerPair = window.React.useState(null),
+      connectPointer = connectPointerPair[0],
+      setConnectPointer = connectPointerPair[1];
     // 이번에 그린 연결선 곡선 위의 점들. 조작 막대가 선을 덮지 않게 할 때 쓴다.
     // 선을 먼저 그리므로 메모를 그릴 때는 이미 채워져 있다.
     var curveSamplesRef = window.React.useRef([]);
@@ -108,7 +120,7 @@
     window.React.useEffect(function () {
       function clearFocusedNode(event) {
         var target = event.target;
-        if (target && target.closest && target.closest(".brain-note, .brain-note-actions, .brain-assignee-menu")) return;
+        if (target && target.closest && target.closest(".brain-note, .brain-note-actions, .brain-board-card, .brain-board-card-toolbar, .brain-floating-toolbar, .brain-assignee-menu")) return;
         setFocused(null); setSelected([]);
       }
       document.addEventListener("mousedown", clearFocusedNode);
@@ -313,11 +325,19 @@
         if ((event.ctrlKey || event.metaKey) && !isTextInput && event.key.toLowerCase() === "y") {
           event.preventDefault(); historyAction("redo/", "취소한 작업을 다시 실행했습니다."); return;
         }
+        if (!isTextInput && (event.key === "Delete" || event.key === "Backspace") && focused && !editor) {
+          var focusedNode = state?.nodes?.find(function (item) { return item.id === focused; });
+          if (focusedNode && state?.permissions?.can_edit && !state?.permissions?.is_completed) {
+            event.preventDefault();
+            deleteNode(focusedNode);
+          }
+          return;
+        }
         if (event.key !== "Escape") return;
         if (assigneeMenu) { setAssigneeMenu(null); return; }
         if (editor) { closeEditorWithConfirmation(); return; }
         if (questionsOpen) { setQuestionsOpen(false); return; }
-        if (tool === "connect" || source) { setTool("select"); setSource(null); return; }
+        if (tool === "connect" || source) { setTool("select"); setSource(null); setSourceDirection(null); setConnectPointer(null); return; }
         setSelected([]); setFocused(null);
       }
       document.addEventListener("keydown", keyboard);
@@ -335,6 +355,43 @@
 
     function editNode(node) {
       setEditor({node: node, content: node.content, color: node.color || "yellow"});
+    }
+
+    function startConnection(node, direction) {
+      setFocused(node.id);
+      setSelected([]);
+      setTool("connect");
+      setSource(node);
+      setSourceDirection(direction || null);
+      setConnectPointer(null);
+    }
+
+    function createAdjacentNote(node, direction) {
+      var origin = positions[node.id] || displayPosition(node);
+      var gap = 44;
+      var x = origin.x, y = origin.y;
+      if (direction === "left") x -= NODE_W + gap;
+      if (direction === "right") x += NODE_W + gap;
+      if (direction === "top") y -= NODE_H + gap;
+      if (direction === "bottom") y += NODE_H + gap;
+      x = Math.max(20, Math.min(CANVAS_W - NODE_W - 20, x));
+      y = Math.max(20, Math.min(CANVAS_H - NODE_H - 20, y));
+      var sectionId = node.section_id || sectionAt(x, y);
+      var spot = {x: x, y: y};
+      if (sectionId) {
+        var targetIndex = laneIndex(sectionId);
+        spot = settleInRegion(targetIndex, x, y, takenSpots(sectionId, node.id)) || spot;
+      } else {
+        spot = nearestFreeNotePosition(x, y);
+      }
+      setEditor({
+        node: null,
+        content: "",
+        color: node.color || "yellow",
+        targetSectionId: sectionId || null,
+        targetPosition: {x: Math.round(spot.x), y: Math.round(spot.y)},
+        connectFromNodeId: node.id
+      });
     }
 
     function nearestFreeNotePosition(wantX, wantY) {
@@ -379,25 +436,41 @@
         refresh(request(apiBase + "nodes/" + editor.node.id + "/content/", {method: "PATCH", body: JSON.stringify({content: content, version: editor.node.version})}));
       } else {
         // 배율로 나눈 좌표는 소수점이 길게 남는다. 서버가 자릿수를 12개로 제한하므로 반올림한다.
-        var x = Math.round(Math.max(20, Math.min(CANVAS_W - NODE_W, (window.innerWidth / 2 - view.x) / view.zoom - NODE_W / 2)));
-        var y = Math.round(Math.max(20, Math.min(CANVAS_H - NODE_H, ((window.innerHeight - 190) / 2 - view.y) / view.zoom - NODE_H / 2)));
-        var sectionId = editor.targetSectionId || sectionAt(x, y), spot = {x: x, y: y};
-        if (sectionId) {
-          var targetIndex = laneIndex(sectionId);
-          var targetTaken = takenSpots(sectionId);
-          spot = editor.targetSectionId
-            ? slotInRegion(targetIndex, targetTaken.length, targetTaken)
-            : settleInRegion(targetIndex, x, y, targetTaken) || spot;
-        } else {
-          spot = nearestFreeNotePosition(x, y);
+        var x = editor.targetPosition
+          ? Number(editor.targetPosition.x)
+          : Math.round(Math.max(20, Math.min(CANVAS_W - NODE_W, (window.innerWidth / 2 - view.x) / view.zoom - NODE_W / 2)));
+        var y = editor.targetPosition
+          ? Number(editor.targetPosition.y)
+          : Math.round(Math.max(20, Math.min(CANVAS_H - NODE_H, ((window.innerHeight - 190) / 2 - view.y) / view.zoom - NODE_H / 2)));
+        // targetSectionId가 명시되어 있으면 null도 의미가 있다.
+        // 일반 "메모 추가"는 null = 미분류로 만들고, 섹션 안의 + 버튼만 해당 섹션으로 들어간다.
+        var hasTargetSection = Object.prototype.hasOwnProperty.call(editor, "targetSectionId");
+        var sectionId = hasTargetSection ? editor.targetSectionId : sectionAt(x, y), spot = {x: x, y: y};
+        if (!editor.targetPosition) {
+          if (sectionId) {
+            var targetIndex = laneIndex(sectionId);
+            var targetTaken = takenSpots(sectionId);
+            spot = editor.targetSectionId
+              ? slotInRegion(targetIndex, targetTaken.length, targetTaken)
+              : settleInRegion(targetIndex, x, y, targetTaken) || spot;
+          } else {
+            spot = nearestFreeNotePosition(x, y);
+          }
         }
+        var connectFromNodeId = editor.connectFromNodeId;
         refresh(
           request(apiBase + "nodes/", {
             method: "POST",
             headers: {"Idempotency-Key": key()},
             body: JSON.stringify({content: content, color: editor.color, x: Math.round(spot.x), y: Math.round(spot.y), section_id: sectionId})
           }),
-          function (created) { setFocused(created.id); }
+          function (created) {
+            setFocused(created.id);
+            if (connectFromNodeId) {
+              var fromNode = state.nodes.find(function (item) { return item.id === connectFromNodeId; });
+              if (fromNode && created.id !== fromNode.id) createConnection(fromNode, created);
+            }
+          }
         );
       }
       setEditor(null);
@@ -796,10 +869,8 @@
     function beginMove(event, node) {
       event.stopPropagation(); setFocused(node.id);
       if (tool === "connect") {
-        if (!source) return setSource(node);
-        if (source.id === node.id) return setSource(null);
-        createConnection(source, node);
-        setSource(null); setTool("select"); return;
+        setFocused(node.id);
+        return;
       }
       if (event.shiftKey) {
         setSelected(function (current) {
@@ -861,10 +932,12 @@
         if (movingIds.length === 1) {
           setDragPreview({
             node: node,
+            source: "canvas",
             x: moveEvent.clientX - previewOffsetX,
             y: moveEvent.clientY - previewOffsetY,
-            width: sourceRect ? sourceRect.width : 190,
-            height: sourceRect ? sourceRect.height : 126,
+            width: sourceRect ? sourceRect.width : NODE_W,
+            height: sourceRect ? sourceRect.height : NODE_H,
+            scale: sourceRect ? Math.max(0.35, Math.min(1.25, sourceRect.width / NODE_W)) : 1,
             overHeld: heldBoundsAt(moveEvent.clientX, moveEvent.clientY)
           });
           return;
@@ -922,7 +995,9 @@
       var stage = document.querySelector(".brain-stage");
       if (!stage || !canvasContentSize) return next;
 
-      var safe = 96;
+      // 자유 캔버스 가장자리에도 메모를 둘 수 있도록 패닝 여백을 넉넉히 둔다.
+      // 저장 좌표/노드 좌표는 건드리지 않고 viewport 이동 가능 범위만 확장한다.
+      var safe = 240;
       var size = canvasContentSize();
       var scaledW = size.w * next.zoom;
       var scaledH = size.h * next.zoom;
@@ -975,7 +1050,44 @@
       window.addEventListener("mousemove", moving);
       window.addEventListener("mouseup", done);
     }
-    function saveView(next) { request(apiBase + "viewport/", {method: "PUT", body: JSON.stringify({viewport_x: next.x, viewport_y: next.y, zoom_level: next.zoom})}).catch(function () {}); }
+    function panBoard(event) {
+      if (tool !== "pan" || event.button !== 0) return;
+      if (event.target.closest("button,a,input,textarea,select,.brain-board-card-toolbar")) return;
+      var viewport = event.currentTarget;
+      event.preventDefault();
+      setFocused(null);
+      setSelected([]);
+      var startX = event.clientX;
+      var startY = event.clientY;
+      var startLeft = viewport.scrollLeft;
+      var startTop = viewport.scrollTop;
+      viewport.classList.add("is-panning");
+
+      function moving(moveEvent) {
+        viewport.scrollLeft = startLeft - (moveEvent.clientX - startX);
+        viewport.scrollTop = startTop - (moveEvent.clientY - startY);
+      }
+      function done() {
+        viewport.classList.remove("is-panning");
+        window.removeEventListener("mousemove", moving);
+        window.removeEventListener("mouseup", done);
+      }
+      window.addEventListener("mousemove", moving);
+      window.addEventListener("mouseup", done);
+    }
+
+    function saveView(next) {
+      // DecimalField는 viewport x/y 소수 3자리, zoom 소수 2자리까지만 허용한다.
+      // 확대/패닝 계산값을 그대로 보내면 긴 부동소수점 때문에 400이 반복될 수 있다.
+      var x = Number(next && next.x), y = Number(next && next.y), zoomValue = Number(next && next.zoom);
+      if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(zoomValue)) return;
+      var payload = {
+        viewport_x: Math.round(x * 1000) / 1000,
+        viewport_y: Math.round(y * 1000) / 1000,
+        zoom_level: Math.round(Math.max(.3, Math.min(2, zoomValue)) * 100) / 100
+      };
+      request(apiBase + "viewport/", {method: "PUT", body: JSON.stringify(payload)}).catch(function () {});
+    }
     function saveViewSoon(next) { clearTimeout(viewportSaveRef.current); viewportSaveRef.current = setTimeout(function () { saveView(next); }, 250); }
     function zoom(amount, anchorX, anchorY) {
       var nextZoom = Math.max(.3, Math.min(2, Math.round((view.zoom + amount) * 100) / 100));
@@ -1068,7 +1180,7 @@
     var visible = state.nodes.filter(function (node) { return node.node_type === "title" || filter === "all" || node.status === filter; });
     var positions = layoutPositions(visible);
 
-    function toolButton(value, icon, label) { return h("button", {type: "button", className: "brain-tool " + (tool === value ? "active" : ""), onClick: function () { setTool(value); if (value !== "connect") setSource(null); }}, h("i", {className: icon}), label); }
+    function toolButton(value, icon, label) { return h("button", {type: "button", className: "brain-tool " + (tool === value ? "active" : ""), onClick: function () { setTool(value); if (value !== "connect") { setSource(null); setSourceDirection(null); setConnectPointer(null); } }}, h("i", {className: icon}), label); }
     // 연결선이 상관없는 메모 위를 지나가면 그 메모까지 이어진 것처럼 보이고,
     // 항목 이름 위를 지나가면 글자를 읽기 어렵다. 둘 다 피해서 잇는다.
     // 조종점 두 개를 따로 밀 수 있어야 한쪽 끝에 가까이 붙은 것도 비켜 갈 수 있다.
@@ -1218,16 +1330,58 @@
         ? dragging.includes(node.id)
         : dragging === node.id;
       var assignee = (state.participants || []).find(function (participant) { return participant.user_id === node.assignee_id; });
-      return h("article", {key: node.id, "data-node": "true", "data-color": node.color, className: "brain-note " + (isFocused ? "selected " : "") + (isMultiSelected ? "multi-selected " : "") + (connect ? "connect-source" : ""), style: {left: p.x, top: p.y}, onMouseDown: function (event) { beginMove(event, node); }, onMouseEnter: function () { setHoveredNode(node.id); }, onMouseLeave: function () { setHoveredNode(function (current) { return current === node.id ? null : current; }); }, onDoubleClick: function (event) { event.stopPropagation(); if (canEdit) editNode(node); }},
-        h("div", {className: "brain-note-top"}, h("span", {className: "brain-note-status " + node.status}, node.status === "accepted" ? "채택" : "아이디어"), canEdit ? h("div", {className: "brain-note-controls", onMouseDown: function (event) { event.stopPropagation(); }}, h("button", {type: "button", onClick: function (event) { event.stopPropagation(); editNode(node); }, title: "내용 수정", "aria-label": "내용 수정"}, "✎"), h("button", {type: "button", onClick: function (event) { event.stopPropagation(); deleteNode(node); }, title: "삭제", "aria-label": "삭제"}, "×")) : null),
+      var connectTarget = tool === "connect" && source && source.id !== node.id && hoveredNode === node.id;
+      function handle(direction) {
+        var connecting = tool === "connect" && source;
+        var isSourceHandle = connecting && source.id === node.id && sourceDirection === direction;
+        return h("button", {
+          type: "button",
+          className: "brain-note-handle " + direction + (isSourceHandle ? " active" : ""),
+          "aria-label": connecting
+            ? (source.id === node.id ? "연결 시작점 변경" : "이 메모와 연결")
+            : "이 지점에서 연결 시작",
+          onMouseDown: function (event) { event.preventDefault(); event.stopPropagation(); },
+          onClick: function (event) {
+            event.preventDefault(); event.stopPropagation();
+            if (!canEdit) return;
+            if (!source) {
+              startConnection(node, direction);
+              return;
+            }
+            if (source.id === node.id) {
+              setSourceDirection(direction);
+              return;
+            }
+            createConnection(source, node);
+            setSource(null);
+            setSourceDirection(null);
+            setConnectPointer(null);
+            setTool("select");
+          }
+        }, h("span", {"aria-hidden": "true"}));
+      }
+      return h("article", {
+        key: node.id,
+        "data-node": "true",
+        "data-node-id": node.id,
+        "data-color": node.color,
+        className: "brain-note " + (isFocused ? "selected " : "") + (isMultiSelected ? "multi-selected " : "") + (connect ? "connect-source " : "") + (connectTarget ? "connect-target " : ""),
+        style: {left: p.x, top: p.y},
+        onMouseDown: function (event) { beginMove(event, node); },
+        onMouseEnter: function () { setHoveredNode(node.id); },
+        onMouseLeave: function () { setHoveredNode(function (current) { return current === node.id ? null : current; }); },
+        onDoubleClick: function (event) { event.stopPropagation(); if (canEdit) editNode(node); }
+      },
+        h("div", {className: "brain-note-top"},
+          h("span", {className: "brain-note-status " + node.status}, node.status === "accepted" ? "채택" : "아이디어")
+        ),
         h("p", {title: node.content}, node.content),
-        h("footer", null, h("span", null, "ver." + node.introduced_in_version), h("span", {title: assignee ? "담당자 " + assignee.display_name : "담당자 없음"}, assignee ? "담당 " + assignee.display_name : "담당자 없음")),
-        isFocused && canEdit && !isDragging ? (function () {
-          var place = actionsOffset(node, p);
-          return h("div", {className: "brain-note-actions", style: {left: place.dx, top: place.dy}, onMouseDown: function (event) { event.stopPropagation(); }},
-            h("button", {type: "button", onClick: function () { statusNode(node, "held"); }}, "보류"),
-            assigneeButton(node));
-        })() : null);
+        h("footer", null,
+          h("span", null, "ver." + node.introduced_in_version),
+          h("span", {title: assignee ? "담당자 " + assignee.display_name : "담당자 없음"}, assignee ? "담당 " + assignee.display_name : "담당자 없음")
+        ),
+        (isFocused || tool === "connect") && canEdit && !isDragging ? h(window.React.Fragment, null, handle("top"), handle("right"), handle("bottom"), handle("left")) : null
+      );
     }
 
     function member(userId) {
@@ -1257,8 +1411,8 @@
     function participantAvatarStyle(user) {
       if (user && Number(user.user_id) === Number(state.current_user_id)) {
         return {
-          color: "var(--ax-primary, #1769e0)",
-          background: "var(--ax-primary-container, #eaf2ff)"
+          color: "var(--idea-avatar-current-fg)",
+          background: "var(--idea-avatar-current-bg)"
         };
       }
       var index = avatarColorIndex(user);
@@ -1275,18 +1429,20 @@
     function openAssigneeMenu(event, node) {
       event.preventDefault(); event.stopPropagation();
       var rect = event.currentTarget.getBoundingClientRect();
-      var width = 244, height = Math.min(360, 82 + (state.participants || []).length * 48);
-      var left = Math.max(10, Math.min(rect.right - width, window.innerWidth - width - 10));
-      var above = rect.bottom + height > window.innerHeight - 12;
-      setAssigneeMenu({node: node, left: left, top: above ? null : rect.bottom + 7, bottom: above ? window.innerHeight - rect.top + 7 : null});
+      // 담당자 선택은 modal이 아니라 trigger에 붙는 compact dropdown이다.
+      var width = 264;
+      var height = Math.min(336, 40 + (state.participants || []).length * 48);
+      var left = Math.max(10, Math.min(rect.left, window.innerWidth - width - 10));
+      var above = rect.bottom + height > window.innerHeight - 12 && rect.top > height + 12;
+      setAssigneeMenu({node: node, left: left, top: above ? null : rect.bottom + 8, bottom: above ? window.innerHeight - rect.top + 8 : null});
     }
 
     function assigneeButton(node) {
       var assigned = member(node.assignee_id);
-      return h("button", {type: "button", className: "brain-assignee-trigger", onMouseDown: function (event) { event.stopPropagation(); }, onClick: function (event) { openAssigneeMenu(event, node); }, title: "담당자 변경"},
+      return h("button", {type: "button", className: "brain-assignee-trigger", onMouseDown: function (event) { event.stopPropagation(); }, onClick: function (event) { openAssigneeMenu(event, node); }, "aria-label": "담당자 변경"},
         h("b", {style: participantAvatarStyle(assigned)}, initials(assigned?.display_name)),
         h("span", null, h("small", null, "담당자"), h("strong", null, assigned?.display_name || "담당자 없음")),
-        h("i", {className: "bi bi-chevron-down"})
+        h("i", {className: "idea-icon idea-icon-chevron-down"})
       );
     }
 
@@ -1295,15 +1451,14 @@
       var node = assigneeMenu.node;
       return window.ReactDOM.createPortal(h(window.React.Fragment, null,
         h("button", {type: "button", className: "brain-assignee-dismiss", onMouseDown: function () { setAssigneeMenu(null); }, "aria-label": "담당자 메뉴 닫기"}),
-        h("aside", {className: "brain-assignee-menu", style: {left: assigneeMenu.left, top: assigneeMenu.top, bottom: assigneeMenu.bottom}, onMouseDown: function (event) { event.stopPropagation(); }},
-          h("header", null, h("div", null, h("span", null, "ASSIGNEE"), h("strong", null, "담당자 지정")), h("button", {type: "button", onClick: function () { setAssigneeMenu(null); }, "aria-label": "닫기"}, "×")),
-          h("p", null, "PRD 참여자 중 이 아이디어를 맡을 팀원을 선택하세요."),
-          h("div", null, (state.participants || []).map(function (participant) {
+        h("aside", {className: "brain-assignee-menu brain-assignee-dropdown", role: "listbox", "aria-label": "담당자 선택", style: {left: assigneeMenu.left, top: assigneeMenu.top, bottom: assigneeMenu.bottom}, onMouseDown: function (event) { event.stopPropagation(); }},
+          h("div", {className: "brain-assignee-dropdown-label"}, "담당자 선택"),
+          h("div", {className: "brain-assignee-options"}, (state.participants || []).map(function (participant) {
             var selected = participant.user_id === node.assignee_id;
-            return h("button", {key: participant.user_id, type: "button", className: selected ? "selected" : "", onClick: function () { setAssigneeMenu(null); assignNode(node, participant.user_id); }},
+            return h("button", {key: participant.user_id, type: "button", role: "option", "aria-selected": selected ? "true" : "false", className: selected ? "selected" : "", onClick: function () { setAssigneeMenu(null); assignNode(node, participant.user_id); }},
               h("b", {style: participantAvatarStyle(participant)}, initials(participant.display_name)),
               h("span", null, h("strong", null, participant.display_name), h("small", null, roleLabel(participant.role))),
-              selected ? h("i", {className: "bi bi-check-lg"}) : null
+              selected ? h("i", {className: "idea-icon idea-icon-check-lg"}) : null
             );
           }))
         )
@@ -1320,56 +1475,122 @@
       moveNode(node, slot.x, slot.y, sectionId);
     }
 
-    function dropNode(event, sectionId) {
-      event.preventDefault();
+    function finishBoardDragVisuals() {
       setBoardDragHeld(false);
       setBoardDropTarget(null);
+      setDragPreview(null);
+      Array.prototype.forEach.call(document.querySelectorAll(".brain-board-card.is-dragging-source"), function (element) {
+        element.classList.remove("is-dragging-source");
+      });
+    }
+
+    function dropNode(event, sectionId) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
       var nodeId = event.dataTransfer.getData("text/brain-node");
       var node = state.nodes.find(function (item) { return item.id === nodeId; });
-      if (node && canEdit) moveToSection(node, sectionId);
+      // Drop 순간에 preview/source 상태를 먼저 종료해, 포인터를 한 번 더 움직여야
+      // 드래그가 끝난 것처럼 보이는 잔상 상태를 만들지 않는다.
+      finishBoardDragVisuals();
+      if (node && canEdit) {
+        setFocused(node.id);
+        moveToSection(node, sectionId);
+      }
     }
 
     function dropHeld(event) {
       event.preventDefault();
-      setBoardDragHeld(false);
-      setBoardDropTarget(null);
+      event.stopPropagation();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
       var nodeId = event.dataTransfer.getData("text/brain-node");
       var node = state.nodes.find(function (item) { return item.id === nodeId; });
-      if (node && canEdit) holdNode(node);
+      finishBoardDragVisuals();
+      if (node && canEdit) {
+        setFocused(node.id);
+        holdNode(node);
+      }
     }
 
     function compactCard(node) {
       var owner = member(node.author_id), assignee = member(node.assignee_id);
+      var isFocused = focused === node.id;
+      var isBoardDragging = !!(dragPreview && dragPreview.source === "board" && dragPreview.node && dragPreview.node.id === node.id);
       return h("article", {
         key: node.id,
-        className: "brain-board-card",
+        className: "brain-board-card" + (isFocused ? " selected" : "") + (isBoardDragging ? " is-dragging-source" : ""),
         "data-color": node.color,
-        draggable: canEdit,
+        draggable: canEdit && tool !== "pan",
+        tabIndex: 0,
+        onClick: function (event) { if (tool === "pan") return; event.stopPropagation(); setFocused(node.id); setSelected([]); },
+        onDoubleClick: function (event) { if (tool === "pan") return; event.stopPropagation(); if (canEdit) editNode(node); },
         onDragStart: function (event) {
+          // Mark the source as visually suppressed without removing it from layout.
+          // The CSS uses opacity only; visibility:hidden would cancel native drag in Chromium.
+          event.currentTarget.classList.add("is-dragging-source");
+          setFocused(node.id);
           setBoardDragHeld(false);
           setBoardDropTarget(null);
           event.dataTransfer.setData("text/brain-node", node.id);
           event.dataTransfer.effectAllowed = "move";
+
+          // 브라우저 기본 drag ghost는 강제로 반투명해져 Dark 카드가 흐릿하게 보인다.
+          // native ghost는 1px 투명 이미지로 숨기고, 자유 캔버스와 같은 fixed preview를 사용한다.
+          var rect = event.currentTarget.getBoundingClientRect();
+          var offsetX = event.clientX - rect.left;
+          var offsetY = event.clientY - rect.top;
+          var ghost = document.createElement("canvas");
+          ghost.width = 1; ghost.height = 1;
+          ghost.style.position = "fixed";
+          ghost.style.left = "-10px";
+          ghost.style.top = "-10px";
+          document.body.appendChild(ghost);
+          try { event.dataTransfer.setDragImage(ghost, 0, 0); } catch (_) {}
+          setTimeout(function () { if (ghost.parentNode) ghost.parentNode.removeChild(ghost); }, 0);
+          setDragPreview({
+            node: node,
+            source: "board",
+            x: rect.left,
+            y: rect.top,
+            width: rect.width,
+            height: rect.height,
+            scale: 1,
+            offsetX: offsetX,
+            offsetY: offsetY,
+            overHeld: false
+          });
         },
-        onDragEnd: function () {
+        onDrag: function (event) {
+          if (!event.clientX && !event.clientY) return;
+          setDragPreview(function (current) {
+            if (!current || current.source !== "board" || current.node.id !== node.id) return current;
+            return Object.assign({}, current, {
+              x: event.clientX - (current.offsetX || 20),
+              y: event.clientY - (current.offsetY || 20)
+            });
+          });
+        },
+        onDragEnd: function (event) {
+          if (event && event.currentTarget) event.currentTarget.classList.remove("is-dragging-source");
           setBoardDragHeld(false);
           setBoardDropTarget(null);
+          setDragPreview(null);
         }
       },
       h("div", {className: "brain-board-card-head"},
-        h("span", {className: "brain-note-status " + node.status}, node.status === "accepted" ? "✓ 채택" : "아이디어"),
-        canEdit ? h("div", {className: "brain-card-actions"},
-          h("button", {type: "button", onClick: function () { editNode(node); }, title: "내용 수정"}, "✎"),
-          h("button", {type: "button", onClick: function () { deleteNode(node); }, title: "삭제"}, "×")
-        ) : null),
+        h("span", {className: "brain-note-status " + node.status}, node.status === "accepted" ? "✓ 채택" : "아이디어")
+      ),
       h("p", {title: node.content}, node.content),
       h("div", {className: "brain-card-people"},
         h("span", {className: "brain-person", title: "작성자 " + (owner?.display_name || "알 수 없음")}, h("b", {style: participantAvatarStyle(owner)}, initials(owner?.display_name)), h("small", null, owner?.display_name || "작성자")),
         h("span", {className: "brain-person assignee", title: "담당자 " + (assignee?.display_name || "없음")}, h("i", null, "→"), h("b", {style: participantAvatarStyle(assignee)}, initials(assignee?.display_name)), h("small", null, assignee?.display_name || "담당자 없음"))
       ),
-      canEdit ? h("div", {className: "brain-card-controls"},
-        h("button", {type: "button", onClick: function () { statusNode(node, "held"); }}, "보류"),
-        assigneeButton(node)
+      isFocused && canEdit && !(dragPreview && dragPreview.source === "board" && dragPreview.node && dragPreview.node.id === node.id) ? h("div", {className: "brain-board-card-toolbar brain-action-toolbar", onClick: function (event) { event.stopPropagation(); }},
+        h("button", {type: "button", onClick: function () { editNode(node); }, "aria-label": "메모 수정"}, h("i", {className: "idea-icon idea-icon-pencil-square"}), h("span", null, "수정")),
+        assigneeButton(node),
+        h("button", {type: "button", onClick: function () { statusNode(node, "held"); }, "aria-label": "메모 보류"}, h("i", {className: "idea-icon idea-icon-pause-circle"}), h("span", null, "보류")),
+        h("span", {className: "brain-floating-divider"}),
+        h("button", {type: "button", className: "danger", onClick: function () { deleteNode(node); }, "aria-label": "메모 삭제"}, h("i", {className: "idea-icon idea-icon-trash3"}), h("span", null, "삭제"))
       ) : null);
     }
 
@@ -1379,7 +1600,7 @@
       return h("section", {
         key: section.id,
         className:
-          "brain-board-column" +
+          "brain-board-column brain-lane-index-" + (index % laneColors.length) +
           (boardDropTarget === section.id ? " is-drop-target" : ""),
         style: {
           "--lane-bg": color[0],
@@ -1395,6 +1616,7 @@
         onDragOver: function (event) {
           if (!canEdit) return;
           event.preventDefault();
+          if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
           if (boardDropTarget !== section.id) {
             setBoardDropTarget(section.id);
           }
@@ -1417,13 +1639,16 @@
           h("div", null, h("strong", null, section.title), h("small", null, nodes.length + "개 아이디어")),
           state.permissions.can_apply_ai && !state.permissions.is_completed ? h("button", {type: "button", onClick: previewPrd}, "✦ AI PRD 적용") : null
         ),
-        h("div", {className: "brain-board-stack"}, nodes.length ? nodes.map(compactCard) : h("div", {className: "brain-column-empty"}, h("i", {className: "bi bi-lightbulb"}), h("span", null, "아이디어를 이 칸으로 끌어오세요")))
+        h("div", {className: "brain-board-stack"}, nodes.length ? nodes.map(compactCard) : h("div", {className: "brain-column-empty"}, h("i", {className: "idea-icon idea-icon-lightbulb"}), h("span", null, "아이디어를 이 칸으로 끌어오세요")))
       );
     }
 
     function renderBoard() {
       var unclassified = visible.filter(function (node) { return node.node_type === "note" && !node.section_id; });
-      return h("main", {className: "brain-board-view"},
+      return h("main", {
+        className: "brain-board-view" + (tool === "pan" ? " is-pan-mode" : ""),
+        onMouseDown: panBoard
+      },
         h("section", {
           className:
             "brain-unclassified-strip" +
@@ -1437,6 +1662,7 @@
           onDragOver: function (event) {
             if (!canEdit) return;
             event.preventDefault();
+            if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
             if (boardDropTarget !== "__unclassified__") {
               setBoardDropTarget("__unclassified__");
             }
@@ -1454,8 +1680,13 @@
             dropNode(event, null);
           }
         },
-          h("header", null, h("div", null, h("strong", null, "미분류 아이디어"), h("span", null, unclassified.length)), h("p", null, "AI 분류 전이거나 직접 옮길 메모입니다.")),
-          h("div", null, unclassified.length ? unclassified.map(compactCard) : h("div", {className: "brain-strip-empty"}, "미분류 메모가 없습니다."))
+          h("header", null,
+            h("div", null, h("strong", null, "미분류 아이디어"), h("span", null, unclassified.length), h("p", null, "AI 분류 전이거나 직접 옮길 메모입니다.")),
+            h("button", {type: "button", className: "brain-unclassified-toggle brain-held-toggle", "aria-expanded": unclassifiedExpanded, onClick: function (event) { event.stopPropagation(); setUnclassifiedExpanded(function (value) { return !value; }); }},
+              h("span", null, unclassifiedExpanded ? "접기" : "펼치기"), h("i", {className: "idea-icon " + (unclassifiedExpanded ? "idea-icon-chevron-up" : "idea-icon-chevron-down")})
+            )
+          ),
+          h("div", {className: "brain-unclassified-list" + (unclassifiedExpanded ? " expanded" : " collapsed")}, unclassified.length ? unclassified.map(compactCard) : h("div", {className: "brain-strip-empty"}, h("i", {className: "idea-icon idea-icon-lightbulb"}), h("span", null, "미분류 메모가 없습니다.")))
         ),
         h("div", {
           className: "brain-board-columns",
@@ -1466,10 +1697,16 @@
 
     function renderList() {
       var groups = [{id: null, title: "미분류"}].concat(state.sections);
+      var listNotes = visible.filter(function (node) { return node.node_type === "note"; });
       return h("main", {className: "brain-list-view"}, h("div", {className: "brain-list-wrap"},
-        h("header", {className: "brain-list-heading"}, h("div", null, h("span", null, "IDEA INVENTORY"), h("h2", null, "전체 아이디어 목록")), h("strong", null, visible.filter(function (node) { return node.node_type === "note"; }).length + "개")),
-        groups.map(function (group, index) {
-          var nodes = visible.filter(function (node) { return node.node_type === "note" && node.section_id === group.id; });
+        h("header", {className: "brain-list-heading"}, h("div", null, h("span", null, "IDEA INVENTORY"), h("h2", null, "전체 아이디어 목록")), h("strong", null, listNotes.length + "개")),
+        !listNotes.length ? h("section", {className: "brain-inventory-empty"},
+          firstPageIllustration ? h("img", {src: firstPageIllustration, alt: ""}) : null,
+          h("span", null, "IDEA INVENTORY"),
+          h("strong", null, "아직 모아둔 아이디어가 없습니다."),
+          h("p", null, "브레인스토밍에서 메모를 추가하면 섹션과 상태별로 이곳에 정리됩니다.")
+        ) : groups.map(function (group, index) {
+          var nodes = listNotes.filter(function (node) { return node.section_id === group.id; });
           return h("section", {key: group.id || "none", className: "brain-list-group"},
             h("header", null, h("i", {style: {background: laneColors[index % laneColors.length][2]}}), h("strong", null, group.title), h("span", null, nodes.length)),
             nodes.length ? h("div", null, nodes.map(function (node) { var assigned = member(node.assignee_id); return h("article", {key: node.id}, h("span", {className: "brain-note-status " + node.status}, node.status === "accepted" ? "채택" : "기본"), h("p", {title: node.content}, node.content), h("small", null, "담당 " + (assigned?.display_name || "없음")), canEdit ? h("button", {type: "button", onClick: function () { editNode(node); }}, "열기") : null); })) : h("p", {className: "brain-list-empty"}, "등록된 아이디어가 없습니다."));
@@ -1486,13 +1723,26 @@
       });
       resizeBoard(visible.length, perSection.length ? Math.max.apply(null, perSection) : 0);
       setRegionWeights(perSection);
-      return h("main", {className: "brain-stage" + (draggingRef.current ? " dragging-note" : ""), onMouseDown: pan, onWheel: wheelCanvas},
-        h("div", {className: "brain-canvas-hint"}, h("i", {className: "bi bi-arrows-move"}), " 빈 공간을 드래그해 이동 · 휠로 패닝 · Ctrl+휠로 확대/축소"),
+      return h("main", {
+        className: "brain-stage" + (draggingRef.current ? " dragging-note" : ""),
+        onMouseDown: pan,
+        onWheel: wheelCanvas,
+        onMouseMove: function (event) {
+          if (tool !== "connect" || !source) return;
+          var rect = event.currentTarget.getBoundingClientRect();
+          setConnectPointer({
+            x: (event.clientX - rect.left - view.x) / view.zoom,
+            y: (event.clientY - rect.top - view.y) / view.zoom
+          });
+        },
+        onMouseLeave: function () { if (tool === "connect") setConnectPointer(null); }
+      },
+        h("div", {className: "brain-canvas-hint"}, h("i", {className: "idea-icon idea-icon-arrows-move"}), " 빈 공간을 드래그해 이동 · 휠로 패닝 · Ctrl+휠로 확대/축소"),
         h("div", {className: "brain-zoom"},
-          h("button", {type: "button", title: "확대", "aria-label": "확대", onClick: function () { zoom(.05); }}, h("i", {className: "bi bi-plus-lg", "aria-hidden": "true"})),
+          h("button", {type: "button", "aria-label": "확대", onClick: function () { zoom(.05); }}, h("i", {className: "idea-icon idea-icon-plus-lg", "aria-hidden": "true"})),
           h("span", null, Math.round(view.zoom * 100) + "%"),
-          h("button", {type: "button", title: "축소", "aria-label": "축소", onClick: function () { zoom(-.05); }}, h("i", {className: "bi bi-dash-lg", "aria-hidden": "true"})),
-          h("button", {type: "button", title: "도화지 전체 보기", "aria-label": "도화지 전체 보기", onClick: function () { var next = clampView(fitBoardView()); setView(next); saveView(next); }}, h("i", {className: "bi bi-house", "aria-hidden": "true"}))
+          h("button", {type: "button", "aria-label": "축소", onClick: function () { zoom(-.05); }}, h("span", {className: "brain-zoom-minus", "aria-hidden": "true"}, "−")),
+          h("button", {type: "button", "aria-label": "도화지 전체 보기", onClick: function () { var next = clampView(fitBoardView()); setView(next); saveView(next); }}, h("i", {className: "idea-icon idea-icon-house-door", "aria-hidden": "true"}))
         ),
         h("div", {className: "brain-canvas", style: {width: canvasWidth(), height: CANVAS_H, transform: "translate(" + view.x + "px," + view.y + "px) scale(" + view.zoom + ")"}},
           h("svg", {className: "brain-regions", width: CANVAS_W, height: CANVAS_H},
@@ -1503,9 +1753,24 @@
               state.counts.unclassified + "개 · 네모 밖에 두면 분류되지 않습니다"),
             state.sections.map(function (section, index) {
               var color = laneColors[index % laneColors.length];
-              return h("path", {key: section.id, d: regionPath(index), fill: color[0], stroke: color[1]});
+              return h("path", {key: section.id, className: "brain-region-path brain-lane-index-" + (index % laneColors.length), d: regionPath(index), fill: color[0], stroke: color[1]});
             })),
-          h("svg", {className: "brain-lines", width: canvasWidth(), height: CANVAS_H}, state.connections.map(line)),
+          h("svg", {className: "brain-lines", width: canvasWidth(), height: CANVAS_H},
+            state.connections.map(line),
+            tool === "connect" && source && connectPointer ? (function () {
+              var sourceSpot = positions[source.id] || displayPosition(source);
+              var targetNode = hoveredNode ? state.nodes.find(function (item) { return item.id === hoveredNode && item.id !== source.id; }) : null;
+              var targetSpot = targetNode ? (positions[targetNode.id] || displayPosition(targetNode)) : null;
+              var x1 = sourceSpot.x + NODE_W / 2, y1 = sourceSpot.y + NODE_H / 2;
+              if (sourceDirection === "left") x1 = sourceSpot.x;
+              if (sourceDirection === "right") x1 = sourceSpot.x + NODE_W;
+              if (sourceDirection === "top") y1 = sourceSpot.y;
+              if (sourceDirection === "bottom") y1 = sourceSpot.y + NODE_H;
+              var x2 = targetSpot ? targetSpot.x + NODE_W / 2 : connectPointer.x;
+              var y2 = targetSpot ? targetSpot.y + NODE_H / 2 : connectPointer.y;
+              return h("path", {className: "brain-connection-preview" + (targetNode ? " is-target" : ""), d: "M " + x1 + " " + y1 + " L " + x2 + " " + y2});
+            })() : null
+          ),
           // 이름표는 연결선보다 위에 그린다. 강조된 연결선이 항목 이름을 가로질러도
           // 글자가 항상 또렷하게 읽히도록 하기 위해서다.
           h("svg", {className: "brain-region-labels", width: CANVAS_W, height: CANVAS_H},
@@ -1513,7 +1778,7 @@
               var color = laneColors[index % laneColors.length];
               var box = regionCenter(index);
               var count = visible.filter(function (node) { return node.section_id === section.id; }).length;
-              return h("g", {key: section.id, className: "brain-region"},
+              return h("g", {key: section.id, className: "brain-region brain-lane-index-" + (index % laneColors.length)},
                 h("text", {className: "brain-region-index", x: box.x, y: box.top + 46, fill: color[2]}, String(index + 1).padStart(2, "0")),
                 h("text", {className: "brain-region-title", x: box.x, y: box.top + 76, fill: color[2]}, section.title),
                 h("text", {className: "brain-region-count", x: box.x, y: box.top + 98, fill: color[2]}, count + "개 아이디어")
@@ -1522,18 +1787,112 @@
           visible.map(note)));
     }
 
+    function renderSelectedToolbar() {
+      if (boardView !== "canvas" || !focused || !canEdit || editor || draggingRef.current) return null;
+      var node = state.nodes.find(function (item) { return item.id === focused; });
+      var p = node ? positions[node.id] : null;
+      if (!node || !p) return null;
+      var stage = document.querySelector(".brain-stage");
+      if (!stage) return null;
+      var noteElement = stage.querySelector('[data-node-id="' + node.id + '"]');
+      var stageRect = stage.getBoundingClientRect();
+      var noteRect = noteElement ? noteElement.getBoundingClientRect() : null;
+      var noteLeft = noteRect ? noteRect.left : stageRect.left + view.x + p.x * view.zoom;
+      var noteTop = noteRect ? noteRect.top : stageRect.top + view.y + p.y * view.zoom;
+      var noteBottom = noteRect ? noteRect.bottom : stageRect.top + view.y + (p.y + NODE_H) * view.zoom;
+      // 선택 툴바는 캔버스 좌표가 아니라 실제 메모 DOM의 viewport 좌표를 기준으로 둔다.
+      // 직전 렌더의 툴바가 있으면 실제 크기를 재사용해 긴 담당자 이름에서도 메모를 덮지 않는다.
+      var previousToolbar = document.querySelector('.brain-floating-toolbar[data-owner-node-id="' + node.id + '"]');
+      var previousRect = previousToolbar ? previousToolbar.getBoundingClientRect() : null;
+      var toolbarWidth = previousRect && previousRect.width ? previousRect.width : 432;
+      var toolbarHeight = previousRect && previousRect.height ? previousRect.height : 52;
+      var gap = 14;
+      var viewportWidth = document.documentElement.clientWidth || window.innerWidth;
+      var viewportHeight = document.documentElement.clientHeight || window.innerHeight;
+      var left = Math.max(12, Math.min(noteLeft, viewportWidth - toolbarWidth - 12));
+      var belowTop = noteBottom + gap;
+      var spaceBelow = viewportHeight - belowTop - 12;
+      var spaceAbove = noteTop - gap - 12;
+      // 아래쪽에 다른 메모가 바로 붙어 있으면 툴바를 위로 올린다.
+      // 단순 viewport 여백만 보던 이전 방식은 메모가 조밀할 때 툴바가 다음 메모를 덮었다.
+      var belowRect = {left: left, top: belowTop, right: left + toolbarWidth, bottom: belowTop + toolbarHeight};
+      var overlapsBelow = Array.prototype.some.call(stage.querySelectorAll('.brain-note[data-node-id]'), function (candidate) {
+        if (candidate === noteElement) return false;
+        var rect = candidate.getBoundingClientRect();
+        return belowRect.left < rect.right && belowRect.right > rect.left && belowRect.top < rect.bottom && belowRect.bottom > rect.top;
+      });
+      // 기본 위치는 항상 선택 메모 아래쪽이다. 아래에 다른 메모가 있어도 높은 z-index로
+      // 그 위에 표시하고, 실제 viewport 하단 공간이 부족할 때만 위쪽으로 전환한다.
+      var placeAbove = spaceBelow < toolbarHeight && spaceAbove >= toolbarHeight;
+      // 아래 배치는 top으로, 위 배치는 bottom으로 고정한다. 위쪽 배치에서 툴바의 실제 높이가
+      // 예상보다 커져도 메모 방향이 아니라 위쪽으로만 자라므로 선택 메모를 덮지 않는다.
+      var toolbarStyle = placeAbove
+        ? {left: left, bottom: Math.max(12, viewportHeight - noteTop + gap)}
+        : {left: left, top: Math.max(noteBottom + gap, 12)};
+      return window.ReactDOM.createPortal(
+        h("div", {className: "brain-floating-toolbar brain-action-toolbar " + (placeAbove ? "is-above" : "is-below"), "data-owner-node-id": node.id, style: toolbarStyle, onMouseDown: function (event) { event.stopPropagation(); }},
+          h("button", {type: "button", onClick: function () { editNode(node); }, "aria-label": "메모 수정"}, h("i", {className: "idea-icon idea-icon-pencil-square"}), h("span", null, "수정")),
+          assigneeButton(node),
+          h("button", {type: "button", onClick: function () { statusNode(node, "held"); }, "aria-label": "메모 보류"}, h("i", {className: "idea-icon idea-icon-pause-circle"}), h("span", null, "보류")),
+          h("span", {className: "brain-floating-divider"}),
+          h("button", {type: "button", className: "danger", onClick: function () { deleteNode(node); }, "aria-label": "메모 삭제"}, h("i", {className: "idea-icon idea-icon-trash3"}), h("span", null, "삭제"))
+        ),
+        document.body
+      );
+    }
+
     function renderDragPreview() {
       if (!dragPreview || !dragPreview.node) return null;
       var previewNode = dragPreview.node;
+
+      // Section-board drag preview should be visually identical to the source
+      // board card instead of falling back to the free-canvas sticky-note skin.
+      if (dragPreview.source === "board") {
+        var previewOwner = member(previewNode.author_id);
+        var previewAssignee = member(previewNode.assignee_id);
+        return window.ReactDOM.createPortal(
+          h("article", {
+            className: "idea-dev idea-dev--brainstorm brain-drag-preview brain-board-drag-preview" + (dragPreview.overHeld ? " is-over-held" : ""),
+            "data-color": previewNode.color || "yellow",
+            style: {
+              left: dragPreview.x,
+              top: dragPreview.y,
+              width: dragPreview.width,
+              height: dragPreview.height
+            },
+            "aria-hidden": "true"
+          },
+            h("div", {className: "brain-board-card-head"},
+              h("span", {className: "brain-note-status " + previewNode.status}, previewNode.status === "accepted" ? "✓ 채택" : "아이디어")
+            ),
+            h("p", {title: previewNode.content}, previewNode.content),
+            h("div", {className: "brain-card-people"},
+              h("span", {className: "brain-person"},
+                h("b", {style: participantAvatarStyle(previewOwner)}, initials(previewOwner?.display_name)),
+                h("small", null, previewOwner?.display_name || "작성자")
+              ),
+              h("span", {className: "brain-person assignee"},
+                h("i", null, "→"),
+                h("b", {style: participantAvatarStyle(previewAssignee)}, initials(previewAssignee?.display_name)),
+                h("small", null, previewAssignee?.display_name || "담당자 없음")
+              )
+            )
+          ),
+          document.body
+        );
+      }
+
       return window.ReactDOM.createPortal(
         h("div", {
-          className: "brain-drag-preview" + (dragPreview.overHeld ? " is-over-held" : ""),
+          className: "idea-dev idea-dev--brainstorm brain-drag-preview is-canvas-source" + (dragPreview.overHeld ? " is-over-held" : ""),
           "data-color": previewNode.color || "yellow",
           style: {
             left: dragPreview.x,
             top: dragPreview.y,
-            width: dragPreview.width,
-            height: dragPreview.height
+            width: NODE_W,
+            height: NODE_H,
+            transform: "scale(" + (dragPreview.scale || 1) + ")",
+            transformOrigin: "top left"
           },
           "aria-hidden": "true"
         },
@@ -1630,7 +1989,7 @@
                 h("span", {className: "brain-ai-section-index"}, String(index + 1).padStart(2, "0")),
                 h("strong", null, section ? section.title : "섹션 " + group.sectionId),
                 h("span", {className: "brain-ai-section-count"}, group.rows.length + "개 질문"),
-                h("i", {className: "bi bi-chevron-down"})
+                h("i", {className: "idea-icon idea-icon-chevron-down"})
               ),
               open ? h("div", {className: "brain-ai-section-body"}, group.rows.map(function (row) {
                 return h("div", {key: row.question_id, className: "brain-ai-answer-row"},
@@ -1643,7 +2002,7 @@
           h("button", {className: "btn btn-primary w-100", onClick: applyPrd}, "질문별 통합 답변 저장")
         );
       }
-      return h("aside", {className: "brain-ai-panel"},
+      return h("aside", {className: "brain-ai-panel" + (aiPanel.type === "classification_result" ? " brain-classification-panel" : "")},
         h("header", null,
           h("div", null, h("span", null, aiPanel.type === "classification_result" ? "CLASSIFICATION RESULT" : "AI RESULT"), h("h2", null, aiPanel.type === "classification_result" ? "분류 결과" : "PRD 반영 미리보기")),
           h("button", {type: "button", onClick: function () { setAiPanel(null); }}, "×")
@@ -1668,7 +2027,7 @@
           h("div", null, h("span", null, "PRD REFERENCE"), h("h2", {id: "brain-question-panel-title"}, "PRD 질문"), h("small", null, total + "개 질문")),
           h("button", {type: "button", onClick: function () { setQuestionsOpen(false); }, "aria-label": "질문 목록 닫기"}, "×")
         ),
-        h("div", {className: "brain-question-search"}, h("i", {className: "bi bi-search"}), h("input", {type: "search", value: questionSearch, placeholder: "질문 또는 답변 검색", onChange: function (event) { setQuestionSearch(event.target.value); }})),
+        h("div", {className: "brain-question-search"}, h("i", {className: "idea-icon idea-icon-search"}), h("input", {type: "search", value: questionSearch, placeholder: "질문 또는 답변 검색", onChange: function (event) { setQuestionSearch(event.target.value); }})),
         h("div", {className: "brain-question-body"},
           visibleSections.length ? visibleSections.map(function (group, index) {
             var section = group.section;
@@ -1680,12 +2039,12 @@
                   h("span", {className: "brain-question-section-index"}, String(section.position).padStart(2, "0")),
                   h("strong", null, section.title)
                 ),
-                canCreateNote ? h("button", {type: "button", className: "brain-question-section-add", title: section.title + "에 메모 추가", "aria-label": section.title + "에 메모 추가", onClick: function () { createNote(section); }},
-                  h("i", {className: "bi bi-plus-lg"}), h("span", null, "메모 추가")
+                canCreateNote ? h("button", {type: "button", className: "brain-question-section-add", "aria-label": section.title + "에 메모 추가", onClick: function () { createNote(section); }},
+                  h("i", {className: "idea-icon idea-icon-plus-lg", "aria-hidden": "true"})
                 ) : null,
                 h("small", null, completed + "/" + group.questions.filter(function (question) { return !question.is_held; }).length),
                 h("button", {type: "button", className: "brain-question-section-toggle", onClick: function () { setOpenQuestionSections(function (current) { var next = Object.assign({}, current); next[section.id] = !open; return next; }); }, "aria-label": section.title + (open ? " 접기" : " 펼치기")},
-                  h("i", {className: "bi bi-chevron-down"})
+                  h("i", {className: "idea-icon idea-icon-chevron-down"})
                 )
               ),
               open ? h("div", {className: "brain-question-items"},
@@ -1702,7 +2061,7 @@
                 })
               ) : null
             );
-          }) : h("p", {className: "brain-question-empty"}, term ? "검색 결과가 없습니다." : "등록된 질문이 없습니다.")
+          }) : h("div", {className: "brain-question-empty"}, h("i", {className: "idea-icon idea-icon-card-checklist"}), h("strong", null, term ? "검색 결과가 없습니다." : "등록된 질문이 없습니다."), h("span", null, term ? "다른 검색어로 다시 찾아보세요." : "PRD 질문이 준비되면 이곳에서 바로 확인할 수 있어요."))
         )
       );
     }
@@ -1789,10 +2148,10 @@
       var versions = state.versions || [];
       return h("aside", {className: "brain-version-sidebar" + (versionsOpen ? "" : " collapsed")},
         h("header", null,
-          versionsOpen ? h("span", null, "BOARD VERSIONS") : null,
-          h("button", {type: "button", onClick: function () { setVersionsOpen(function (value) { return !value; }); }, title: versionsOpen ? "버전 목록 접기" : "버전 목록 펼치기", "aria-label": versionsOpen ? "버전 목록 접기" : "버전 목록 펼치기"}, h("i", {className: "bi " + (versionsOpen ? "bi-chevron-left" : "bi-chevron-right")}))
+          versionsOpen ? h("span", null, "VERSION") : null,
+          h("button", {type: "button", onClick: function () { setVersionsOpen(function (value) { return !value; }); }, "aria-label": versionsOpen ? "버전 목록 접기" : "버전 목록 펼치기"}, h("i", {className: "idea-icon " + (versionsOpen ? "idea-icon-chevron-left" : "idea-icon-chevron-right")}))
         ),
-        versionsOpen && state.permissions.can_manage_versions ? h("button", {type: "button", className: "brain-version-add", disabled: busy, onClick: createCanvasVersion, title: "현재 보드를 복제해 새 버전 만들기", "aria-label": "새 캔버스 버전 만들기"}, h("i", {className: "bi bi-plus-lg"}), h("span", null, "새 보드")) : null,
+        versionsOpen && state.permissions.can_manage_versions ? h("button", {type: "button", className: "brain-version-add", disabled: busy, onClick: createCanvasVersion, "aria-label": "새 캔버스 버전 만들기"}, h("i", {className: "idea-icon idea-icon-plus-lg"}), h("span", null, "새 보드")) : null,
         versionsOpen ? h("nav", {"aria-label": "캔버스 버전"}, versions.map(function (row, index) {
           return h("div", {key: row.id, className: "brain-version-row" + (row.id === state.canvas.id ? " active" : "")},
             h("button", {type: "button", className: "brain-version-select", onClick: function () { switchCanvas(row.id); }},
@@ -1800,10 +2159,10 @@
               row.is_latest ? h("small", null, "최신") : null
             ),
             state.permissions.can_manage_versions ? h("div", {className: "brain-version-controls"},
-              !row.is_latest ? h("button", {type: "button", disabled: busy, title: "이 보드를 최신으로 지정", "aria-label": "ver." + row.version_number + " 최신 지정", onClick: function () { designateLatestCanvas(row); }}, h("i", {className: "bi bi-pin-angle"})) : null,
-              index > 0 ? h("button", {type: "button", disabled: busy, title: "위로 이동", "aria-label": "ver." + row.version_number + " 위로 이동", onClick: function () { moveCanvasVersion(row, -1); }}, h("i", {className: "bi bi-chevron-up"})) : null,
-              index < versions.length - 1 ? h("button", {type: "button", disabled: busy, title: "아래로 이동", "aria-label": "ver." + row.version_number + " 아래로 이동", onClick: function () { moveCanvasVersion(row, 1); }}, h("i", {className: "bi bi-chevron-down"})) : null,
-              row.is_latest && versions.length > 1 ? h("button", {type: "button", className: "danger", disabled: busy, title: "최신 보드 삭제", "aria-label": "ver." + row.version_number + " 삭제", onClick: function () { deleteLatestCanvas(row); }}, h("i", {className: "bi bi-trash3"})) : null
+              !row.is_latest ? h("button", {type: "button", disabled: busy, "aria-label": "ver." + row.version_number + " 최신 지정", onClick: function () { designateLatestCanvas(row); }}, h("i", {className: "idea-icon idea-icon-pin-angle"})) : null,
+              index > 0 ? h("button", {type: "button", disabled: busy, "aria-label": "ver." + row.version_number + " 위로 이동", onClick: function () { moveCanvasVersion(row, -1); }}, h("i", {className: "idea-icon idea-icon-chevron-up"})) : null,
+              index < versions.length - 1 ? h("button", {type: "button", disabled: busy, "aria-label": "ver." + row.version_number + " 아래로 이동", onClick: function () { moveCanvasVersion(row, 1); }}, h("i", {className: "idea-icon idea-icon-chevron-down"})) : null,
+              row.is_latest && versions.length > 1 ? h("button", {type: "button", className: "danger", disabled: busy, "aria-label": "ver." + row.version_number + " 삭제", onClick: function () { deleteLatestCanvas(row); }}, h("i", {className: "idea-icon idea-icon-trash3"})) : null
             ) : null
           );
         })) : null
@@ -1812,28 +2171,29 @@
 
     return h("div", {className: "brain-react-shell"},
       h("header", {className: "brain-topbar"},
-        h("div", {className: "brain-project"}, h("a", {href: "/ideas/prds/" + root.dataset.prdId + "/write/", className: "brain-back"}, h("i", {className: "bi bi-arrow-left"}), " PRD로 돌아가기"), h("span", {className: "brain-divider"}), h("div", null, h("strong", {className: "brain-title"}, prdTitle), h("small", null, "브레인스토밍 보드"))),
+        h("div", {className: "brain-project"}, h("a", {href: "/ideas/prds/" + root.dataset.prdId + "/write/", className: "brain-back"}, h("i", {className: "idea-icon idea-icon-arrow-left"}), " PRD로 돌아가기"), h("span", {className: "brain-divider"}), brandMarkUrl ? h("img", {className: "brain-brand-mark", src: brandMarkUrl, alt: "", "aria-hidden": "true"}) : null, h("div", null, h("strong", {className: "brain-title"}, prdTitle), h("small", null, "Idea Developer · 브레인스토밍 보드"))),
         h("nav", {className: "brain-view-tabs", "aria-label": "브레인스토밍 보기 방식"}, [
-          ["board", "bi bi-kanban", "섹션 보드"], ["canvas", "bi bi-bounding-box", "자유 캔버스"], ["list", "bi bi-list-ul", "아이디어 목록"]
+          ["board", "idea-icon idea-icon-kanban", "섹션 보드"], ["canvas", "idea-icon idea-icon-bounding-box", "자유 캔버스"], ["list", "idea-icon idea-icon-list-ul", "아이디어 목록"]
         ].map(function (item) { return h("button", {key: item[0], type: "button", className: boardView === item[0] ? "active" : "", onClick: function () { changeBoard(item[0]); }}, h("i", {className: item[1]}), item[2]); })),
         h("div", {className: "brain-top-actions"}, h("span", {className: "brain-sync " + sync}, sync === "connected" ? "● 동기화됨" : "● 재연결 중"), state.permissions.can_apply_ai && canEdit ? h("button", {type: "button", className: "btn btn-sm btn-outline-primary", disabled: busy, onClick: previewPrd}, "PRD에 반영") : null)
       ),
       h("div", {className: "brain-toolbar"},
         h("div", {className: "brain-counts"}, h("span", null, state.counts.total + "개 메모"), h("span", {className: "warn"}, "미분류 " + state.counts.unclassified), h("span", {className: "good"}, "✓ " + state.counts.accepted + "개 채택")),
-        boardView === "canvas" ? h("div", {className: "brain-tools"}, toolButton("select", "bi bi-cursor", "선택"), toolButton("connect", "bi bi-bezier2", "연결")) : null,
-        canCreateNote ? h("button", {type: "button", className: "brain-add", onClick: function () { createNote(); }}, h("i", {className: "bi bi-plus-lg"}), " 메모 추가") : null,
+        boardView === "board" ? h("div", {className: "brain-tools"}, toolButton("select", "idea-icon idea-icon-cursor", "선택"), toolButton("pan", "idea-icon idea-icon-hand", "손 이동")) :
+          boardView === "canvas" ? h("div", {className: "brain-tools"}, toolButton("select", "idea-icon idea-icon-cursor", "선택"), toolButton("connect", "idea-icon idea-icon-bezier2", "연결")) : null,
+        canCreateNote ? h("button", {type: "button", className: "brain-add", onClick: function () { createNote(); }}, h("i", {className: "idea-icon idea-icon-plus-lg"}), " 메모 추가") : null,
         h("div", {className: "brain-filter"}, ["all", "accepted", "default"].map(function (value) { return h("button", {key: value, type: "button", className: filter === value ? "active" : "", onClick: function () { setFilter(value); }}, {all: "전체", accepted: "채택됨", default: "미분류"}[value]); })),
-        boardView === "canvas" && canEdit ? h("button", {type: "button", className: "btn btn-sm brain-auto", disabled: busy, onClick: autoLayout}, h("i", {className: "bi bi-grid-3x3-gap"}), " 자동 정렬") : null,
+        boardView === "canvas" && canEdit ? h("button", {type: "button", className: "btn btn-sm brain-auto", disabled: busy, onClick: autoLayout}, h("i", {className: "idea-icon idea-icon-grid-3x3-gap"}), " 자동 정렬") : null,
         h("div", {className: "brain-ai-actions"},
-          h("button", {type: "button", className: "brain-question-trigger" + (questionsOpen ? " active" : ""), "aria-expanded": questionsOpen, onClick: function () { var next = !questionsOpen; setQuestionsOpen(next); if (next) setAiPanel(null); }}, h("i", {className: "bi bi-card-checklist"}), " 질문 보기"),
-          h("button", {type: "button", className: "brain-classification-trigger", disabled: busy, onClick: loadClassificationResult}, h("i", {className: "bi bi-diagram-3"}), " 분류 결과")
+          h("button", {type: "button", className: "brain-question-trigger" + (questionsOpen ? " active" : ""), "aria-expanded": questionsOpen, onClick: function () { var next = !questionsOpen; setQuestionsOpen(next); if (next) setAiPanel(null); }}, h("i", {className: "idea-icon idea-icon-card-checklist"}), " 질문 보기"),
+          h("button", {type: "button", className: "brain-classification-trigger", disabled: busy, onClick: loadClassificationResult}, h("i", {className: "idea-icon idea-icon-diagram-3"}), " 분류 결과")
         )
       ),
       h("div", {className: "brain-workspace"},
         renderVersionSidebar(),
         h("div", {className: "brain-version-content"},
-          !state.permissions.is_latest_canvas ? h("div", {className: "brain-readonly-banner"}, h("i", {className: "bi bi-lock"}), " 이전 버전은 조회 전용입니다. 최신 보드에서만 편집할 수 있습니다.") : null,
-          boardView === "canvas" && tool === "connect" ? h("div", {className: "brain-connect-banner"}, source ? "두 번째 메모를 선택해 주세요" : "연결할 첫 번째 메모를 선택해 주세요", h("button", {onClick: function () { setTool("select"); setSource(null); }}, "취소")) : null,
+          !state.permissions.is_latest_canvas ? h("div", {className: "brain-readonly-banner"}, h("i", {className: "idea-icon idea-icon-lock"}), " 이전 버전은 조회 전용입니다. 최신 보드에서만 편집할 수 있습니다.") : null,
+          boardView === "canvas" && tool === "connect" ? h("div", {className: "brain-connect-banner"}, source ? "다른 메모의 연결 점을 선택해 주세요" : "메모 가장자리의 연결 점을 선택해 주세요", h("button", {onClick: function () { setTool("select"); setSource(null); setSourceDirection(null); setConnectPointer(null); }}, "취소")) : null,
           boardView === "canvas" && selected.length > 1 && tool !== "connect" ? h("div", {className: "brain-multi-banner"}, selected.length + "개 메모 선택됨", h("button", {type: "button", onClick: function () { setSelected([]); setFocused(null); }}, "선택 해제")) : null,
           notice ? h("div", {className: "brain-notice alert alert-" + notice.kind}, notice.text, h("button", {type: "button", className: "btn-close", onClick: function () { setNotice(null); }})) : null,
           boardView === "board" ? renderBoard() : boardView === "canvas" ? renderCanvas() : renderList(),
@@ -1869,14 +2229,20 @@
               h("small", null, "메모를 이곳으로 끌어오거나 보류 버튼을 누르면 보류됩니다"),
               h("button", {type: "button", className: "brain-held-toggle", "aria-expanded": heldExpanded, onClick: function () { setHeldExpanded(function (current) { return !current; }); }},
                 h("span", null, heldExpanded ? "접기" : "펼치기"),
-                h("i", {className: "bi " + (heldExpanded ? "bi-chevron-down" : "bi-chevron-up"), "aria-hidden": "true"})
+                h("i", {className: "idea-icon " + (heldExpanded ? "idea-icon-chevron-down" : "idea-icon-chevron-up"), "aria-hidden": "true"})
               )
             ),
-            h("div", {className: "brain-held-list"}, state.held_nodes.map(function (node) { return h("article", {key: node.id, "data-color": node.color}, h("p", {title: node.content}, node.content), canEdit ? h("button", {onClick: function () { statusNode(node, "default"); }}, "보류 해제 →") : null); }))
+            h("div", {className: "brain-held-list"}, state.held_nodes.map(function (node) {
+              return h("article", {key: node.id, className: "brain-held-card", "data-color": node.color},
+                h("span", {className: "brain-note-status held"}, "보류"),
+                h("p", {title: node.content}, node.content),
+                canEdit ? h("footer", null, h("button", {type: "button", onClick: function () { statusNode(node, "default"); }}, "보류 해제")) : null
+              );
+            }))
           )
         )
       ),
-      renderEditor(), renderAssigneeMenu(), renderAiPanel(), renderQuestionPanel(), renderDragPreview(),
+      renderEditor(), renderAssigneeMenu(), renderAiPanel(), renderQuestionPanel(), renderSelectedToolbar(), renderDragPreview(),
       busy ? h("div", {className: "brain-busy"}, h("span", {className: "spinner-border spinner-border-sm"}), jobId ? " AI 작업 처리 중" : " 저장 중") : null);
   }
 

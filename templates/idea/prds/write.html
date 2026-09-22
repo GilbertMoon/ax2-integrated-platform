@@ -3,7 +3,7 @@
 {% block title %}{{ prd.title }} | Idea Developer{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/write.css' %}?v=20260917-r3"
+  <link href="{% static 'prds/css/write.css' %}?v=20260922-v5-5"
         rel="stylesheet">
 {% endblock %}
 {% block content %}
@@ -11,6 +11,7 @@
        class="idea-dev idea-dev--write"
        data-prd-id="{{ prd.id }}"
        data-current-user-id="{{ request.user.external_user_id }}"
+       data-current-user-name="{{ session_identity.display_name|default:'나' }}"
        data-detail-api="{{ detail_api_url }}"
        data-export-api="{% url 'prd_api:export-markdown' prd.id %}"
        data-participants-api="{{ participants_api_url }}"
@@ -18,7 +19,9 @@
        data-participant-team-api="{{ participant_team_api_url }}"
        data-comments-api="{{ comments_api_url }}"
        data-contributions-api="{{ contributions_api_url }}"
-       data-ai-api-base="{{ ai_api_base }}">
+       data-ai-api-base="{{ ai_api_base }}"
+       data-illustration-shared-thinking="{% static 'idea/assets/illustrations/shared-thinking.svg' %}"
+       data-illustration-focused-review="{% static 'idea/assets/illustrations/focused-review.svg' %}">
     <div id="prd-alert"
          class="alert d-none write-alert"
          role="status"
@@ -26,8 +29,8 @@
     <header class="write-toolbar" aria-labelledby="prd-heading">
       <a class="write-back"
          href="{% url 'ideas:home' %}"
-         aria-label="PRD 목록으로 돌아가기"><i class="bi bi-arrow-left"></i></a>
-      <span class="write-doc-mark" aria-hidden="true">아</span>
+         aria-label="PRD 목록으로 돌아가기"><i class="idea-icon idea-icon-arrow-left"></i></a>
+      <span class="write-doc-mark" aria-hidden="true"><img src="{% static 'idea/assets/brand/id-mark-primary.svg' %}" alt=""></span>
       <div class="write-doc-copy">
         <div class="write-title-row">
           <h1 id="prd-heading">{{ prd.title }}</h1>
@@ -37,9 +40,8 @@
                   type="button"
                   data-bs-toggle="modal"
                   data-bs-target="#prd-settings-modal"
-                  aria-label="PRD 설정 열기"
-                  title="PRD 설정">
-            <i class="bi bi-gear"></i>
+                  aria-label="PRD 설정 열기">
+            <i class="idea-icon idea-icon-gear"></i>
           </button>
         </div>
         <p id="prd-description"></p>
@@ -60,31 +62,31 @@
                 <button class="dropdown-item"
                         type="button"
                         data-prd-status-option="in_progress">
-                  <i class="status-option-dot in-progress"></i><span><strong>진행 중</strong><small>PRD를 작성하고 있어요</small></span><i class="bi bi-check-lg status-option-check"></i>
+                  <i class="status-option-dot in-progress"></i><span><strong>진행 중</strong><small>PRD를 작성하고 있어요</small></span><i class="idea-icon idea-icon-check-lg status-option-check"></i>
                 </button>
               </li>
               <li>
                 <button class="dropdown-item" type="button" data-prd-status-option="held">
-                  <i class="status-option-dot held"></i><span><strong>보류</strong><small>작업을 잠시 멈춰요</small></span><i class="bi bi-check-lg status-option-check"></i>
+                  <i class="status-option-dot held"></i><span><strong>보류</strong><small>작업을 잠시 멈춰요</small></span><i class="idea-icon idea-icon-check-lg status-option-check"></i>
                 </button>
               </li>
               <li>
                 <button class="dropdown-item" type="button" data-prd-status-option="dropped">
-                  <i class="status-option-dot dropped"></i><span><strong>드랍</strong><small>이 PRD 작업을 종료해요</small></span><i class="bi bi-check-lg status-option-check"></i>
+                  <i class="status-option-dot dropped"></i><span><strong>드랍</strong><small>이 PRD 작업을 종료해요</small></span><i class="idea-icon idea-icon-check-lg status-option-check"></i>
                 </button>
               </li>
               <li>
                 <button class="dropdown-item"
                         type="button"
                         data-prd-status-option="completed">
-                  <i class="status-option-dot completed"></i><span><strong>완료</strong><small>PRD 작성을 완료해요</small></span><i class="bi bi-check-lg status-option-check"></i>
+                  <i class="status-option-dot completed"></i><span><strong>완료</strong><small>PRD 작성을 완료해요</small></span><i class="idea-icon idea-icon-check-lg status-option-check"></i>
                 </button>
               </li>
             </ul>
           </div>
           <span id="prd-status" class="write-status"></span>
           <label class="write-deadline" for="write-deadline-input">
-            <i class="bi bi-calendar3"></i>
+            <i class="idea-icon idea-icon-calendar3"></i>
             <input id="write-deadline-input" type="date" aria-label="목표 마감일">
             <span id="write-deadline-label">마감일 없음</span><em id="write-deadline-warning" class="write-deadline-warning d-none"></em>
           </label>
@@ -96,9 +98,8 @@
                   type="button"
                   aria-expanded="false"
                   aria-controls="participant-picker"
-                  aria-label="참여자 추가 및 관리"
-                  title="참여자 추가 및 관리">
-            <i class="bi bi-plus-lg"></i>
+                  aria-label="참여자 추가 및 관리">
+            <i class="idea-icon idea-icon-plus-lg"></i>
           </button>
           <div id="participant-picker" class="write-participant-picker d-none">
             <div class="write-participant-picker-head">
@@ -123,10 +124,10 @@
                         class="write-team-add"
                         type="button"
                         disabled>
-                  <span class="participant-person-avatar"><i class="bi bi-people-fill"></i></span><span class="participant-person-copy"><strong id="participant-team-name">현재 팀</strong><small id="participant-team-description">팀 정보를 불러오는 중입니다.</small></span><span id="participant-team-state">불러오는 중</span>
+                  <span class="participant-person-avatar"><i class="idea-icon idea-icon-people-fill"></i></span><span class="participant-person-copy"><strong id="participant-team-name">현재 팀</strong><small id="participant-team-description">팀 정보를 불러오는 중입니다.</small></span><span id="participant-team-state">불러오는 중</span>
                 </button>
                 <div class="write-participant-search">
-                  <i class="bi bi-search"></i>
+                  <i class="idea-icon idea-icon-search"></i>
                   <input id="participant-search"
                          type="search"
                          minlength="2"
@@ -147,14 +148,14 @@
       </div>
       <div class="write-actions">
         <a class="btn btn-sm btn-outline-secondary brainstorm-launch"
-           href="{% url 'idea-brainstorm' prd.id %}"><i class="bi bi-lightbulb-fill brainstorm-launch-icon"></i><span>브레인스토밍</span></a>
+           href="{% url 'idea-brainstorm' prd.id %}"><i class="idea-icon idea-icon-lightbulb-fill brainstorm-launch-icon"></i><span>브레인스토밍</span></a>
         <button id="comment-toggle"
                 class="btn btn-sm btn-outline-secondary"
                 type="button"
                 data-bs-toggle="offcanvas"
                 data-bs-target="#write-comments-panel"
                 aria-controls="write-comments-panel">
-          <i class="bi bi-chat-square-text"></i><span>코멘트</span><b id="comment-count" class="comment-count d-none">0</b>
+          <i class="idea-icon idea-icon-chat-square-text"></i><span>코멘트</span><b id="comment-count" class="comment-count d-none">0</b>
         </button>
         <button id="contribution-toggle"
                 class="btn btn-sm btn-outline-secondary d-none"
@@ -162,7 +163,7 @@
                 data-bs-toggle="offcanvas"
                 data-bs-target="#write-contribution-panel"
                 aria-controls="write-contribution-panel">
-          <i class="bi bi-bar-chart"></i><span>기여도</span>
+          <i class="idea-icon idea-icon-bar-chart"></i><span>기여도</span>
         </button>
         <button id="coach-toggle"
                 class="btn btn-sm btn-outline-secondary"
@@ -170,17 +171,17 @@
                 data-bs-toggle="offcanvas"
                 data-bs-target="#write-support-panel"
                 aria-controls="write-support-panel">
-          <i class="bi bi-stars"></i> AI 코치
+          <i class="idea-icon idea-icon-stars"></i> AI 코치
         </button>
         <button id="export-prd"
                 class="btn btn-sm btn-outline-secondary"
                 type="button"
                 data-bs-toggle="modal"
                 data-bs-target="#export-modal">
-          <i class="bi bi-file-earmark-arrow-down"></i> 내보내기
+          <i class="idea-icon idea-icon-file-earmark-arrow-down"></i> 내보내기
         </button>
         <button id="reopen-prd" class="btn btn-sm btn-warning d-none" type="button">
-          <i class="bi bi-arrow-counterclockwise"></i> 다시 열기
+          <i class="idea-icon idea-icon-arrow-counterclockwise"></i> 다시 열기
         </button>
       </div>
     </header>
@@ -210,7 +211,7 @@
                     class="btn btn-primary save-all-answers d-none"
                     type="button"
                     disabled>
-              <i class="bi bi-cloud-check"></i> 전체 저장
+              <i class="idea-icon idea-icon-cloud-check"></i> 전체 저장
             </button>
           </div>
         </div>
@@ -253,7 +254,7 @@
                   <span class="write-score-persona-value">—</span>
                 </div>
                 <div class="write-score-persona-copy">
-                  <strong><i class="bi bi-kanban"></i> PM</strong>
+                  <strong><i class="idea-icon idea-icon-kanban"></i> PM</strong>
                   <p class="write-score-persona-feedback">아직 진단하지 않았습니다.</p>
                 </div>
               </div>
@@ -269,7 +270,7 @@
                   <span class="write-score-persona-value">—</span>
                 </div>
                 <div class="write-score-persona-copy">
-                  <strong><i class="bi bi-code-slash"></i> 엔지니어링</strong>
+                  <strong><i class="idea-icon idea-icon-code-slash"></i> 엔지니어링</strong>
                   <p class="write-score-persona-feedback">아직 진단하지 않았습니다.</p>
                 </div>
               </div>
@@ -285,7 +286,7 @@
                   <span class="write-score-persona-value">—</span>
                 </div>
                 <div class="write-score-persona-copy">
-                  <strong><i class="bi bi-graph-up-arrow"></i> 투자자</strong>
+                  <strong><i class="idea-icon idea-icon-graph-up-arrow"></i> 투자자</strong>
                   <p class="write-score-persona-feedback">아직 진단하지 않았습니다.</p>
                 </div>
               </div>
@@ -297,17 +298,17 @@
                role="status"></div>
           <div class="evaluation-actions">
             <button id="run-evaluation" class="btn btn-primary" type="button">
-              <i class="bi bi-stars"></i> AI 진단하기
+              <i class="idea-icon idea-icon-stars"></i> AI 진단하기
             </button>
             <button id="run-perspective-draft" class="btn btn-primary" type="button">
-              <i class="bi bi-magic"></i> AI 초안 작성
+              <i class="idea-icon idea-icon-magic"></i> AI 초안 작성
             </button>
           </div>
           <button id="cancel-evaluation"
                   class="btn btn-outline-secondary btn-sm w-100 d-none"
                   type="button">진단 취소</button>
           <p class="evaluation-caption">
-            <i class="bi bi-info-circle"></i> AI 진단하기는 PM·엔지니어링·투자자 세 관점을 모두 진단합니다. AI 초안 작성은 세 관점을 종합해 PRD 전체 답변 초안을 만들어 드립니다.
+            <i class="idea-icon idea-icon-info-circle"></i> AI 진단하기는 PM·엔지니어링·투자자 세 관점을 모두 진단합니다. AI 초안 작성은 세 관점을 종합해 PRD 전체 답변 초안을 만들어 드립니다.
           </p>
         </section>
         <section class="write-diagnosis" aria-labelledby="diagnosis-heading">
@@ -319,8 +320,9 @@
             <small>항목을 누르면 이동합니다</small>
           </div>
           <div id="write-section-diagnostics" class="write-diagnosis-list">
-            <div class="evaluation-empty">
-              <i class="bi bi-stars"></i><span>AI 진단 후 섹션별 피드백이 표시됩니다.</span>
+            <div class="evaluation-empty evaluation-empty--review">
+              <img src="{% static 'idea/assets/illustrations/focused-review.svg' %}" alt="">
+              <div><strong>아직 AI 진단 전입니다.</strong><span>진단을 실행하면 섹션별 충족도와 보완점을 여기에서 확인할 수 있어요.</span></div>
             </div>
           </div>
         </section>
@@ -350,7 +352,7 @@
           <section id="coach-panel" class="ai-coach-panel">
             <div class="coach-header">
               <div>
-                <span class="coach-mark"><i class="bi bi-stars"></i></span>
+                <span class="coach-mark"><i class="idea-icon idea-icon-stars"></i></span>
                 <div>
                   <h2 id="coach-heading">AI 코치</h2>
                   <p>PRD 맥락을 기반으로 피드백합니다</p>
@@ -363,7 +365,7 @@
               </select>
             </div>
             <div class="coach-notice">
-              <i class="bi bi-lightbulb"></i> 내용을 임의로 추가하지 않고 현재 PRD를 기준으로 답합니다.
+              <i class="idea-icon idea-icon-lightbulb"></i> 내용을 임의로 추가하지 않고 현재 PRD를 기준으로 답합니다.
             </div>
             <div id="coach-messages" class="ai-coach-messages" aria-live="polite"></div>
             <form id="coach-form" class="coach-form">
@@ -379,7 +381,7 @@
                           type="button"
                           class="btn btn-outline-secondary btn-sm d-none">취소</button>
                   <button id="coach-submit" type="submit" class="btn btn-primary btn-sm">
-                    <i class="bi bi-send"></i>
+                    <i class="idea-icon idea-icon-send"></i>
                   </button>
                 </span>
               </div>
@@ -430,7 +432,7 @@
           <div>
             <small id="comment-permission-hint">PRD 전체 또는 질문을 선택해 의견을 남길 수 있습니다.</small>
             <button id="comment-submit" class="btn btn-primary btn-sm" type="submit">
-              <i class="bi bi-send"></i> 등록
+              <i class="idea-icon idea-icon-send"></i> 등록
             </button>
           </div>
         </form>
@@ -490,7 +492,7 @@
           <section class="prd-settings-info">
             <h3>PRD 정보</h3>
             <div class="prd-settings-created">
-              <span><i class="bi bi-calendar-check"></i> 생성일</span><strong id="prd-created-date">-</strong>
+              <span><i class="idea-icon idea-icon-calendar-check"></i> 생성일</span><strong id="prd-created-date">-</strong>
             </div>
           </section>
           <section id="prd-settings-edit-section" class="prd-settings-edit d-none">
@@ -527,7 +529,7 @@
                    role="alert"></div>
               <div class="prd-settings-save">
                 <button id="prd-summary-save" type="submit" class="btn btn-primary">
-                  <i class="bi bi-check-lg"></i> 변경사항 저장
+                  <i class="idea-icon idea-icon-check-lg"></i> 변경사항 저장
                 </button>
               </div>
             </form>
@@ -535,11 +537,11 @@
           <section id="prd-settings-danger-section" class="prd-settings-danger d-none">
             <h3>PRD 관리</h3>
             <button id="delete-prd" class="prd-settings-action danger" type="button">
-              <span><i class="bi bi-trash3"></i></span>
+              <span><i class="idea-icon idea-icon-trash3"></i></span>
               <div>
                 <strong>PRD 삭제</strong><small>휴지통으로 이동하며 30일 동안 복구할 수 있습니다.</small>
               </div>
-              <i class="bi bi-chevron-right"></i>
+              <i class="idea-icon idea-icon-chevron-right"></i>
             </button>
           </section>
         </div>
@@ -554,7 +556,7 @@
     <div class="modal-dialog modal-sm modal-dialog-centered">
       <div class="modal-content write-delete-confirm-content">
         <div class="modal-body text-center">
-          <span class="write-delete-confirm-icon"><i class="bi bi-trash3"></i></span>
+          <span class="write-delete-confirm-icon"><i class="idea-icon idea-icon-trash3"></i></span>
           <h2 id="write-delete-confirm-title">이 PRD를 삭제할까요?</h2>
           <p>
             <strong id="write-delete-prd-title"></strong>
@@ -637,7 +639,7 @@
           <button id="answer-held-conflict-copy"
                   type="button"
                   class="btn btn-outline-secondary">
-            <i class="bi bi-clipboard"></i> 내용 복사
+            <i class="idea-icon idea-icon-clipboard"></i> 내용 복사
           </button>
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">확인</button>
         </div>
@@ -668,13 +670,13 @@
                   type="button"
                   role="tab"
                   aria-selected="true">
-            <i class="bi bi-check2-circle"></i> 완성도 점검
+            <i class="idea-icon idea-icon-check2-circle"></i> 완성도 점검
           </button>
           <button id="export-preview-tab"
                   type="button"
                   role="tab"
                   aria-selected="false">
-            <i class="bi bi-file-earmark-text"></i> PRD 미리보기
+            <i class="idea-icon idea-icon-file-earmark-text"></i> PRD 미리보기
           </button>
         </div>
         <div class="modal-body export-modal-body">
@@ -704,9 +706,9 @@
                     type="button"
                     class="btn btn-outline-secondary"
                     disabled>
-              <i class="bi bi-clipboard"></i> 복사
+              <i class="idea-icon idea-icon-clipboard"></i> 복사
             </button>
-            <a id="download-prd-markdown" class="btn btn-primary" href="#"><i class="bi bi-download"></i> .md 다운로드</a>
+            <a id="download-prd-markdown" class="btn btn-primary" href="#"><i class="idea-icon idea-icon-download"></i> .md 다운로드</a>
           </div>
         </div>
       </div>
@@ -742,7 +744,7 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">닫기</button>
           <button id="perspective-draft-apply" type="button" class="btn btn-primary">
-            <i class="bi bi-check2-circle"></i> 선택한 답변 반영
+            <i class="idea-icon idea-icon-check2-circle"></i> 선택한 답변 반영
           </button>
         </div>
       </div>
@@ -751,8 +753,8 @@
 {% endblock %}
 {% block extra_js %}
   {{ block.super }}
-  <script src="{% static 'prds/js/write-participants.js' %}?v=20260917-3"></script>
-  <script src="{% static 'prds/js/write-comments.js' %}?v=20260917-3"></script>
-  <script src="{% static 'prds/js/write-contributions.js' %}?v=20260906-1"></script>
-  <script src="{% static 'prds/js/write.js' %}?v=20260917-3"></script>
+  <script src="{% static 'prds/js/write-participants.js' %}?v=20260922-v3-9"></script>
+  <script src="{% static 'prds/js/write-comments.js' %}?v=20260922-v3-9"></script>
+  <script src="{% static 'prds/js/write-contributions.js' %}?v=20260922-v3-9"></script>
+  <script src="{% static 'prds/js/write.js' %}?v=20260922-v3-9"></script>
 {% endblock %}

@@ -50,7 +50,7 @@
 
     const chevron = document.createElement("i");
     chevron.className =
-      "bi bi-chevron-down studio-select-chevron";
+      "idea-icon idea-icon-chevron-down studio-select-chevron";
 
     button.append(label, chevron);
 
@@ -134,7 +134,7 @@
             document.createElement("i");
 
           check.className =
-            "bi bi-check-lg";
+            "idea-icon idea-icon-check-lg";
 
           item.append(copy, check);
 
@@ -219,44 +219,44 @@
 
     style.textContent = `
 .idea-date-field{position:relative;display:block}
-.idea-date-native{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important;opacity:0!important;pointer-events:none!important}
-.idea-date-trigger{display:flex;width:100%;min-height:46px;align-items:center;gap:10px;justify-content:space-between;padding:0 13px;border:1px solid var(--idea-border-default,#e2e8f0);border-radius:12px;color:var(--idea-text-secondary,#334155);background:var(--idea-neutral-25,#fbfcfe);cursor:pointer;font:500 14px/1 var(--idea-font-family,Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)}
-.idea-date-trigger:hover{border-color:var(--idea-indigo-200,#c7d2fe);background:#fff}
-.idea-date-trigger[aria-expanded="true"],.idea-date-trigger:focus-visible{border-color:var(--idea-border-focus,#818cf8);outline:0;background:#fff;box-shadow:var(--idea-focus-ring,0 0 0 3px rgba(99,102,241,.12))}
+.idea-date-native{position:absolute!important;width:1px!important;height:1px!important;margin:0px!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important;opacity:0!important;pointer-events:none!important}
+.idea-date-trigger{display:flex;width:100%;min-height:var(--idea-control-height-md,40px);align-items:center;gap:var(--idea-gap-sm,8px);justify-content:space-between;padding:0 var(--idea-space-3,12px);border:1px solid var(--idea-border-default,var(--idea-border-default));border-radius:var(--idea-radius-md,8px);color:var(--idea-text-secondary,var(--idea-text-secondary));background:var(--idea-surface-default,var(--idea-surface-default));cursor:pointer;font:400 14px/1.45 var(--idea-font-family,Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)}
+.idea-date-trigger:hover{border-color:var(--idea-border-strong,var(--idea-border-strong));background:var(--idea-surface-default,var(--idea-surface-default))}
+.idea-date-trigger[aria-expanded="true"],.idea-date-trigger:focus-visible{border-color:var(--idea-border-focus,var(--idea-color-primary));outline:0;background:var(--idea-surface-default,var(--idea-surface-default));box-shadow:var(--idea-focus-ring,0 0 0 3px rgba(79,70,229,.16))}
 .idea-date-trigger:disabled{cursor:not-allowed;opacity:.55}
 .idea-date-value{min-width:0;flex:1;overflow:hidden;text-align:left;text-overflow:ellipsis;white-space:nowrap}
-.idea-date-value.is-placeholder{color:var(--idea-text-disabled,#94a3b8)}
-.idea-date-trigger i{color:var(--idea-color-primary,#4f46e5)}
-.idea-date-popover{position:fixed;z-index:2200;width:min(312px,calc(100vw - 24px));padding:12px;border:1px solid var(--idea-border-default,#e2e8f0);border-radius:16px;color:var(--idea-text-secondary,#334155);background:#fff;box-shadow:0 22px 60px rgba(15,23,42,.22);font-family:var(--idea-font-family,Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)}
+.idea-date-value.is-placeholder{color:var(--idea-text-placeholder,var(--idea-text-placeholder))}
+.idea-date-trigger i{color:var(--idea-color-primary,var(--idea-color-primary))}
+.idea-date-popover{position:fixed;z-index:2200;width:min(312px,calc(100vw - 24px));padding:var(--idea-space-3,12px);border:1px solid var(--idea-border-default,var(--idea-border-default));border-radius:var(--idea-radius-lg,12px);color:var(--idea-text-secondary,var(--idea-text-secondary));background:var(--idea-surface-default,var(--idea-surface-default));box-shadow:var(--idea-shadow-floating,0 10px 28px rgba(23,32,51,.10));font-family:var(--idea-font-family,Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)}
 .idea-date-popover[hidden]{display:none!important}
-.idea-date-head{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;align-items:center;gap:7px}
-.idea-date-nav,.idea-date-period,.idea-date-action,.idea-date-month-button{border:0;color:var(--idea-text-secondary,#334155);background:transparent}
-.idea-date-nav{display:grid;width:34px;height:34px;place-items:center;border-radius:9px;color:var(--idea-text-muted,#64748b)}
-.idea-date-nav:hover{color:var(--idea-color-primary,#4f46e5);background:var(--idea-color-primary-soft,#eef2ff)}
-.idea-date-period{display:flex;min-height:34px;align-items:center;justify-content:center;gap:7px;border-radius:9px;font-size:13px;font-weight:700}
-.idea-date-period:hover,.idea-date-period[aria-expanded="true"]{color:var(--idea-color-primary-hover,#4338ca);background:var(--idea-color-primary-soft,#eef2ff)}
-.idea-date-month-panel{margin-top:9px;padding:10px;border:1px solid var(--idea-border-default,#e2e8f0);border-radius:12px;background:var(--idea-surface-subtle,#f8fafc)}
-.idea-date-year-head{display:grid;grid-template-columns:30px 1fr 30px;align-items:center;gap:6px;margin-bottom:9px}
+.idea-date-head{display:grid;grid-template-columns:36px minmax(0,1fr) 36px;align-items:center;gap:var(--idea-gap-sm,8px)}
+.idea-date-nav,.idea-date-period,.idea-date-action,.idea-date-month-button{border:0;color:var(--idea-text-secondary,var(--idea-text-secondary));background:transparent}
+.idea-date-nav{display:grid;width:36px;height:36px;place-items:center;border-radius:var(--idea-radius-md,8px);color:var(--idea-text-muted,var(--idea-text-muted))}
+.idea-date-nav:hover{color:var(--idea-color-primary,var(--idea-color-primary));background:var(--idea-color-primary-soft,var(--idea-color-primary-soft))}
+.idea-date-period{display:flex;min-height:36px;align-items:center;justify-content:center;gap:var(--idea-gap-sm,8px);border-radius:var(--idea-radius-md,8px);font-size:13px;font-weight:600}
+.idea-date-period:hover,.idea-date-period[aria-expanded="true"]{color:var(--idea-color-primary-hover,var(--idea-color-primary-hover));background:var(--idea-color-primary-soft,var(--idea-color-primary-soft))}
+.idea-date-month-panel{margin-top:var(--idea-space-2,8px);padding:var(--idea-space-3,12px);border:1px solid var(--idea-border-default,var(--idea-border-default));border-radius:var(--idea-radius-lg,12px);background:var(--idea-surface-subtle,var(--idea-surface-subtle))}
+.idea-date-year-head{display:grid;grid-template-columns:32px 1fr 32px;align-items:center;gap:var(--idea-gap-sm,8px);margin-bottom:var(--idea-space-2,8px)}
 .idea-date-year-head strong{text-align:center;font-size:13px}
-.idea-date-month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.idea-date-month-button{min-height:34px;border-radius:8px;font-size:12px}
-.idea-date-month-button:hover{color:var(--idea-color-primary,#4f46e5);background:#fff}
-.idea-date-month-button.is-selected{color:#fff;background:var(--idea-color-primary,#4f46e5)}
+.idea-date-month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--idea-gap-sm,8px)}
+.idea-date-month-button{min-height:var(--idea-control-height-sm,36px);border-radius:var(--idea-radius-md,8px);font-size:13px;font-weight:600}
+.idea-date-month-button:hover{color:var(--idea-color-primary,var(--idea-color-primary));background:var(--idea-surface-default,var(--idea-surface-default))}
+.idea-date-month-button.is-selected{color:var(--idea-text-inverse,var(--idea-surface-default));background:var(--idea-color-primary,var(--idea-color-primary))}
 .idea-date-weekdays,.idea-date-days{display:grid;grid-template-columns:repeat(7,1fr)}
-.idea-date-weekdays{margin-top:10px;padding:0 2px}
-.idea-date-weekdays span{display:grid;height:25px;place-items:center;color:var(--idea-text-disabled,#94a3b8);font-size:10px;font-weight:600}
-.idea-date-days{gap:3px;margin-top:2px}
-.idea-date-day{display:grid;aspect-ratio:1/1;place-items:center;padding:0;border:0;border-radius:9px;color:var(--idea-text-secondary,#334155);background:transparent;font-size:12px}
-.idea-date-day:hover:not(:disabled){color:var(--idea-color-primary,#4f46e5);background:var(--idea-color-primary-soft,#eef2ff)}
-.idea-date-day.is-outside{color:#cbd5e1}
-.idea-date-day.is-today{box-shadow:inset 0 0 0 1px var(--idea-indigo-300,#a5b4fc);color:var(--idea-color-primary,#4f46e5);font-weight:700}
-.idea-date-day.is-selected{color:#fff;background:var(--idea-color-primary,#4f46e5);font-weight:700;box-shadow:none}
+.idea-date-weekdays{margin-top:var(--idea-space-3,12px);padding:0}
+.idea-date-weekdays span{display:grid;height:24px;place-items:center;color:var(--idea-text-muted,var(--idea-text-muted));font-size:12px;font-weight:600}
+.idea-date-days{gap:var(--idea-gap-xs,4px);margin-top:var(--idea-space-1,4px)}
+.idea-date-day{display:grid;aspect-ratio:1/1;place-items:center;padding:0;border:0;border-radius:var(--idea-radius-md,8px);color:var(--idea-text-secondary,var(--idea-text-secondary));background:transparent;font-size:12px;font-weight:500}
+.idea-date-day:hover:not(:disabled){color:var(--idea-color-primary,var(--idea-color-primary));background:var(--idea-color-primary-soft,var(--idea-color-primary-soft))}
+.idea-date-day.is-outside{color:var(--idea-text-disabled,var(--idea-text-disabled))}
+.idea-date-day.is-today{box-shadow:inset 0 0 0 1px var(--idea-indigo-300,#a5b4fc);color:var(--idea-color-primary,var(--idea-color-primary));font-weight:700}
+.idea-date-day.is-selected{color:var(--idea-text-inverse,var(--idea-surface-default));background:var(--idea-color-primary,var(--idea-color-primary));font-weight:700;box-shadow:none}
 .idea-date-day:disabled{cursor:not-allowed;opacity:.32}
-.idea-date-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--idea-border-default,#e2e8f0)}
-.idea-date-action{min-height:32px;padding:0 10px;border-radius:8px;font-size:11px;font-weight:600}
-.idea-date-action:hover{background:var(--idea-surface-muted,#f1f5f9)}
-.idea-date-action.is-primary{color:var(--idea-color-primary,#4f46e5);background:var(--idea-color-primary-soft,#eef2ff)}
-.idea-date-action.is-primary:hover{color:#fff;background:var(--idea-color-primary,#4f46e5)}
+.idea-date-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--idea-gap-sm,8px);margin-top:var(--idea-space-3,12px);padding-top:var(--idea-space-3,12px);border-top:1px solid var(--idea-border-default,var(--idea-border-default))}
+.idea-date-action{min-height:var(--idea-control-height-sm,36px);padding:0 var(--idea-space-3,12px);border-radius:var(--idea-radius-md,8px);font-size:13px;font-weight:600}
+.idea-date-action:hover{background:var(--idea-surface-muted,var(--idea-status-dropped-soft))}
+.idea-date-action.is-primary{color:var(--idea-color-primary,var(--idea-color-primary));background:var(--idea-color-primary-soft,var(--idea-color-primary-soft))}
+.idea-date-action.is-primary:hover{color:var(--idea-text-inverse,var(--idea-surface-default));background:var(--idea-color-primary,var(--idea-color-primary))}
 @media(max-width:480px){.idea-date-popover{width:calc(100vw - 20px)!important}}
 `;
 
@@ -403,7 +403,7 @@
       document.createElement("i");
 
     icon.className =
-      "bi bi-calendar3";
+      "idea-icon idea-icon-calendar3";
 
     trigger.append(
       value,
@@ -451,7 +451,7 @@
     );
 
     prev.innerHTML =
-      '<i class="bi bi-chevron-left"></i>';
+      '<i class="idea-icon idea-icon-chevron-left"></i>';
 
     const period =
       document.createElement("button");
@@ -478,7 +478,7 @@
     );
 
     next.innerHTML =
-      '<i class="bi bi-chevron-right"></i>';
+      '<i class="idea-icon idea-icon-chevron-right"></i>';
 
     head.append(
       prev,
@@ -508,7 +508,7 @@
       "idea-date-nav";
 
     prevYear.innerHTML =
-      '<i class="bi bi-chevron-left"></i>';
+      '<i class="idea-icon idea-icon-chevron-left"></i>';
 
     const yearLabel =
       document.createElement("strong");
@@ -521,7 +521,7 @@
       "idea-date-nav";
 
     nextYear.innerHTML =
-      '<i class="bi bi-chevron-right"></i>';
+      '<i class="idea-icon idea-icon-chevron-right"></i>';
 
     yearHead.append(
       prevYear,
@@ -772,7 +772,7 @@
         "년 " +
         (viewDate.getMonth() + 1) +
         "월</strong>" +
-        '<i class="bi bi-chevron-down"></i>';
+        '<i class="idea-icon idea-icon-chevron-down"></i>';
 
       const first =
         new Date(

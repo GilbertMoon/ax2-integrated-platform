@@ -7,8 +7,8 @@
   const csrf =
     document.querySelector('meta[name="csrf-token"]')?.content || "";
 
-  const currentUserId = Number(root.dataset.currentUserId);
-  const currentUserName = root.dataset.currentUserName || "나";
+  let currentUserId = Number(root.dataset.currentUserId);
+  let currentUserName = root.dataset.currentUserName || "나";
 
   const selected = new Map();
 
@@ -23,7 +23,6 @@
   const selectedRoot = document.getElementById("selected-participants");
   const picker = document.getElementById("participant-picker");
   const pickerToggle = document.getElementById("participant-picker-toggle");
-  const pickerClose = document.getElementById("participant-picker-close");
   const searchInput = document.getElementById("participant-search");
   const searchHelp = document.getElementById("participant-search-help");
   const searchSpinner = document.getElementById("participant-search-spinner");
@@ -161,9 +160,6 @@
       "selected-participant" +
       (owner ? " is-current-user" : "");
 
-    item.title =
-      user.display_name +
-      (owner ? " · 소유자" : " · 편집자");
 
     const avatar = document.createElement("span");
 
@@ -195,7 +191,6 @@
         "aria-label",
         user.display_name + " 제거"
       );
-      remove.title = user.display_name + " 제거";
       remove.textContent = "−";
 
       remove.addEventListener("click", function () {
@@ -241,6 +236,7 @@
 
     if (
       !userId ||
+      user.selected ||
       userId === currentUserId ||
       selected.has(userId)
     ) {
@@ -258,7 +254,7 @@
 
   function allTeamMembersAdded() {
     const others = teamUsers.filter(function (user) {
-      return Number(user.user_id) !== currentUserId;
+      return !user.selected && Number(user.user_id) !== currentUserId;
     });
 
     return (
@@ -274,7 +270,7 @@
 
     const otherCount =
       teamUsers.filter(function (user) {
-        return Number(user.user_id) !== currentUserId;
+        return !user.selected && Number(user.user_id) !== currentUserId;
       }).length;
 
     const allAdded = allTeamMembersAdded();
@@ -307,7 +303,9 @@
           )
       );
 
-      teamUsers = data.users || [];
+      teamUsers = (data.users || []).filter(function (user) {
+        return !user.selected && Number(user.user_id) !== currentUserId;
+      });
       teamLoaded = true;
 
       const teamAvailable =
@@ -346,7 +344,6 @@
     const userId = Number(user.user_id);
 
     const isAdded =
-      userId === currentUserId ||
       selected.has(userId) ||
       user.selected;
 
@@ -430,16 +427,17 @@
 
       results.replaceChildren();
 
+      const visibleResults = (data.results || []).filter(function (user) {
+        const userId = Number(user.user_id);
+        return userId !== currentUserId && !selected.has(userId) && !user.selected;
+      });
+
       if (data.bulk_mode) {
         const available =
-          data.results.filter(function (user) {
+          visibleResults.filter(function (user) {
             const userId = Number(user.user_id);
 
-            return (
-              userId !== currentUserId &&
-              !selected.has(userId) &&
-              !user.selected
-            );
+            return Boolean(userId);
           });
 
         if (available.length) {
@@ -452,7 +450,7 @@
 
           addAll.innerHTML =
             '<span class="participant-result-avatar">' +
-            '<i class="bi bi-people-fill"></i>' +
+            '<i class="idea-icon idea-icon-people-fill"></i>' +
             "</span>" +
             '<span class="participant-result-copy">' +
             "<strong>검색 결과 모두 추가</strong>" +
@@ -474,11 +472,11 @@
         }
       }
 
-      data.results.forEach(function (user) {
+      visibleResults.forEach(function (user) {
         results.append(resultButton(user));
       });
 
-      if (!data.results.length) {
+      if (!visibleResults.length) {
         searchHelp.classList.remove("d-none");
         searchHelp.textContent =
           "검색 결과가 없습니다.";
@@ -617,6 +615,7 @@
   document
     .querySelectorAll(".prd-type-card")
     .forEach(function (button) {
+      button.setAttribute("aria-pressed", "false");
       button.addEventListener(
         "click",
         function () {
@@ -626,10 +625,9 @@
           document
             .querySelectorAll(".prd-type-card")
             .forEach(function (item) {
-              item.classList.toggle(
-                "selected",
-                item === button
-              );
+              const isSelected = item === button;
+              item.classList.toggle("selected", isSelected);
+              item.setAttribute("aria-pressed", String(isSelected));
             });
 
           document.getElementById(
@@ -694,6 +692,9 @@
       }
     );
 
+  // The owner is a fixed participant and must never disappear even if a later picker binding fails.
+  renderSelected();
+
   pickerToggle.setAttribute(
     "aria-expanded",
     "false"
@@ -705,14 +706,6 @@
       setPicker(
         picker.classList.contains("d-none")
       );
-    }
-  );
-
-  pickerClose.addEventListener(
-    "click",
-    function () {
-      setPicker(false);
-      pickerToggle.focus();
     }
   );
 
@@ -856,5 +849,4 @@
       }
     );
 
-  renderSelected();
 }());

@@ -1,18 +1,24 @@
 {% extends "idea/integrated_base.html" %}
 {% load static %}
 {% block title %}브레인스토밍 | Idea Developer{% endblock %}
+
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'brainstorm/css/brainstorm.css' %}?v=20260917-r5"
+  <link href="{% static 'brainstorm/css/brainstorm.css' %}?v=20260922-v5-8"
         rel="stylesheet">
 {% endblock %}
+
 {% block breadcrumb %}브레인스토밍{% endblock %}
+
 {% block content %}
   <div id="brainstorm-root"
        class="idea-dev idea-dev--brainstorm"
        data-prd-id="{{ prd_id }}"
        data-prd-title="{{ prd_title }}"
        data-api-base="{{ api_base }}"
+       data-brand-mark-url="{% static 'idea/assets/brand/id-mark-primary.svg' %}"
+       data-first-page-illustration="{% static 'idea/assets/illustrations/first-page.svg' %}"
+       data-idea-document-illustration="{% static 'idea/assets/illustrations/idea-to-document.svg' %}"
        data-polling-interval-ms="{{ polling_interval_ms }}"
        aria-live="polite">
     <div class="d-flex justify-content-center py-5" role="status">
@@ -20,19 +26,22 @@
       <span class="visually-hidden">브레인스토밍 화면을 불러오는 중입니다.</span>
     </div>
   </div>
+
   <form class="d-none" aria-hidden="true">
     {% csrf_token %}
   </form>
+
   <noscript>
     <div class="alert alert-warning">브레인스토밍 화면을 사용하려면 JavaScript를 켜 주세요.</div>
   </noscript>
 {% endblock %}
+
 {% block extra_js %}
   {{ block.super }}
   <script src="{% static 'vendor/react/react.production.min.js' %}?v=18.3.1"></script>
   <script src="{% static 'vendor/react/react-dom.production.min.js' %}?v=18.3.1"></script>
   <script src="{% static 'brainstorm/js/layout.js' %}?v=20260917-r2"></script>
   <script src="{% static 'brainstorm/js/api-client.js' %}?v=20260906-7"></script>
-  <script src="{% static 'brainstorm/js/app.js' %}?v=20260917-r5"></script>
+  <script src="{% static 'brainstorm/js/app.js' %}?v=20260922-v5-8"></script>
   <script src="{% static 'brainstorm/js/brainstorm-zoom-guard.js' %}?v=20260917-r2"></script>
 {% endblock %}

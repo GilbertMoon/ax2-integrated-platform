@@ -12,6 +12,8 @@
   const commentsApi = root.dataset.commentsApi;
   const contributionsApi = root.dataset.contributionsApi;
   const aiBase = root.dataset.aiApiBase;
+  const sharedThinkingIllustration = root.dataset.illustrationSharedThinking || "";
+  const focusedReviewIllustration = root.dataset.illustrationFocusedReview || "";
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
   const sectionsRoot = document.getElementById("prd-sections");
   const scope = document.getElementById("coach-scope");
@@ -127,11 +129,10 @@
     control.classList.toggle("is-today", dueToday);
     deadlineWarning.classList.toggle("d-none", !overdue && !dueToday);
     deadlineWarning.textContent = overdue ? "마감 지남" : dueToday ? "오늘 마감" : "";
-    control.title = overdue
-      ? "마감 기한이 지났습니다."
-      : dueToday
-        ? "오늘이 마감일입니다."
-        : "목표 마감일";
+    control.setAttribute(
+      "aria-label",
+      overdue ? "마감 기한이 지났습니다." : dueToday ? "오늘이 마감일입니다." : "목표 마감일"
+    );
   }
 
   function decodeSafeText(value) {
@@ -249,7 +250,6 @@
       button.type = "button";
       // 글자 수로 자르지 않는다. 넘칠 때만 CSS가 말줄임표를 붙이고, 전체 제목은 툴팁으로 보여준다.
       const label = element("span", "", section.title);
-      label.title = section.title;
       button.append(element("b", "", rate === 100 ? "✓" : String(index + 1)), label);
       button.addEventListener("click", function () { activeSectionId = section.id; renderDetail(detail); document.querySelector('[data-section-id="' + section.id + '"]')?.scrollIntoView({behavior: "smooth", block: "start"}); });
       steps.append(button);
@@ -266,7 +266,6 @@
     const roleLabels = {owner: "소유자", editor: "편집자", viewer: "뷰어", tutor: "튜터"};
     roleBadge.textContent = roleLabels[roleKey] || "";
     roleBadge.className = "write-role-badge" + (roleLabels[roleKey] ? " " + roleKey : " d-none");
-    roleBadge.title = data.permissions.is_creator ? "이 PRD를 생성한 소유자입니다." : "이 PRD에서 나의 역할입니다.";
     document.title = data.prd.title + " | Idea Developer";
     const status = document.getElementById("prd-status");
     status.textContent = statusLabels[data.prd.status] || data.prd.status;
@@ -386,7 +385,7 @@
     if (questionListMode) {
       const intro = element("div", "write-question-list-intro");
       intro.append(
-        element("i", "bi bi-list-check"),
+        element("i", "idea-icon idea-icon-list-check"),
         element("span", "", "모든 질문을 섹션별로 한 번에 펼쳐 보고 연속해서 작성할 수 있습니다.")
       );
       sectionsRoot.append(intro);
@@ -426,7 +425,7 @@
       card.dataset.sectionId = section.id;
       const toggle = element("button", "write-section-toggle"); toggle.type = "button";
       const copy = element("span", "write-section-title"); copy.append(element("strong", "", section.title), element("small", "", section.guide || "작성 가이드를 확인해 주세요."));
-      toggle.append(element("span", "write-section-index", String(index + 1)), copy, element("span", "write-section-badge" + (rate === 100 ? " done" : ""), rate === 100 ? "완료" : rate ? "작성 중" : "시작 전"), element("i", "bi bi-chevron-down write-section-chevron"));
+      toggle.append(element("span", "write-section-index", String(index + 1)), copy, element("span", "write-section-badge" + (rate === 100 ? " done" : ""), rate === 100 ? "완료" : rate ? "작성 중" : "시작 전"), element("i", "idea-icon idea-icon-chevron-down write-section-chevron"));
       toggle.addEventListener("click", function () { activeSectionId = String(activeSectionId) === String(section.id) ? null : section.id; renderDetail(detail); });
       card.append(toggle);
       const body = element("div", "write-section-body");
@@ -496,7 +495,7 @@
     saveAllButton.disabled = savingAllAnswers || count === 0;
     saveAllButton.innerHTML = savingAllAnswers
       ? '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> 저장 중…'
-      : '<i class="bi bi-cloud-check"></i> 전체 저장' + (count ? ' <span class="save-count">' + count + '</span>' : '');
+      : '<i class="idea-icon idea-icon-cloud-check"></i> 전체 저장' + (count ? ' <span class="save-count">' + count + '</span>' : '');
   }
 
   function findQuestion(questionId) {
@@ -635,7 +634,7 @@
     const original = answerHeldConflictCopy.innerHTML;
     try {
       await navigator.clipboard.writeText(answerHeldConflictLocal.value);
-      answerHeldConflictCopy.innerHTML = '<i class="bi bi-check2"></i> 복사됨';
+      answerHeldConflictCopy.innerHTML = '<i class="idea-icon idea-icon-check2"></i> 복사됨';
       window.setTimeout(function () { answerHeldConflictCopy.innerHTML = original; }, 1800);
     } catch (error) {
       answerHeldConflictLocal.focus();
@@ -689,7 +688,7 @@
     const card = element("div", "coach-proposal");
 
     const head = element("div", "coach-proposal-head");
-    head.append(element("i", "bi bi-pencil-square"), element("strong", "", "이 답변을 고칠까요?"));
+    head.append(element("i", "idea-icon idea-icon-pencil-square"), element("strong", "", "이 답변을 고칠까요?"));
     card.append(head);
 
     const target = element("div", "coach-proposal-target");
@@ -712,7 +711,6 @@
     no.type = "button";
     if (!canRequestAi) {
       yes.disabled = true;
-      yes.title = "현재 권한 또는 PRD 상태에서는 반영할 수 없습니다.";
     }
     yes.addEventListener("click", function () {
       applyProposal(message.job.id, proposal, yes, no, card);
@@ -914,9 +912,20 @@
     document.getElementById("score-state").textContent = "진단 전";
     document.getElementById("write-score-label").textContent = "아직 진단하지 않았습니다";
     document.getElementById("write-score-feedback").textContent = message || "AI 진단을 실행하면 PM·엔지니어링·투자자 세 관점을 종합한 의견을 확인할 수 있습니다.";
-    document.getElementById("write-section-diagnostics").replaceChildren(
-      Object.assign(element("div", "evaluation-empty"), {innerHTML: '<i class="bi bi-stars"></i><span>AI 진단 후 섹션별 피드백이 표시됩니다.</span>'})
+    const diagnosticsEmpty = element("div", "evaluation-empty evaluation-empty--review");
+    if (focusedReviewIllustration) {
+      const image = document.createElement("img");
+      image.src = focusedReviewIllustration;
+      image.alt = "";
+      diagnosticsEmpty.append(image);
+    }
+    const emptyCopy = element("div");
+    emptyCopy.append(
+      element("strong", "", "아직 AI 진단 전입니다."),
+      element("span", "", "진단을 실행하면 섹션별 충족도와 보완점을 여기에서 확인할 수 있어요.")
     );
+    diagnosticsEmpty.append(emptyCopy);
+    document.getElementById("write-section-diagnostics").replaceChildren(diagnosticsEmpty);
   }
 
   function renderEvaluationEmpty() {
@@ -963,11 +972,9 @@
       coach.type = "button";
       if (!canRequestAi) {
         coach.disabled = true;
-        coach.title = "현재 권한 또는 PRD 상태에서는 AI를 요청할 수 없습니다.";
       } else if (!isCurrent) {
         // 낡은 진단으로 상담을 시작하면 이미 채워 넣은 내용을 또 채우라고 하게 된다.
         coach.disabled = true;
-        coach.title = "진단 후 답변이 바뀌었습니다. 다시 진단한 뒤 상담해 주세요.";
       }
       coach.addEventListener("click", function () { startSectionCoaching(section, row); });
 
@@ -1008,7 +1015,7 @@
     evaluationButton.disabled = busy || !detail?.permissions.can_request_ai || detail?.prd.status === "completed";
     evaluationButton.innerHTML = busy
       ? '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ' + (label || "세 관점 진단 중…")
-      : '<i class="bi bi-stars"></i> AI 진단하기';
+      : '<i class="idea-icon idea-icon-stars"></i> AI 진단하기';
     evaluationCancel.classList.toggle("d-none", !busy || !evaluationJobIds.length);
   }
 
@@ -1154,7 +1161,7 @@
     perspectiveDraftButton.disabled = busy || !detail?.permissions.can_request_ai || detail?.prd.status === "completed";
     perspectiveDraftButton.innerHTML = busy
       ? '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> 초안 작성 중…'
-      : '<i class="bi bi-magic"></i> AI 초안 작성';
+      : '<i class="idea-icon idea-icon-magic"></i> AI 초안 작성';
   }
 
   function findQuestionPrompt(questionId) {
@@ -1216,12 +1223,12 @@
       body.append(Object.assign(element("p", "perspective-draft-item-draft"), {textContent: decodeSafeText(row.draft)}));
       if (row.reasoning) {
         const reasoning = element("div", "perspective-draft-item-reasoning");
-        reasoning.append(element("i", "bi bi-info-circle"), element("span", "", decodeSafeText(row.reasoning)));
+        reasoning.append(element("i", "idea-icon idea-icon-info-circle"), element("span", "", decodeSafeText(row.reasoning)));
         body.append(reasoning);
       }
       const chatLink = element("button", "perspective-draft-item-chat-link");
       chatLink.type = "button";
-      chatLink.append(element("i", "bi bi-chat-dots"), element("span", "", "AI 채팅으로 가기"));
+      chatLink.append(element("i", "idea-icon idea-icon-chat-dots"), element("span", "", "AI 채팅으로 가기"));
       chatLink.addEventListener("click", function (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -1295,7 +1302,7 @@
       showAlert(error.message);
     } finally {
       perspectiveDraftApplyButton.disabled = false;
-      perspectiveDraftApplyButton.innerHTML = '<i class="bi bi-check2-circle"></i> 선택한 답변 반영';
+      perspectiveDraftApplyButton.innerHTML = '<i class="idea-icon idea-icon-check2-circle"></i> 선택한 답변 반영';
     }
   });
 
@@ -1561,29 +1568,68 @@
     }
   });
 
-  const participantController = window.PrdWriteParticipants.create({
-    api: api,
-    element: element,
-    participantsApi: participantsApi,
-    participantSearchApi: participantSearchApi,
-    participantTeamApi: participantTeamApi,
-    canManageParticipants: function () { return canManageParticipants; }
-  });
+  function fallbackParticipantAvatar(participant, className) {
+    const avatar = element("span", className || "participant-person-avatar");
+    const name = String(participant?.display_name || "?").trim();
+    avatar.textContent = name.length > 2 ? name.slice(-2) : name || "?";
+    avatar.setAttribute("aria-hidden", "true");
+    return avatar;
+  }
 
-  const commentController = window.PrdWriteComments.create({
-    api: api,
-    element: element,
-    participantAvatar: participantController.avatar,
-    commentsApi: commentsApi,
-    getDetail: function () { return detail; }
-  });
+  let participantController = {
+    load: function () { return Promise.resolve(); },
+    avatar: fallbackParticipantAvatar
+  };
+  if (window.PrdWriteParticipants && typeof window.PrdWriteParticipants.create === "function") {
+    try {
+      participantController = window.PrdWriteParticipants.create({
+        api: api,
+        element: element,
+        participantsApi: participantsApi,
+        participantSearchApi: participantSearchApi,
+        participantTeamApi: participantTeamApi,
+        canManageParticipants: function () { return canManageParticipants; }
+      });
+    } catch (error) {
+      console.error("[Idea Write] participant module init failed", error);
+    }
+  } else {
+    console.error("[Idea Write] write-participants.js did not load.");
+  }
 
-  const contributionController = window.PrdWriteContributions.create({
-    api: api,
-    element: element,
-    contributionsApi: contributionsApi,
-    getDetail: function () { return detail; }
-  });
+  let commentController = {load: function () { return Promise.resolve(); }};
+  if (window.PrdWriteComments && typeof window.PrdWriteComments.create === "function") {
+    try {
+      commentController = window.PrdWriteComments.create({
+        api: api,
+        element: element,
+        participantAvatar: participantController.avatar || fallbackParticipantAvatar,
+        commentsApi: commentsApi,
+        emptyIllustration: sharedThinkingIllustration,
+        getDetail: function () { return detail; }
+      });
+    } catch (error) {
+      console.error("[Idea Write] comment module init failed", error);
+    }
+  } else {
+    console.error("[Idea Write] write-comments.js did not load.");
+  }
+
+  let contributionController = {load: function () { return Promise.resolve(); }};
+  if (window.PrdWriteContributions && typeof window.PrdWriteContributions.create === "function") {
+    try {
+      contributionController = window.PrdWriteContributions.create({
+        api: api,
+        element: element,
+        contributionsApi: contributionsApi,
+        getDetail: function () { return detail; }
+      });
+    } catch (error) {
+      console.error("[Idea Write] contribution module init failed", error);
+    }
+  } else {
+    console.error("[Idea Write] write-contributions.js did not load.");
+  }
   saveAllButton.addEventListener("click", saveAllAnswers);
 
   exportModalElement.addEventListener("show.bs.modal", function () {
@@ -1602,9 +1648,9 @@
     if (!exportedMarkdown) return;
     try {
       await navigator.clipboard.writeText(exportedMarkdown);
-      copyMarkdownButton.innerHTML = '<i class="bi bi-check2"></i> 복사됨';
+      copyMarkdownButton.innerHTML = '<i class="idea-icon idea-icon-check2"></i> 복사됨';
       window.setTimeout(function () {
-        copyMarkdownButton.innerHTML = '<i class="bi bi-clipboard"></i> 복사';
+        copyMarkdownButton.innerHTML = '<i class="idea-icon idea-icon-clipboard"></i> 복사';
       }, 1800);
     } catch (_error) {
       showAlert("클립보드에 복사하지 못했습니다. 미리보기 내용을 직접 복사해 주세요.");
@@ -1631,9 +1677,23 @@
 
   api(detailApi)
     .then(function (data) {
+      if (data.current_user_id !== undefined && data.current_user_id !== null) {
+        root.dataset.currentUserId = String(data.current_user_id);
+      }
+      if (participantController.setCurrentUserIdentity) {
+        participantController.setCurrentUserIdentity(
+          data.current_user_id,
+          root.dataset.currentUserName,
+          Boolean(data.permissions?.is_creator)
+        );
+      }
       renderDetail(data);
-      participantController.load();
-      commentController.load();
+      Promise.resolve(participantController.load()).catch(function (error) {
+        console.error("[Idea Write] participants load failed", error);
+      });
+      Promise.resolve(commentController.load()).catch(function (error) {
+        console.error("[Idea Write] comments load failed", error);
+      });
       loadEvaluation();
       return loadConversation();
     })

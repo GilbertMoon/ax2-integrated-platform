@@ -34,6 +34,12 @@
     dropped: "status-dropped"
   };
 
+  const prdTypeIcons = {
+    new_product: "idea-icon-rocket-takeoff",
+    new_feature: "idea-icon-lightning-charge",
+    improvement: "idea-icon-magic"
+  };
+
   const projectScopeLabels = {
     round_team: "회차 팀",
     team: "일반 팀",
@@ -266,9 +272,15 @@
     target.replaceChildren();
 
     if (!activities.length) {
-      target.append(
-        el("div", "home-activity-empty", "아직 표시할 활동이 없습니다.")
+      const emptyState = el("div", "home-activity-empty idea-empty-compact");
+      const icon = el("span", "idea-empty-icon");
+      icon.append(el("i", "idea-icon idea-icon-lightning-charge"));
+      emptyState.append(
+        icon,
+        el("strong", "", "아직 최근 활동이 없습니다."),
+        el("span", "", "PRD를 만들거나 수정하면 주요 변경 내역이 여기에 모입니다.")
       );
+      target.append(emptyState);
       return;
     }
 
@@ -503,6 +515,13 @@
           ? "뷰어로 참여한 PRD가 없습니다."
           : "조건에 맞는 PRD가 없습니다.";
 
+    document.getElementById("home-empty-copy").textContent =
+      tutorManagementMode
+        ? "회차나 학생 범위를 바꾸면 다른 담당 PRD를 확인할 수 있어요."
+        : state.scope === "viewer"
+          ? "뷰어 권한으로 초대된 PRD가 생기면 이 목록에서 바로 확인할 수 있어요."
+          : "첫 문서를 만들면 아이디어부터 작성 진행 상황까지 한곳에서 이어서 관리할 수 있어요.";
+
     document
       .getElementById("home-empty-create")
       .classList.toggle(
@@ -524,12 +543,16 @@
       const cardTop = el("div", "prd-card-top mb-2");
       const badges = el("div", "d-flex flex-wrap gap-2");
 
+      const typeBadge = el(
+        "span",
+        "badge home-type-badge home-type-" + (item.prd_type || "unknown")
+      );
+      const typeIcon = el("i", "idea-icon " + (prdTypeIcons[item.prd_type] || "idea-icon-file-earmark-text"));
+      typeIcon.setAttribute("aria-hidden", "true");
+      typeBadge.append(typeIcon, document.createTextNode(labels[item.prd_type] || item.prd_type));
+
       badges.append(
-        el(
-          "span",
-          "badge text-bg-light",
-          labels[item.prd_type] || item.prd_type
-        ),
+        typeBadge,
         el(
           "span",
           "badge " + (statusClasses[item.status] || "status-dropped"),
@@ -582,7 +605,6 @@
           roleLabels[visibleRole]
         );
 
-        roleBadge.title = "이 PRD에서 나의 역할입니다.";
         badges.append(roleBadge);
       }
 
@@ -604,7 +626,7 @@
 
       brain.href = brainstormUrl(item.id);
       brain.prepend(
-        el("i", "bi bi-lightbulb-fill")
+        el("i", "idea-icon idea-icon-lightbulb-fill")
       );
       brain.addEventListener("click", function (event) {
         event.stopPropagation();
@@ -653,7 +675,6 @@
           avatarText(participant.display_name)
         );
 
-        avatar.title = participant.display_name;
         avatars.append(avatar);
       });
 
@@ -680,8 +701,7 @@
         );
 
         noDeadline.append(
-          el("i", "bi bi-exclamation-circle-fill"),
-          document.createTextNode(" 마감일 없음")
+          document.createTextNode("마감일 없음")
         );
 
         meta.append(noDeadline);
@@ -692,7 +712,7 @@
         );
 
         todayAlert.append(
-          el("i", "bi bi-exclamation-circle-fill"),
+          el("span", "prd-card-deadline-bang", "!"),
           document.createTextNode(" 오늘 마감 · D-Day")
         );
 
@@ -758,7 +778,7 @@
           item.title + " 메뉴"
         );
         menuButton.append(
-          el("i", "bi bi-three-dots")
+          el("i", "idea-icon idea-icon-three-dots")
         );
 
         const menu = el(
@@ -775,7 +795,7 @@
 
         remove.type = "button";
         remove.prepend(
-          el("i", "bi bi-trash3 me-2")
+          el("i", "idea-icon idea-icon-trash3 me-2")
         );
 
         [
@@ -888,7 +908,7 @@
       "학생 선택 해제"
     );
     clear.append(
-      el("i", "bi bi-x-lg")
+      el("i", "idea-icon idea-icon-x-lg")
     );
     clear.addEventListener(
       "click",
@@ -1319,13 +1339,15 @@
     trashList.replaceChildren();
 
     if (!items.length) {
-      trashList.append(
-        el(
-          "div",
-          "trash-empty",
-          "휴지통이 비어 있습니다."
-        )
+      const emptyState = el("div", "trash-empty idea-empty-compact");
+      const icon = el("span", "idea-empty-icon");
+      icon.append(el("i", "idea-icon idea-icon-trash3"));
+      emptyState.append(
+        icon,
+        el("strong", "", "휴지통이 비어 있습니다."),
+        el("span", "", "삭제한 PRD가 생기면 30일 동안 이곳에서 복구할 수 있어요.")
       );
+      trashList.append(emptyState);
       return;
     }
 

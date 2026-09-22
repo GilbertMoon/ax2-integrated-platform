@@ -13,13 +13,13 @@
    ============================================================ */
 
 .idea-dev--home .home-hero {
-  padding: 10px 2px;
+  padding: 8px 2px;
 }
 
 .idea-dev--home .home-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--idea-gap-sm);
   margin-bottom: 8px;
   color: var(--idea-indigo-500);
   font-size: var(--idea-font-size-caption);
@@ -30,7 +30,7 @@
 .idea-dev--home .home-title {
   margin: 0 0 8px;
   color: var(--idea-text-primary);
-  font-size: clamp(1.9rem, 3vw, 2.25rem);
+  font-size: var(--idea-font-size-display);
   font-weight: var(--idea-font-weight-bold);
   letter-spacing: -.035em;
   line-height: 1.2;
@@ -47,7 +47,7 @@
 .idea-dev--home .home-hero-actions {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--idea-gap-sm);
 }
 
 .idea-dev--home .home-create {
@@ -55,8 +55,8 @@
   min-height: 44px;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: var(--idea-gap-sm);
+  padding: 8px 16px;
   border-radius: var(--idea-radius-md);
   color: var(--idea-text-inverse) !important;
   background: var(--idea-color-primary);
@@ -79,7 +79,7 @@
   border-radius: var(--idea-radius-md);
   color: var(--idea-text-muted);
   background: var(--idea-surface-default);
-  font-size: 19px;
+  font-size: var(--idea-font-size-title-2);
   text-decoration: none;
   box-shadow: var(--idea-shadow-1);
   transition:
@@ -111,7 +111,7 @@
   min-height: 112px;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 0 10px;
+  gap: 0 var(--idea-gap-sm);
   padding: 16px;
   overflow: hidden;
   border: 1px solid var(--idea-border-default);
@@ -141,7 +141,7 @@
 .idea-dev--home .home-kpi strong {
   grid-column: 1 / -1;
   margin-top: 8px;
-  font-size: 1.625rem;
+  font-size: var(--idea-font-size-title-1);
   font-weight: var(--idea-font-weight-bold);
   line-height: 1;
   letter-spacing: -.035em;
@@ -152,8 +152,8 @@
   width: 34px;
   height: 34px;
   place-items: center;
-  border-radius: 10px;
-  font-size: 16px;
+  border-radius: var(--idea-radius-md);
+  font-size: var(--idea-font-size-body-lg);
 }
 
 /* 기존 HTML class도 안전하게 지원 */
@@ -164,20 +164,20 @@
 
 .idea-dev--home .kpi-blue,
 .idea-dev--home .kpi-status-progress {
-  color: var(--idea-status-progress, #047857);
-  background: var(--idea-status-progress-soft, #ecfdf5);
+  color: var(--idea-status-progress, var(--idea-color-success));
+  background: var(--idea-status-progress-soft, var(--idea-color-success-soft));
 }
 
 .idea-dev--home .kpi-green,
 .idea-dev--home .kpi-status-completed {
-  color: var(--idea-status-completed, #4f46e5);
-  background: var(--idea-status-completed-soft, #eef2ff);
+  color: var(--idea-status-completed, var(--idea-color-primary));
+  background: var(--idea-status-completed-soft, var(--idea-color-primary-soft));
 }
 
 .idea-dev--home .kpi-purple,
 .idea-dev--home .kpi-status-held {
   color: var(--idea-status-held, #b45309);
-  background: var(--idea-status-held-soft, #fffbeb);
+  background: var(--idea-status-held-soft, var(--idea-color-warning-soft));
 }
 
 .idea-dev--home .kpi-cyan {
@@ -195,14 +195,14 @@
    ============================================================ */
 
 .idea-dev--home .home-library {
-  margin-top: 34px;
+  margin-top: 32px;
 }
 
 .idea-dev--home .home-content-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 272px;
   align-items: start;
-  gap: 22px;
+  gap: var(--idea-gap-xl);
 }
 
 .idea-dev--home .home-library-main {
@@ -214,7 +214,7 @@
   top: 82px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--idea-gap-lg);
 }
 
 /* ============================================================
@@ -231,38 +231,38 @@
   width: 100%;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
+  gap: var(--idea-gap-xl);
   margin-bottom: 8px;
 }
 
 .idea-dev--home .home-scope-tabs {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--idea-gap-sm);
   margin-bottom: 8px;
 }
 
 .idea-dev--home .home-scope-tab {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 2px 9px;
+  gap: var(--idea-gap-sm);
+  padding: 8px 2px 8px;
   border: 0;
   border-bottom: 2px solid transparent;
   color: var(--idea-text-disabled);
   background: transparent;
-  font-size: 17px;
+  font-size: var(--idea-font-size-heading);
   font-weight: var(--idea-font-weight-bold);
   letter-spacing: -.025em;
   transition: color .15s ease, border-color .15s ease;
 }
 
 .idea-dev--home .home-scope-tab + .home-scope-tab {
-  margin-left: 10px;
+  margin-left: 8px;
 }
 
 .idea-dev--home .home-scope-tab i {
-  font-size: 16px;
+  font-size: var(--idea-font-size-body-lg);
 }
 
 .idea-dev--home .home-scope-tab:hover {
@@ -281,7 +281,7 @@
   min-height: 36px;
   flex: 0 0 auto;
   align-items: center;
-  gap: 6px;
+  gap: var(--idea-gap-sm);
   padding: 0 12px;
   border: 1px solid var(--idea-border-default);
   border-radius: var(--idea-radius-sm);
@@ -307,9 +307,9 @@
 
 .idea-dev--home .home-trash-action:hover,
 .idea-dev--home .home-trash-icon:hover {
-  border-color: #fecaca;
-  color: var(--idea-color-danger, #dc2626);
-  background: var(--idea-color-danger-soft, #fef2f2);
+  border-color: var(--idea-color-danger-border);
+  color: var(--idea-color-danger, var(--idea-color-danger));
+  background: var(--idea-color-danger-soft, var(--idea-color-danger-soft));
 }
 
 .idea-dev--home .home-trash-action:focus-visible,
@@ -319,7 +319,7 @@
 }
 
 .idea-dev--home .home-scope-description {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   color: var(--idea-text-muted);
   font-size: var(--idea-font-size-label);
 }
@@ -332,7 +332,7 @@
   display: inline-flex;
   width: fit-content;
   align-items: center;
-  gap: 4px;
+  gap: var(--idea-gap-xs);
   padding: 4px;
   overflow: visible;
   border: 1px solid var(--idea-border-default);
@@ -349,9 +349,9 @@
   align-items: center;
   justify-content: center;
   margin: 0 !important;
-  padding: 0 14px;
+  padding: 0 12px;
   border: 0 !important;
-  border-radius: 9px !important;
+  border-radius: var(--idea-radius-md) !important;
   box-shadow: none;
   font-size: var(--idea-font-size-label);
   font-weight: var(--idea-font-weight-semibold);
@@ -393,7 +393,7 @@
 
 .idea-dev--home .home-filters .studio-select-button {
   min-height: 38px;
-  padding-inline: 11px;
+  padding-inline: 12px;
   background: var(--idea-surface-default);
   font-size: var(--idea-font-size-label);
 }
@@ -427,7 +427,7 @@
   display: flex;
   min-height: 250px;
   flex-direction: column;
-  padding: 18px;
+  padding: 16px;
 }
 
 .idea-dev--home .idea-card-hover h3 {
@@ -444,7 +444,7 @@
   padding: 4px 8px;
   border: 1px solid transparent;
   border-radius: var(--idea-radius-sm);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-semibold);
   line-height: 1.2;
 }
@@ -452,29 +452,29 @@
 /* 카드 상태: 기존 JS class + 이후 status-* class 둘 다 지원 */
 .idea-dev--home .prd-card-top .badge.text-bg-warning,
 .idea-dev--home .prd-card-top .badge.status-in-progress {
-  border-color: var(--idea-status-progress-border, #a7f3d0);
-  color: var(--idea-status-progress, #047857) !important;
-  background: var(--idea-status-progress-soft, #ecfdf5) !important;
+  border-color: var(--idea-status-progress-border, var(--idea-color-success-border));
+  color: var(--idea-status-progress, var(--idea-color-success)) !important;
+  background: var(--idea-status-progress-soft, var(--idea-color-success-soft)) !important;
 }
 
 .idea-dev--home .prd-card-top .badge.text-bg-success,
 .idea-dev--home .prd-card-top .badge.status-completed {
-  border-color: var(--idea-status-completed-border, #c7d2fe);
-  color: var(--idea-status-completed, #4f46e5) !important;
-  background: var(--idea-status-completed-soft, #eef2ff) !important;
+  border-color: var(--idea-status-completed-border, var(--idea-color-primary-subtle));
+  color: var(--idea-status-completed, var(--idea-color-primary)) !important;
+  background: var(--idea-status-completed-soft, var(--idea-color-primary-soft)) !important;
 }
 
 .idea-dev--home .prd-card-top .badge.status-held {
-  border-color: var(--idea-status-held-border, #fde68a);
+  border-color: var(--idea-status-held-border, var(--idea-color-warning-border));
   color: var(--idea-status-held, #b45309) !important;
-  background: var(--idea-status-held-soft, #fffbeb) !important;
+  background: var(--idea-status-held-soft, var(--idea-color-warning-soft)) !important;
 }
 
 .idea-dev--home .prd-card-top .badge.status-dropped,
 .idea-dev--home .prd-card-top .badge.text-bg-secondary {
-  border-color: var(--idea-status-dropped-border, #e2e8f0);
-  color: var(--idea-status-dropped, #64748b) !important;
-  background: var(--idea-status-dropped-soft, #f1f5f9) !important;
+  border-color: var(--idea-status-dropped-border, var(--idea-border-default));
+  color: var(--idea-status-dropped, var(--idea-text-muted)) !important;
+  background: var(--idea-status-dropped-soft, var(--idea-surface-subtle)) !important;
 }
 
 /* NEW는 상태가 아니라 novelty tag */
@@ -489,9 +489,9 @@
   display: flex;
   min-height: 24px;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--idea-gap-sm);
   margin-bottom: 12px !important;
-  padding-right: 28px;
+  padding-right: 24px;
 }
 
 .idea-dev--home .prd-card-top > div {
@@ -505,7 +505,7 @@
   min-width: 0;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--idea-gap-md);
   margin-bottom: 8px;
 }
 
@@ -534,13 +534,13 @@
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 5px;
-  padding: 5px 8px;
+  gap: var(--idea-gap-xs);
+  padding: 4px 8px;
   border: 1px solid var(--idea-indigo-200);
   border-radius: var(--idea-radius-sm);
   color: var(--idea-color-primary);
   background: var(--idea-color-primary-soft);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-semibold);
   text-decoration: none;
   white-space: nowrap;
@@ -548,7 +548,7 @@
 
 .idea-dev--home .prd-card-brainstorm i {
   color: #f5b800;
-  font-size: 13px;
+  font-size: var(--idea-font-size-label);
 }
 
 .idea-dev--home .prd-card-brainstorm:hover {
@@ -574,7 +574,7 @@
   border-radius: var(--idea-radius-sm);
   color: var(--idea-text-disabled);
   background: transparent;
-  font-size: 17px;
+  font-size: var(--idea-font-size-heading);
 }
 
 .idea-dev--home .prd-card-menu-button:hover,
@@ -585,7 +585,7 @@
 
 .idea-dev--home .prd-card-menu .dropdown-menu {
   min-width: 112px;
-  padding: 5px;
+  padding: 4px;
   border-color: var(--idea-border-default);
   border-radius: var(--idea-radius-md);
   box-shadow: var(--idea-shadow-2);
@@ -593,7 +593,7 @@
 
 .idea-dev--home .prd-card-menu .dropdown-item {
   border-radius: var(--idea-radius-sm);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
 }
 
 /* progress / footer 기준선을 카드마다 동일하게 유지 */
@@ -615,7 +615,7 @@
 
 /* D-Day는 카드 상단 badge가 아니라 footer 메타에서만 강조한다. */
 .idea-dev--home .prd-card-deadline.is-today {
-  color: var(--idea-color-danger, #dc2626) !important;
+  color: var(--idea-color-danger, var(--idea-color-danger)) !important;
   font-weight: var(--idea-font-weight-bold);
 }
 
@@ -627,14 +627,14 @@
 .idea-dev--home .prd-card-deadline-alert {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: var(--idea-color-danger, #dc2626);
+  gap: var(--idea-gap-xs);
+  color: var(--idea-color-danger, var(--idea-color-danger));
   font-weight: var(--idea-font-weight-bold);
   white-space: nowrap;
 }
 
 .idea-dev--home .prd-card-deadline-alert i {
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev--home .prd-card-deadline-date {
@@ -646,15 +646,15 @@
 .idea-dev--home .prd-card-no-deadline {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--idea-gap-xs);
   color: var(--idea-status-held, #b45309);
   font-weight: var(--idea-font-weight-semibold);
   white-space: nowrap;
 }
 
 .idea-dev--home .prd-card-no-deadline i {
-  color: var(--idea-status-held, #d97706);
-  font-size: 11px;
+  color: var(--idea-status-held, var(--idea-color-warning));
+  font-size: var(--idea-font-size-caption);
 }
 
 /* ============================================================
@@ -667,8 +667,8 @@
 }
 
 .idea-dev--home .editor-role-badge {
-  color: var(--idea-status-progress, #047857) !important;
-  background: var(--idea-status-progress-soft, #ecfdf5) !important;
+  color: var(--idea-status-progress, var(--idea-color-success)) !important;
+  background: var(--idea-status-progress-soft, var(--idea-color-success-soft)) !important;
 }
 
 .idea-dev--home .viewer-role-badge {
@@ -692,10 +692,10 @@
   height: 30px;
   align-items: center;
   justify-content: center;
-  margin-left: -7px;
+  margin-left: -8px;
   border: 2px solid var(--idea-surface-default);
   border-radius: 50%;
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-bold);
   box-shadow: var(--idea-shadow-1);
 }
@@ -707,8 +707,8 @@
 .idea-dev--home .participant-avatar.is-current-user,
 .idea-dev--home .home-recent-avatar.is-current-user,
 .idea-dev--home .tutor-student-avatar.is-current-user {
-  color: var(--ax-primary, #1769e0) !important;
-  background: var(--ax-primary-container, #eaf2ff) !important;
+  color: var(--idea-avatar-current-fg) !important;
+  background: var(--idea-avatar-current-bg) !important;
 }
 
 
@@ -749,7 +749,7 @@
    ============================================================ */
 
 .idea-dev--home .home-activity-card {
-  padding: 18px;
+  padding: 16px;
   border: 1px solid var(--idea-border-default);
   border-radius: var(--idea-radius-lg);
   background: var(--idea-surface-default);
@@ -760,8 +760,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 17px;
+  gap: var(--idea-gap-sm);
+  margin-bottom: 16px;
 }
 
 .idea-dev--home .home-activity-head h2 {
@@ -774,13 +774,13 @@
 
 .idea-dev--home .home-activity-head span,
 .idea-dev--home .home-activity-more {
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev--home .home-activity-more {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--idea-gap-xs);
   padding: 2px;
   border: 0;
   color: var(--idea-color-primary);
@@ -797,7 +797,7 @@
   min-height: 82px;
   grid-template-columns: repeat(7, 1fr);
   align-items: end;
-  gap: 6px;
+  gap: var(--idea-gap-sm);
 }
 
 .idea-dev--home .home-activity-day {
@@ -805,7 +805,7 @@
   min-width: 0;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: var(--idea-gap-sm);
 }
 
 .idea-dev--home .home-activity-track {
@@ -836,21 +836,21 @@
 .idea-dev--home .home-activity-day span,
 .idea-dev--home .home-activity-day strong {
   color: var(--idea-text-muted);
-  font-size: 10px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-semibold);
 }
 
 .idea-dev--home .home-recent-list {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--idea-gap-xs);
 }
 
 .idea-dev--home .home-recent-item {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 9px 7px;
+  gap: var(--idea-gap-sm);
+  padding: 8px 8px;
   border-radius: var(--idea-radius-md);
   color: inherit;
   text-decoration: none;
@@ -871,14 +871,14 @@
   flex: 0 0 28px;
   place-items: center;
   border-radius: 50%;
-  font-size: 10px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-bold);
 }
 
 /* 최근 활동 모달 프로필 컬러 */
 .idea-dev-modal .home-recent-avatar.is-current-user {
-  color: var(--ax-primary, #1769e0) !important;
-  background: var(--ax-primary-container, #eaf2ff) !important;
+  color: var(--idea-avatar-current-fg) !important;
+  background: var(--idea-avatar-current-bg) !important;
 }
 
 .idea-dev-modal .home-recent-avatar.avatar-color-0 {
@@ -945,9 +945,9 @@
 
 .idea-dev--home .home-recent-copy time {
   display: block;
-  margin-top: 3px;
+  margin-top: 2px;
   color: var(--idea-text-disabled);
-  font-size: 10px;
+  font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev--home .home-activity-empty {
@@ -965,7 +965,7 @@
   min-height: 38px;
   align-items: center;
   justify-content: center;
-  padding: 0 14px;
+  padding: 0 12px;
   border-radius: var(--idea-radius-md);
   color: var(--idea-text-inverse) !important;
   background: var(--idea-color-primary);
@@ -989,9 +989,9 @@
 }
 
 .idea-dev--home .pagination .page-link {
-  margin-inline: 3px;
+  margin-inline: 2px;
   border: 0;
-  border-radius: 9px !important;
+  border-radius: var(--idea-radius-md) !important;
   color: var(--idea-text-muted);
   background: var(--idea-surface-default);
 }
@@ -1008,34 +1008,34 @@
 .idea-dev--home .tutor-home-heading {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  margin-bottom: 7px;
+  gap: var(--idea-gap-md);
+  margin-bottom: 8px;
 }
 
 .idea-dev--home .tutor-home-heading > span {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--idea-gap-sm);
   color: var(--idea-text-primary);
-  font-size: 18px;
+  font-size: var(--idea-font-size-heading);
   font-weight: var(--idea-font-weight-bold);
   letter-spacing: -.035em;
 }
 
 .idea-dev--home .tutor-home-heading > span i {
   color: var(--idea-color-primary);
-  font-size: 17px;
+  font-size: var(--idea-font-size-heading);
 }
 
 .idea-dev--home .tutor-home-heading > strong {
   color: var(--idea-text-disabled);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-medium);
 }
 
 .idea-dev--home .tutor-dashboard-navigation {
   display: inline-flex;
-  gap: 4px;
+  gap: var(--idea-gap-xs);
   margin: 4px 0 8px;
   padding: 4px;
   border: 1px solid var(--idea-border-default);
@@ -1047,8 +1047,8 @@
   display: inline-flex;
   min-height: 31px;
   align-items: center;
-  gap: 6px;
-  padding: 0 11px;
+  gap: var(--idea-gap-sm);
+  padding: 0 12px;
   border: 0;
   border-radius: var(--idea-radius-sm);
   color: var(--idea-text-muted);
@@ -1071,26 +1071,26 @@
 .idea-dev--home .tutor-student-filter {
   display: grid;
   grid-template-columns: minmax(220px, .72fr) minmax(320px, 1.28fr);
-  gap: 24px;
+  gap: var(--idea-gap-xl);
   margin: 0 0 20px;
-  padding: 20px 22px;
+  padding: 20px 20px;
   border: 1px solid var(--idea-border-default);
   border-radius: var(--idea-radius-lg);
-  background: linear-gradient(135deg, var(--idea-color-primary-soft) 0%, #fff 58%, #f7fbff 100%);
+  background: linear-gradient(135deg, var(--idea-color-primary-soft) 0%, var(--idea-surface-default) 58%, #f7fbff 100%);
   box-shadow: var(--idea-shadow-1);
 }
 
 .idea-dev--home .tutor-student-filter-copy > span {
   color: var(--idea-color-primary);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-bold);
   letter-spacing: .12em;
 }
 
 .idea-dev--home .tutor-student-filter-copy h3 {
-  margin: 5px 0 6px;
+  margin: 4px 0 4px;
   color: var(--idea-text-primary);
-  font-size: 17px;
+  font-size: var(--idea-font-size-heading);
   font-weight: var(--idea-font-weight-bold);
   letter-spacing: -.035em;
 }
@@ -1112,8 +1112,8 @@
   display: flex;
   height: 44px;
   align-items: center;
-  gap: 9px;
-  padding: 0 13px;
+  gap: var(--idea-gap-sm);
+  padding: 0 12px;
   border: 1px solid var(--idea-border-default);
   border-radius: var(--idea-radius-md);
   background: var(--idea-surface-default);
@@ -1128,7 +1128,7 @@
 
 .idea-dev--home .tutor-student-search > i {
   color: var(--idea-text-muted);
-  font-size: 14px;
+  font-size: var(--idea-font-size-body);
 }
 
 .idea-dev--home .tutor-student-search input {
@@ -1153,9 +1153,9 @@
 
 .idea-dev--home .tutor-student-search-area > small {
   display: block;
-  margin: 6px 2px 0;
+  margin: 4px 2px 0;
   color: var(--idea-text-disabled);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev--home .tutor-student-results {
@@ -1165,7 +1165,7 @@
   right: 0;
   left: 0;
   overflow: hidden;
-  padding: 6px;
+  padding: 4px;
   border: 1px solid var(--idea-border-default);
   border-radius: var(--idea-radius-lg);
   background: var(--idea-surface-default);
@@ -1176,8 +1176,8 @@
   display: flex;
   width: 100%;
   align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
+  gap: var(--idea-gap-sm);
+  padding: 8px 8px;
   border: 0;
   border-radius: var(--idea-radius-md);
   color: var(--idea-text-primary);
@@ -1198,7 +1198,7 @@
   flex: 0 0 34px;
   place-items: center;
   border-radius: 50%;
-  font-size: 10px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-bold);
 }
 
@@ -1220,22 +1220,22 @@
   overflow: hidden;
   margin-top: 2px;
   color: var(--idea-text-muted);
-  font-size: 10px;
+  font-size: var(--idea-font-size-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .idea-dev--home .tutor-project-count {
-  padding: 4px 7px;
+  padding: 4px 8px;
   border-radius: var(--idea-radius-full);
   color: var(--idea-color-primary);
   background: var(--idea-color-primary-soft);
-  font-size: 10px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-bold);
 }
 
 .idea-dev--home .tutor-student-empty {
-  padding: 17px;
+  padding: 16px;
   color: var(--idea-text-muted);
   font-size: var(--idea-font-size-caption);
   text-align: center;
@@ -1244,8 +1244,8 @@
 .idea-dev--home .tutor-student-pages {
   display: flex;
   justify-content: center;
-  gap: 4px;
-  padding: 6px 4px 3px;
+  gap: var(--idea-gap-xs);
+  padding: 4px 4px 2px;
   border-top: 1px solid var(--idea-border-default);
 }
 
@@ -1258,7 +1258,7 @@
   border-radius: var(--idea-radius-sm);
   color: var(--idea-text-muted);
   background: transparent;
-  font-size: 10px;
+  font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev--home .tutor-student-pages button.active {
@@ -1269,9 +1269,9 @@
 .idea-dev--home .tutor-selected-student {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin-top: 9px;
-  padding: 8px 10px;
+  gap: var(--idea-gap-sm);
+  margin-top: 8px;
+  padding: 8px 8px;
   border: 1px solid var(--idea-indigo-200);
   border-radius: var(--idea-radius-md);
   background: var(--idea-color-primary-soft);
@@ -1286,7 +1286,7 @@
 
 .idea-dev--home .tutor-selected-copy small {
   color: var(--idea-text-muted);
-  font-size: 10px;
+  font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev--home .tutor-selected-copy strong {
@@ -1306,7 +1306,7 @@
   border-radius: var(--idea-radius-sm);
   color: var(--idea-text-muted);
   background: var(--idea-surface-muted);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev--home .tutor-student-clear:hover {
@@ -1333,13 +1333,13 @@
 .idea-dev-modal .recent-activity-modal-content .home-recent-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--idea-gap-xs);
 }
 
 .idea-dev-modal .recent-activity-modal-content .home-recent-item {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: var(--idea-gap-md);
   padding: 12px 4px;
   border-radius: var(--idea-radius-md);
   color: inherit;
@@ -1362,7 +1362,7 @@
   flex: 0 0 36px;
   place-items: center;
   border-radius: 50%;
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-bold);
 }
 
@@ -1412,14 +1412,14 @@
 .idea-dev-modal .recent-activity-modal-content .modal-header,
 .idea-dev-modal .trash-modal-content .modal-header {
   align-items: flex-start;
-  padding: 20px 22px;
+  padding: 20px 20px;
   border-bottom: 1px solid var(--idea-border-default);
-  background: linear-gradient(135deg, #fff, var(--idea-color-primary-soft));
+  background: linear-gradient(135deg, var(--idea-surface-default), var(--idea-color-primary-soft));
 }
 
 .idea-dev-modal .recent-activity-modal-content .modal-title,
 .idea-dev-modal .trash-modal-content .modal-title {
-  margin: 3px 0 0;
+  margin: 2px 0 0;
   color: var(--idea-text-primary);
   font-size: var(--idea-font-size-heading);
   font-weight: var(--idea-font-weight-bold);
@@ -1427,14 +1427,14 @@
 
 .idea-dev-modal .recent-activity-modal-content .modal-header p,
 .idea-dev-modal .trash-modal-content .modal-header p {
-  margin: 5px 0 0;
+  margin: 4px 0 0;
   color: var(--idea-text-muted);
   font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev-modal .home-modal-eyebrow {
   color: var(--idea-color-primary);
-  font-size: var(--idea-font-size-overline);
+  font-size: var(--idea-font-size-caption);
   font-weight: var(--idea-font-weight-bold);
   letter-spacing: .12em;
 }
@@ -1463,20 +1463,20 @@
 
 .idea-dev-modal .trash-modal-content .modal-footer small {
   color: var(--idea-text-muted);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev-modal .trash-list {
   display: grid;
-  gap: 10px;
+  gap: var(--idea-gap-sm);
 }
 
 .idea-dev-modal .trash-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
-  padding: 15px 16px;
+  gap: var(--idea-gap-lg);
+  padding: 16px 16px;
   border: 1px solid var(--idea-border-default);
   border-radius: var(--idea-radius-lg);
   background: var(--idea-surface-default);
@@ -1496,10 +1496,10 @@
 }
 
 .idea-dev-modal .trash-item-copy p {
-  margin: 4px 0 7px;
+  margin: 4px 0 8px;
   overflow: hidden;
   color: var(--idea-text-muted);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1507,32 +1507,32 @@
 .idea-dev-modal .trash-item-meta {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--idea-gap-sm);
   color: var(--idea-text-disabled);
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev-modal .trash-state {
-  padding: 4px 7px;
+  padding: 4px 8px;
   border-radius: var(--idea-radius-full);
   color: var(--idea-status-held, #b45309);
-  background: var(--idea-status-held-soft, #fffbeb);
+  background: var(--idea-status-held-soft, var(--idea-color-warning-soft));
   font-weight: var(--idea-font-weight-bold);
 }
 
 .idea-dev-modal .trash-state.complete {
-  color: var(--idea-status-dropped, #64748b);
-  background: var(--idea-status-dropped-soft, #f1f5f9);
+  color: var(--idea-status-dropped, var(--idea-text-muted));
+  background: var(--idea-status-dropped-soft, var(--idea-surface-subtle));
 }
 
 .idea-dev-modal .trash-item-actions {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--idea-gap-sm);
 }
 
 .idea-dev-modal .trash-item-actions .btn {
-  font-size: 11px;
+  font-size: var(--idea-font-size-caption);
 }
 
 .idea-dev-modal .trash-empty {
@@ -1545,34 +1545,34 @@
 }
 
 .idea-dev-modal .delete-confirm-content {
-  border-radius: 18px;
+  border-radius: var(--idea-radius-xl);
 }
 
 .idea-dev-modal .delete-confirm-content .modal-body {
-  padding: 25px 24px 15px;
+  padding: 24px 24px 16px;
 }
 
 .idea-dev-modal .delete-confirm-icon {
   display: grid;
   width: 46px;
   height: 46px;
-  margin: 0 auto 13px;
+  margin: 0 auto 12px;
   place-items: center;
-  border-radius: 14px;
+  border-radius: var(--idea-radius-lg);
   color: var(--idea-color-danger);
   background: var(--idea-color-danger-soft);
-  font-size: 19px;
+  font-size: var(--idea-font-size-title-2);
 }
 
 .idea-dev-modal .delete-confirm-content h2 {
   margin: 0;
   color: var(--idea-text-primary);
-  font-size: 17px;
+  font-size: var(--idea-font-size-heading);
   font-weight: var(--idea-font-weight-bold);
 }
 
 .idea-dev-modal .delete-confirm-content p {
-  margin: 9px 0 0;
+  margin: 8px 0 0;
   color: var(--idea-text-muted);
   font-size: var(--idea-font-size-caption);
   line-height: 1.6;
@@ -1600,7 +1600,7 @@
 @media (max-width: 1199.98px) {
   .idea-dev--home .home-content-layout {
     grid-template-columns: minmax(0, 1fr) 244px;
-    gap: 16px;
+    gap: var(--idea-gap-lg);
   }
 }
 
@@ -1650,7 +1650,7 @@
 
   .idea-dev--home .home-scope-navigation {
     flex-direction: column;
-    gap: 8px;
+    gap: var(--idea-gap-sm);
   }
 
   .idea-dev--home .home-scope-tabs {
@@ -1665,13 +1665,13 @@
   .idea-dev--home .tutor-home-heading {
     align-items: flex-start;
     flex-direction: column;
-    gap: 3px;
+    gap: var(--idea-gap-xs);
   }
 
   .idea-dev--home .tutor-student-filter {
     grid-template-columns: 1fr;
-    gap: 15px;
-    padding: 17px;
+    gap: var(--idea-gap-lg);
+    padding: 16px;
   }
 
   .idea-dev--home .tutor-student-results {
@@ -1710,7 +1710,7 @@
 /* Home list pagination and modal pagination use the same rhythm. */
 .idea-dev--home .pagination,
 .idea-dev-modal#recent-activity-modal .pagination {
-  gap: 4px;
+  gap: var(--idea-gap-xs);
 }
 
 .idea-dev--home .pagination .page-link,
@@ -1723,24 +1723,24 @@
   margin: 0 !important;
   padding: 0;
   place-items: center;
-  border: 1px solid var(--idea-border-default, #e2e8f0);
-  border-radius: 9px !important;
-  color: var(--idea-text-secondary, #475569);
-  background: #fff;
-  font-size: 12px;
-  font-weight: 600;
+  border: 1px solid var(--idea-border-default, var(--idea-border-default));
+  border-radius: var(--idea-radius-md) !important;
+  color: var(--idea-text-secondary, var(--idea-text-secondary));
+  background: var(--idea-surface-default);
+  font-size: var(--idea-font-size-caption);
+  font-weight: var(--idea-font-weight-semibold);
   line-height: 1;
 }
 
 .idea-dev--home .pagination .page-item.active .page-link,
 .idea-dev-modal#recent-activity-modal .pagination .page-item.active .page-link {
-  border-color: var(--idea-color-primary, #4f46e5);
-  color: #fff;
-  background: var(--idea-color-primary, #4f46e5);
+  border-color: var(--idea-color-primary, var(--idea-color-primary));
+  color: var(--idea-surface-default);
+  background: var(--idea-color-primary, var(--idea-color-primary));
 }
 
 .idea-dev-modal#recent-activity-modal .modal-footer {
-  padding: 12px 20px 14px;
+  padding: 12px 20px 12px;
 }
 
 
@@ -1755,14 +1755,14 @@
 
 .idea-dev--home .prd-card-brainstorm {
   min-height: 30px;
-  padding: 0 10px;
-  border: 1px solid var(--idea-indigo-200, #c7d2fe);
-  border-radius: 9px;
-  color: var(--idea-indigo-700, #4338ca);
-  background: #fff;
+  padding: 0 8px;
+  border: 1px solid var(--idea-indigo-200, var(--idea-color-primary-subtle));
+  border-radius: var(--idea-radius-md);
+  color: var(--idea-indigo-700, var(--idea-color-primary-hover));
+  background: var(--idea-surface-default);
   box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--idea-font-size-caption);
+  font-weight: var(--idea-font-weight-semibold);
   opacity: 0;
   transform: translateY(2px);
   pointer-events: none;
@@ -1774,8 +1774,8 @@
 }
 
 .idea-dev--home .prd-card-brainstorm i {
-  color: var(--idea-indigo-500, #6366f1);
-  font-size: 13px;
+  color: var(--idea-indigo-500, var(--idea-color-primary));
+  font-size: var(--idea-font-size-label);
 }
 
 .idea-dev--home .idea-card-hover:hover .prd-card-brainstorm,
@@ -1787,9 +1787,9 @@
 
 .idea-dev--home .prd-card-brainstorm:hover,
 .idea-dev--home .prd-card-brainstorm:focus-visible {
-  border-color: var(--idea-indigo-400, #818cf8);
-  color: var(--idea-indigo-800, #3730a3);
-  background: var(--idea-indigo-50, #eef2ff);
+  border-color: var(--idea-indigo-400, var(--idea-indigo-400));
+  color: var(--idea-indigo-800, var(--idea-color-primary-pressed));
+  background: var(--idea-indigo-50, var(--idea-color-primary-soft));
   box-shadow: 0 4px 12px rgba(79, 70, 229, .10);
   outline: none;
 }
@@ -1802,3 +1802,374 @@
     pointer-events: auto;
   }
 }
+
+
+/* ============================================================
+   ID v3 — compact card context menu
+   ============================================================ */
+.idea-dev--home .prd-card-menu {
+  top: var(--idea-space-3);
+  right: var(--idea-space-3);
+}
+.idea-dev--home .prd-card-menu-button {
+  width: var(--idea-control-height-sm);
+  height: var(--idea-control-height-sm);
+  border: 1px solid transparent;
+  border-radius: var(--idea-radius-md);
+  font-size: var(--idea-icon-size-md);
+}
+.idea-dev--home .prd-card-menu-button:hover,
+.idea-dev--home .prd-card-menu-button[aria-expanded="true"] {
+  border-color: var(--idea-border-default);
+  color: var(--idea-color-primary);
+  background: var(--idea-color-primary-soft);
+}
+.idea-dev--home .prd-card-menu .dropdown-menu {
+  min-width: 136px;
+  margin-top: var(--idea-space-2) !important;
+  padding: var(--idea-space-1);
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-lg);
+  background: var(--idea-surface-default);
+  box-shadow: var(--idea-shadow-floating);
+}
+.idea-dev--home .prd-card-menu .dropdown-item {
+  display: flex;
+  min-height: var(--idea-control-height-md);
+  align-items: center;
+  gap: var(--idea-gap-sm);
+  padding: 0 var(--idea-space-3);
+  border-radius: var(--idea-radius-md);
+  font-size: var(--idea-font-size-label);
+  font-weight: var(--idea-font-weight-semibold);
+}
+.idea-dev--home .prd-card-menu .dropdown-item.text-danger {
+  color: var(--idea-color-danger) !important;
+}
+.idea-dev--home .prd-card-menu .dropdown-item.text-danger:hover {
+  color: var(--idea-color-danger) !important;
+  background: var(--idea-color-danger-soft);
+}
+
+
+/* v3.1 — D/Icon set has no exclamation-circle; today uses a compact semantic marker. */
+.prd-card-deadline-bang {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
+  border-radius: 50%;
+  background: var(--idea-danger-bg);
+  color: var(--idea-danger);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+
+/* ============================================================
+   ID v3.2 — paginated activity modal (no redundant long scroll)
+   ============================================================ */
+.idea-dev-modal#recent-activity-modal .recent-activity-modal-content .modal-body {
+  min-height: 0;
+  max-height: none;
+  overflow-y: visible;
+  padding: 16px 20px;
+}
+.idea-dev-modal#recent-activity-modal .recent-activity-modal-content .home-recent-list {
+  gap: var(--idea-gap-xs);
+}
+.idea-dev-modal#recent-activity-modal .recent-activity-modal-content .home-recent-item {
+  min-height: 54px;
+  padding: 8px 4px;
+}
+@media (max-height: 760px) {
+  .idea-dev-modal#recent-activity-modal .recent-activity-modal-content .modal-body {
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+  }
+}
+
+
+/* ============================================================
+   ID v3.3 — compact control row + icon rhythm
+   ============================================================ */
+.idea-dev--home .home-control-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--idea-gap-lg);
+}
+.idea-dev--home .home-control-row .home-tabs { flex: 0 0 auto; }
+.idea-dev--home .home-control-row .home-filters {
+  display: flex !important;
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  flex-wrap: nowrap !important;
+}
+.idea-dev--home .home-control-row .home-filters .studio-select-shell { width: 136px; }
+.idea-dev--home .home-control-row .home-filters .studio-select-shell:nth-child(1) { width: 128px; }
+.idea-dev--home .home-control-row .home-filters .studio-select-shell:nth-child(2) { width: 136px; }
+.idea-dev--home .home-control-row .home-filters .studio-select-shell:last-child { width: 168px; }
+.idea-dev--home .kpi-icon .idea-icon,
+.idea-dev--home .home-scope-tab .idea-icon,
+.idea-dev--home .home-trash-action .idea-icon { opacity: .72; }
+.idea-dev--home .prd-card-menu .dropdown-item {
+  min-height: 40px;
+  gap: 10px;
+  padding: 8px 12px;
+}
+.idea-dev--home .prd-card-menu .dropdown-item .idea-icon {
+  margin-right: 0 !important;
+  color: currentColor;
+  opacity: .68;
+}
+@media (max-width: 1180px) {
+  .idea-dev--home .home-control-row { align-items: stretch; flex-direction: column; }
+  .idea-dev--home .home-control-row .home-filters { justify-content: flex-start; flex-wrap: wrap !important; }
+}
+
+
+/* ID v3.4 — contextual menu alignment */
+.idea-dev--home .prd-card-menu .dropdown-item {
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+
+/* ============================================================
+   ID v3.6 — PRD type identity badges
+   ============================================================ */
+.idea-dev--home .prd-card-top .home-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-color: transparent;
+  font-weight: var(--idea-font-weight-semibold);
+}
+.idea-dev--home .prd-card-top .home-type-badge .idea-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  color: currentColor;
+  opacity: .9;
+}
+.idea-dev--home .prd-card-top .home-type-new_product {
+  color: #4338CA !important;
+  background: #EEF2FF !important;
+  border-color: #DDE3FF !important;
+}
+.idea-dev--home .prd-card-top .home-type-new_feature {
+  color: #6D28D9 !important;
+  background: #F5F3FF !important;
+  border-color: #E9E2FF !important;
+}
+.idea-dev--home .prd-card-top .home-type-improvement {
+  color: #0E7490 !important;
+  background: #ECFEFF !important;
+  border-color: #CFFAFE !important;
+}
+
+/* ============================================================
+   Idea Developer v3.7 — modal sizing / close-button spacing
+   ============================================================ */
+.idea-dev-modal#recent-activity-modal .modal-dialog {
+  width: calc(100% - 40px);
+  max-width: 720px;
+}
+.idea-dev-modal#prd-trash-modal .modal-dialog {
+  width: calc(100% - 40px);
+  max-width: 840px;
+}
+.idea-dev-modal#home-delete-confirm-modal .modal-dialog {
+  width: calc(100% - 40px);
+  max-width: 420px;
+}
+.idea-dev-modal .recent-activity-modal-content .modal-header,
+.idea-dev-modal .trash-modal-content .modal-header {
+  gap: var(--idea-gap-lg);
+  padding: 22px 28px 20px 24px;
+}
+.idea-dev-modal .recent-activity-modal-content .modal-header > div,
+.idea-dev-modal .trash-modal-content .modal-header > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.idea-dev-modal .recent-activity-modal-content .modal-header .btn-close,
+.idea-dev-modal .trash-modal-content .modal-header .btn-close {
+  flex: 0 0 auto;
+  margin: 2px 0 0 12px;
+  padding: 8px;
+}
+@media (max-width: 575.98px) {
+  .idea-dev-modal#recent-activity-modal .modal-dialog,
+  .idea-dev-modal#prd-trash-modal .modal-dialog,
+  .idea-dev-modal#home-delete-confirm-modal .modal-dialog {
+    width: calc(100% - 24px);
+    margin-inline: auto;
+  }
+}
+
+/* v3.7 brand / empty-state polish */
+.idea-dev--home .home-eyebrow.idea-brand-lockup {
+  margin-bottom: 10px;
+  letter-spacing: 0;
+}
+.idea-dev--home #home-empty {
+  overflow: hidden;
+  border: 1px solid var(--idea-border-default) !important;
+  border-radius: var(--idea-radius-xl);
+  background: linear-gradient(180deg, var(--idea-surface-default), color-mix(in srgb, var(--idea-color-primary-soft) 36%, var(--idea-surface-default)));
+  box-shadow: none !important;
+}
+.idea-dev--home .idea-empty-state--home {
+  min-height: 360px;
+}
+.idea-dev--home .home-activity-empty,
+.idea-dev-modal .trash-empty {
+  min-height: 180px;
+}
+
+/* v3.7 dark mode: Idea Home only */
+[data-bs-theme="dark"] .idea-dev--home #home-empty,
+[data-bs-theme="dark"] .idea-dev--home .home-summary-card,
+[data-bs-theme="dark"] .idea-dev--home .home-activity-card,
+[data-bs-theme="dark"] .idea-dev--home .card,
+[data-bs-theme="dark"] .idea-dev--home .home-controls,
+[data-bs-theme="dark"] .idea-dev--home .tutor-student-panel {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default) !important;
+  background-color: var(--idea-surface-default) !important;
+}
+[data-bs-theme="dark"] .idea-dev--home #home-empty {
+  background: linear-gradient(180deg, var(--idea-surface-default), color-mix(in srgb, var(--idea-color-primary-soft) 42%, var(--idea-surface-default))) !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-filter-option:hover,
+[data-bs-theme="dark"] .idea-dev--home .home-filter-option.active,
+[data-bs-theme="dark"] .idea-dev--home .home-recent-item:hover {
+  background: var(--idea-surface-subtle);
+}
+[data-bs-theme="dark"] .idea-dev-modal .modal-content {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-default);
+}
+[data-bs-theme="dark"] .idea-dev-modal .modal-header,
+[data-bs-theme="dark"] .idea-dev-modal .modal-footer {
+  border-color: var(--idea-border-default);
+}
+
+
+/* ============================================================
+   Idea Developer v3.8 — Home dark readability / profiles
+   ============================================================ */
+[data-bs-theme="dark"] .idea-dev--home .kpi-cyan { color: #8ed8f7; background: #173746; }
+[data-bs-theme="dark"] .idea-dev--home .kpi-rose { color: #ffadb9; background: #45242d; }
+[data-bs-theme="dark"] .idea-dev--home .viewer-role-badge,
+[data-bs-theme="dark"] .idea-dev--home .tutor-scope-badge { color: #cbb8ff !important; background: #332854 !important; }
+[data-bs-theme="dark"] .idea-dev--home .tutor-role-badge { color: #8ed8f7 !important; background: #173746 !important; }
+[data-bs-theme="dark"] .idea-dev--home .prd-card-top .home-type-new_product { color: #c4cbff !important; background: #2a315b !important; border-color: #46527e !important; }
+[data-bs-theme="dark"] .idea-dev--home .prd-card-top .home-type-new_feature { color: #d4c3ff !important; background: #332854 !important; border-color: #514273 !important; }
+[data-bs-theme="dark"] .idea-dev--home .prd-card-top .home-type-improvement { color: #8ed8f7 !important; background: #173746 !important; border-color: #315466 !important; }
+[data-bs-theme="dark"] .idea-dev--home .participant-avatar.is-current-user,
+[data-bs-theme="dark"] .idea-dev--home .home-recent-avatar.is-current-user,
+[data-bs-theme="dark"] .idea-dev--home .tutor-student-avatar.is-current-user,
+[data-bs-theme="dark"] .idea-dev-modal .home-recent-avatar.is-current-user {
+  color: var(--idea-avatar-current-fg) !important;
+  background: var(--idea-avatar-current-bg) !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .participant-avatar,
+[data-bs-theme="dark"] .idea-dev--home .home-recent-avatar,
+[data-bs-theme="dark"] .idea-dev--home .tutor-student-avatar,
+[data-bs-theme="dark"] .idea-dev-modal .home-recent-avatar { border-color: var(--idea-surface-default); }
+[data-bs-theme="dark"] .idea-dev--home .home-scope-tabs,
+[data-bs-theme="dark"] .idea-dev--home .home-tabs { background: var(--idea-surface-subtle); }
+[data-bs-theme="dark"] .idea-dev--home .home-scope-tab:hover,
+[data-bs-theme="dark"] .idea-dev--home .home-tab:hover { background: var(--idea-surface-muted); }
+
+
+/* ============================================================
+   Idea Developer v3.9 — Home readability / tabs / progress
+   ============================================================ */
+/* Scope tabs are navigation labels, not a segmented container. */
+[data-bs-theme="dark"] .idea-dev--home .home-scope-tabs {
+  padding: 0;
+  border: 0;
+  background: transparent !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-scope-tab {
+  color: #8F9CAF;
+  background: transparent !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-scope-tab:hover {
+  color: var(--idea-text-secondary);
+  background: transparent !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-scope-tab.active {
+  color: var(--idea-text-primary);
+  border-bottom-color: #7E87EB;
+  background: transparent !important;
+}
+
+/* Secondary scope filters size from their labels instead of equal minimum cells. */
+.idea-dev--home .home-tabs .btn {
+  width: auto !important;
+  min-width: 0 !important;
+  padding-inline: 14px;
+  flex: 0 0 auto !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-tabs {
+  gap: 2px;
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-subtle);
+}
+[data-bs-theme="dark"] .idea-dev--home .home-tabs .btn-primary {
+  color: #FFFFFF !important;
+  background: #6064DD !important;
+  box-shadow: none;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-tabs .btn-outline-primary {
+  color: var(--idea-text-muted);
+  background: transparent !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-tabs .btn-outline-primary:hover {
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-muted) !important;
+}
+
+/* Cards need a clearer progress rail in dark mode, including 0%. */
+[data-bs-theme="dark"] .idea-dev--home .idea-card-hover .progress {
+  height: 7px !important;
+  min-height: 7px;
+  border: 1px solid #36465C;
+  background: #2A394D;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.22);
+}
+[data-bs-theme="dark"] .idea-dev--home .idea-card-hover .progress-bar {
+  background: linear-gradient(90deg, #6064DD, #7E87EB);
+}
+[data-bs-theme="dark"] .idea-dev--home .idea-card-hover {
+  border-color: #334155 !important;
+  background: #17212F;
+}
+[data-bs-theme="dark"] .idea-dev--home .idea-card-hover:hover,
+[data-bs-theme="dark"] .idea-dev--home .idea-card-hover:focus {
+  border-color: #55627B !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.24);
+}
+
+/* KPI icon containers remain semantic but no longer look like glowing pills. */
+[data-bs-theme="dark"] .idea-dev--home .kpi-icon {
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.055);
+}
+[data-bs-theme="dark"] .idea-dev--home .kpi-indigo,
+[data-bs-theme="dark"] .idea-dev--home .kpi-status-completed { color: #B8C1FF; background: #293158; }
+[data-bs-theme="dark"] .idea-dev--home .kpi-status-progress,
+[data-bs-theme="dark"] .idea-dev--home .kpi-blue { color: #7DD3A7; background: #183A2C; }
+[data-bs-theme="dark"] .idea-dev--home .kpi-purple,
+[data-bs-theme="dark"] .idea-dev--home .kpi-status-held { color: #E7C16C; background: #3A2D18; }
+[data-bs-theme="dark"] .idea-dev--home .kpi-cyan { color: #8FD7EA; background: #17323D; }
+[data-bs-theme="dark"] .idea-dev--home .kpi-rose { color: #F3A6B0; background: #40262D; }

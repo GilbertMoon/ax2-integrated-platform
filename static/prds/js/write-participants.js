@@ -23,11 +23,27 @@
       var participantSearchTimer = null;
       var participantSearchSequence = 0;
       var writeRoot = document.getElementById("prd-write-app");
-      var currentUserId = String(writeRoot?.dataset.currentUserId || "");
+      var resolvedCurrentUserId = String(writeRoot?.dataset.currentUserId || "");
+      var resolvedCurrentUserName = String(writeRoot?.dataset.currentUserName || "").trim();
+      var resolvedCurrentUserIsCreator = false;
+
+      function setCurrentUserIdentity(userId, displayName, isCreator) {
+        if (userId !== undefined && userId !== null && String(userId) !== "") {
+          resolvedCurrentUserId = String(userId);
+          if (writeRoot) writeRoot.dataset.currentUserId = resolvedCurrentUserId;
+        }
+        if (displayName !== undefined && displayName !== null && String(displayName).trim()) {
+          resolvedCurrentUserName = String(displayName).trim();
+          if (writeRoot) writeRoot.dataset.currentUserName = resolvedCurrentUserName;
+        }
+        resolvedCurrentUserIsCreator = Boolean(isCreator);
+      }
 
       function isCurrentUser(user) {
-        return currentUserId &&
-          String(user?.user_id ?? "") === currentUserId;
+        var idMatches = resolvedCurrentUserId && String(user?.user_id ?? "") === resolvedCurrentUserId;
+        var nameMatches = resolvedCurrentUserName && resolvedCurrentUserName !== "나" && String(user?.display_name || "").trim() === resolvedCurrentUserName;
+        var creatorRoleMatches = resolvedCurrentUserIsCreator && String(user?.role || "") === "owner";
+        return Boolean(user?.is_current_user || idMatches || nameMatches || creatorRoleMatches);
       }
 
       function avatarColor(user) {
@@ -53,7 +69,6 @@
             ),
           label
         );
-        avatar.title = name + " · " + participant.role;
         return avatar;
       }
 
@@ -75,7 +90,6 @@
         });
         if (totalItems > 6) {
           const more = element("span", "write-member avatar-color-7", "+" + (totalItems - 6));
-          more.title = "추가 참여자 " + (totalItems - 6) + "명";
           members.append(more);
         }
       }
@@ -171,7 +185,6 @@
           renderParticipantManager();
           participantTeamState();
         } catch (error) {
-          document.getElementById("write-members").title = error.message;
           showParticipantAlert(error.message);
         }
       }
@@ -179,7 +192,9 @@
       function participantTeamState() {
         if (!participantTeamLoaded) return;
         const currentIds = new Set(currentParticipants.map(function (participant) { return Number(participant.user_id); }));
-        const available = participantTeamUsers.filter(function (user) { return !currentIds.has(Number(user.user_id)); });
+        const available = participantTeamUsers.filter(function (user) {
+          return !isCurrentUser(user) && !currentIds.has(Number(user.user_id));
+        });
         participantAddTeam.disabled = available.length === 0;
         document.getElementById("participant-team-state").textContent = available.length ? available.length + "명 추가" : "전원 추가됨";
       }
@@ -191,7 +206,9 @@
             selected_user_ids: currentParticipants.map(function (participant) { return participant.user_id; }).join(",")
           });
           const data = await api(participantTeamApi + "?" + params.toString());
-          participantTeamUsers = data.users || [];
+          participantTeamUsers = (data.users || []).filter(function (user) {
+            return !isCurrentUser(user) && !user.selected;
+          });
           participantTeamLoaded = true;
           document.getElementById("participant-team-name").textContent = data.team?.team_name || "현재 팀";
           document.getElementById("participant-team-description").textContent = data.team ? "현재 회차의 팀원을 한 번에 추가합니다." : (data.message || "연결된 회차 팀이 없습니다.");
@@ -258,8 +275,11 @@
           const data = await api(participantSearchApi + "?" + params.toString());
           if (sequence !== participantSearchSequence) return;
           participantResults.replaceChildren();
+          const visibleResults = (data.results || []).filter(function (user) {
+            return !isCurrentUser(user) && !user.selected;
+          });
           if (data.bulk_mode) {
-            const available = data.results.filter(function (user) { return !user.selected; });
+            const available = visibleResults.slice();
             if (available.length) {
               const addAll = element("button", "participant-result participant-result-all");
               addAll.type = "button";
@@ -297,8 +317,8 @@
               participantResults.append(addAll);
             }
           }
-          data.results.forEach(function (user) { participantResults.append(searchResultRow(user)); });
-          if (!data.results.length) {
+          visibleResults.forEach(function (user) { participantResults.append(searchResultRow(user)); });
+          if (!visibleResults.length) {
             participantSearchHelp.classList.remove("d-none");
             participantSearchHelp.textContent = "검색 결과가 없습니다.";
           }
@@ -349,7 +369,9 @@
       });
       participantAddTeam.addEventListener("click", async function () {
         const currentIds = new Set(currentParticipants.map(function (participant) { return Number(participant.user_id); }));
-        const available = participantTeamUsers.filter(function (user) { return !currentIds.has(Number(user.user_id)); });
+        const available = participantTeamUsers.filter(function (user) {
+          return !isCurrentUser(user) && !currentIds.has(Number(user.user_id));
+        });
         if (!available.length) return;
         participantAddTeam.disabled = true;
         document.getElementById("participant-team-state").textContent = "추가 중…";
@@ -370,7 +392,11 @@
       });
 
 
-      return {load: loadParticipants, avatar: participantAvatar};
+      return {
+        load: loadParticipants,
+        avatar: participantAvatar,
+        setCurrentUserIdentity: setCurrentUserIdentity
+      };
     }
   };
 }());

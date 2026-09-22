@@ -5,16 +5,14 @@
 {% block extra_head %}
   {{ block.super }}
   <meta name="csrf-token" content="{{ csrf_token }}">
-  <link href="{% static 'idea/css/foundation.css' %}?v=20260917-r2"
-        rel="stylesheet">
-  <link href="{% static 'idea/css/base.css' %}?v=20260917-1" rel="stylesheet">
-  <link href="{% static 'idea/css/integrated.css' %}?v=20260917-1"
-        rel="stylesheet">
-  <link href="{% static 'idea/css/interaction.css' %}?v=20260917-r2"
-        rel="stylesheet">
+  <link href="{% static 'idea/css/foundation.css' %}?v=20260922-v5-1" rel="stylesheet">
+  <link href="{% static 'idea/css/icons.css' %}?v=20260922-v3-9" rel="stylesheet">
+  <link href="{% static 'idea/css/base.css' %}?v=20260922-v3-9" rel="stylesheet">
+  <link href="{% static 'idea/css/integrated.css' %}?v=20260922-v3-9" rel="stylesheet">
+  <link href="{% static 'idea/css/interaction.css' %}?v=20260922-v3-9" rel="stylesheet">
 {% endblock %}
 {% block extra_js %}
   {{ block.super }}
-  <script src="{% static 'idea/js/controls.js' %}?v=20260917-4"></script>
-  <script src="{% static 'idea/js/dialogs.js' %}?v=20260917-4"></script>
+  <script src="{% static 'idea/js/controls.js' %}?v=20260922-v3-9"></script>
+  <script src="{% static 'idea/js/dialogs.js' %}?v=20260922-v3-9"></script>
 {% endblock %}

@@ -185,10 +185,15 @@
       zoom: zoom
     };
   }
+  // Canvas/board colors are CSS variables so light/dark mode can switch without
+  // touching the saved canvas data, section IDs, or layout geometry.
   var laneColors = [
-    ["#eef2ff", "#c7d2fe", "#4338ca"], ["#ecfeff", "#a5f3fc", "#0e7490"],
-    ["#ecfdf5", "#a7f3d0", "#047857"], ["#fff7ed", "#fed7aa", "#c2410c"],
-    ["#fdf2f8", "#fbcfe8", "#be185d"], ["#f5f3ff", "#ddd6fe", "#6d28d9"]
+    ["var(--brain-lane-0-bg)", "var(--brain-lane-0-border)", "var(--brain-lane-0-accent)"],
+    ["var(--brain-lane-1-bg)", "var(--brain-lane-1-border)", "var(--brain-lane-1-accent)"],
+    ["var(--brain-lane-2-bg)", "var(--brain-lane-2-border)", "var(--brain-lane-2-accent)"],
+    ["var(--brain-lane-3-bg)", "var(--brain-lane-3-border)", "var(--brain-lane-3-accent)"],
+    ["var(--brain-lane-4-bg)", "var(--brain-lane-4-border)", "var(--brain-lane-4-accent)"],
+    ["var(--brain-lane-5-bg)", "var(--brain-lane-5-border)", "var(--brain-lane-5-accent)"]
   ];
 
 

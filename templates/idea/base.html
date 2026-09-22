@@ -28,7 +28,7 @@
       <nav class="navbar navbar-expand-lg studio-nav" aria-label="주 메뉴">
         <div class="container-fluid studio-container">
           <a class="navbar-brand studio-brand" href="{% url 'ideas:home' %}">
-            <span class="studio-brand-mark" aria-hidden="true"><i class="bi bi-stars"></i></span>
+            <span class="studio-brand-mark" aria-hidden="true"><i class="idea-icon idea-icon-stars"></i></span>
             <span><strong>Idea Developer</strong><small>생각을 제품으로</small></span>
           </a>
           {% if request.user.is_authenticated %}
@@ -39,20 +39,20 @@
                     aria-controls="studio-navigation"
                     aria-expanded="false"
                     aria-label="메뉴 열기">
-              <i class="bi bi-list fs-3"></i>
+              <i class="idea-icon idea-icon-list fs-3"></i>
             </button>
             <div class="collapse navbar-collapse" id="studio-navigation">
               <div class="studio-actions d-flex align-items-center gap-2 ms-lg-auto">
                 <a class="btn btn-primary studio-create"
-                   href="{% url 'ideas:new-prd' %}"><i class="bi bi-plus-lg"></i> 새 PRD</a>
+                   href="{% url 'ideas:new-prd' %}"><i class="idea-icon idea-icon-plus-lg"></i> 새 PRD</a>
                 <div class="dropdown">
                   <button class="btn studio-profile"
                           data-bs-toggle="dropdown"
                           aria-expanded="false"
                           aria-label="사용자 메뉴">
-                    <span class="studio-avatar"><i class="bi bi-person"></i></span>
+                    <span class="studio-avatar"><i class="idea-icon idea-icon-person"></i></span>
                     <span class="studio-profile-copy d-none d-xl-flex"><strong>{{ session_identity.display_name|default:"로그인 사용자" }}</strong><small>{{ session_identity.role_label|default:"수강생" }}</small></span>
-                    <i class="bi bi-chevron-down"></i>
+                    <i class="idea-icon idea-icon-chevron-down"></i>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end studio-menu">
                     <li>
@@ -67,7 +67,7 @@
                       <form method="post" action="{% url 'accounts:logout' %}">
                         {% csrf_token %}
                         <button class="dropdown-item text-danger" type="submit">
-                          <i class="bi bi-box-arrow-right me-2"></i>로그아웃
+                          <i class="idea-icon idea-icon-box-arrow-right me-2"></i>로그아웃
                         </button>
                       </form>
                     </li>

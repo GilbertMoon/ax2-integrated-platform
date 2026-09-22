@@ -22,7 +22,36 @@ class Category:
     TEAM_SUBMITTED = "LMS_TEAM_SUBMITTED"
 
 
-def notify(*, user_id, category, title, message="", link=""):
+class TargetType:
+    """target_type 값. 알림이 가리키는 대상이 클릭 시점에도 존재하는지 확인하는 용도."""
+
+    ASSIGNMENT = "assignment"
+    LESSON = "lesson"
+    SUBMISSION = "submission"
+
+
+def _target_model(target_type):
+    from lms_modules.core.models import Assignment, Lesson, Submission
+
+    return {
+        TargetType.ASSIGNMENT: Assignment,
+        TargetType.LESSON: Lesson,
+        TargetType.SUBMISSION: Submission,
+    }.get(target_type)
+
+
+def target_still_exists(notification):
+    """알림이 가리키는 대상(과제/강의/제출물)이 아직 있는지. target_type/id가 없는
+    옛 알림은 확인할 수 없으니 있는 것으로 간주한다(하위 호환)."""
+    if not notification.target_type or notification.target_id is None:
+        return True
+    model = _target_model(notification.target_type)
+    if model is None:
+        return True
+    return model.objects.filter(pk=notification.target_id).exists()
+
+
+def notify(*, user_id, category, title, message="", link="", target_type="", target_id=None):
     """학생 한 명에게 LMS 알림 하나 생성."""
     LmsNotification.objects.create(
         recipient_id=user_id,
@@ -30,10 +59,12 @@ def notify(*, user_id, category, title, message="", link=""):
         title=title,
         message=message,
         link=link,
+        target_type=target_type,
+        target_id=target_id,
     )
 
 
-def notify_many(*, user_ids, category, title, message="", link=""):
+def notify_many(*, user_ids, category, title, message="", link="", target_type="", target_id=None):
     """여러 명에게 알림 생성 — 실제로 존재하는 유저에게만 보낸다.
 
     accounts_client(get_students/get_team_members 등)가 반환하는 id가 accounts_user와
@@ -46,7 +77,10 @@ def notify_many(*, user_ids, category, title, message="", link=""):
     valid_ids = set(User.objects.filter(id__in=user_ids).values_list("id", flat=True))
     for user_id in user_ids:
         if user_id in valid_ids:
-            notify(user_id=user_id, category=category, title=title, message=message, link=link)
+            notify(
+                user_id=user_id, category=category, title=title, message=message,
+                link=link, target_type=target_type, target_id=target_id,
+            )
 
 
 def _lms_notifications(user):
@@ -65,6 +99,21 @@ def mark_read(*, user, notification_id):
     _lms_notifications(user).filter(pk=notification_id, read_at__isnull=True).update(
         read_at=timezone.now()
     )
+
+
+def open_notification(*, user, notification_id):
+    """알림 클릭 시 호출. 대상이 아직 있으면 읽음 처리하고 이동할 링크를 반환하고,
+    삭제된 과제/강의 등이라 대상이 없으면 그 알림 자체를 지우고 실패를 반환한다."""
+    notification = _lms_notifications(user).filter(pk=notification_id).first()
+    if notification is None:
+        return {"ok": False}
+    if not target_still_exists(notification):
+        notification.delete()
+        return {"ok": False}
+    if notification.read_at is None:
+        notification.read_at = timezone.now()
+        notification.save(update_fields=["read_at"])
+    return {"ok": True, "link": notification.link}
 
 
 def mark_all_read(user):

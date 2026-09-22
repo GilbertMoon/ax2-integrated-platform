@@ -39,6 +39,18 @@ def mark_read_view(request, notification_id):
 
 @login_required
 @require_POST
+def open_view(request, notification_id):
+    """알림 클릭 시 서버에서 대상 존재 여부를 먼저 확인한다.
+    삭제된 과제/강의라면 알림을 지우고 실패로 응답 — 클라이언트는 이동하지 않는다."""
+    result = services.open_notification(user=request.user, notification_id=notification_id)
+    status = 200 if result["ok"] else 404
+    return JsonResponse(
+        {**result, "unread_count": services.unread_count(request.user)}, status=status
+    )
+
+
+@login_required
+@require_POST
 def mark_all_read_view(request):
     services.mark_all_read(request.user)
     return JsonResponse({"unread_count": 0})

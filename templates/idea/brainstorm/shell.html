@@ -1,15 +1,12 @@
 {% extends "idea/integrated_base.html" %}
 {% load static %}
 {% block title %}브레인스토밍 | Idea Developer{% endblock %}
-
 {% block extra_head %}
   {{ block.super }}
   <link href="{% static 'brainstorm/css/brainstorm.css' %}?v=20260922-v5-8"
         rel="stylesheet">
 {% endblock %}
-
 {% block breadcrumb %}브레인스토밍{% endblock %}
-
 {% block content %}
   <div id="brainstorm-root"
        class="idea-dev idea-dev--brainstorm"
@@ -26,16 +23,13 @@
       <span class="visually-hidden">브레인스토밍 화면을 불러오는 중입니다.</span>
     </div>
   </div>
-
   <form class="d-none" aria-hidden="true">
     {% csrf_token %}
   </form>
-
   <noscript>
     <div class="alert alert-warning">브레인스토밍 화면을 사용하려면 JavaScript를 켜 주세요.</div>
   </noscript>
 {% endblock %}
-
 {% block extra_js %}
   {{ block.super }}
   <script src="{% static 'vendor/react/react.production.min.js' %}?v=18.3.1"></script>

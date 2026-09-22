@@ -3,7 +3,8 @@
 {% block title %}PRD 홈 | 아이디어 디벨로퍼{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/home.css' %}?v=20260922-v3-9" rel="stylesheet">
+  <link href="{% static 'prds/css/home.css' %}?v=20260922-v3-9"
+        rel="stylesheet">
 {% endblock %}
 {% block content %}
   <div id="prd-home-app"
@@ -18,7 +19,10 @@
     <div class="home-hero d-flex flex-wrap justify-content-between align-items-center gap-4 mb-4">
       <div>
         <span class="home-eyebrow idea-brand-lockup">
-          <img class="idea-brand-mark" src="{% static 'idea/assets/brand/id-mark-primary.svg' %}" alt="" aria-hidden="true">
+          <img class="idea-brand-mark"
+               src="{% static 'idea/assets/brand/id-mark-primary.svg' %}"
+               alt=""
+               aria-hidden="true">
           <strong>Idea Developer</strong><i class="idea-brand-separator" aria-hidden="true"></i><span>PRODUCT WORKSPACE</span>
         </span>
         <h1 id="home-greeting" class="home-title">PRD를 불러오는 중입니다.</h1>
@@ -68,10 +72,9 @@
               <h2 id="prd-list-title" class="visually-hidden">PRD 목록</h2>
               <div class="home-scope-navigation">
                 <div id="standard-home-navigation"
-                    class="home-scope-tabs"
-                    role="tablist"
-                    aria-label="PRD 참여 역할">
-
+                     class="home-scope-tabs"
+                     role="tablist"
+                     aria-label="PRD 참여 역할">
                   <button class="home-scope-tab active"
                           type="button"
                           role="tab"
@@ -80,7 +83,6 @@
                     <i class="idea-icon idea-icon-folder2-open"></i>
                     <span>내 PRD</span>
                   </button>
-
                   <button class="home-scope-tab"
                           type="button"
                           role="tab"
@@ -90,7 +92,6 @@
                     <span>뷰어로 참여한 PRD</span>
                   </button>
                 </div>
-
                 <button class="home-trash-action"
                         type="button"
                         data-bs-toggle="modal"
@@ -135,36 +136,36 @@
                   <button class="btn btn-outline-primary home-tab" data-tab="personal">개인</button>
                 </div>
                 <div class="home-filters d-flex flex-wrap gap-2">
-              <select id="home-round-filter"
-                      class="form-select form-select-sm"
-                      aria-label="회차 필터">
-                <option value="all">모든 회차</option>
-              </select>
-              <select id="home-project-scope"
-                      class="form-select form-select-sm"
-                      aria-label="프로젝트 구분">
-                <option value="all">전체 구분</option>
-                <option value="round_team">회차 팀 PRD</option>
-                <option value="team">일반 팀 PRD</option>
-                <option value="personal">개인 PRD</option>
-              </select>
-              <select id="home-status"
-                      class="form-select form-select-sm"
-                      aria-label="상태 필터">
-                <option value="">모든 상태</option>
-                <option value="in_progress">진행 중</option>
-                <option value="completed">완료</option>
-                <option value="held">보류</option>
-                <option value="dropped">드랍</option>
-              </select>
-              <select id="home-sort" class="form-select form-select-sm" aria-label="정렬">
-                <option value="default">상태·최근 수정순</option>
-                <option value="deadline_asc">마감 임박순</option>
-                <option value="completion_desc">완성도순</option>
-                <option value="updated_desc">최근 수정순</option>
-                <option value="created_desc">생성일 최신순</option>
-                <option value="created_asc">생성일 오래된순</option>
-              </select>
+                  <select id="home-round-filter"
+                          class="form-select form-select-sm"
+                          aria-label="회차 필터">
+                    <option value="all">모든 회차</option>
+                  </select>
+                  <select id="home-project-scope"
+                          class="form-select form-select-sm"
+                          aria-label="프로젝트 구분">
+                    <option value="all">전체 구분</option>
+                    <option value="round_team">회차 팀 PRD</option>
+                    <option value="team">일반 팀 PRD</option>
+                    <option value="personal">개인 PRD</option>
+                  </select>
+                  <select id="home-status"
+                          class="form-select form-select-sm"
+                          aria-label="상태 필터">
+                    <option value="">모든 상태</option>
+                    <option value="in_progress">진행 중</option>
+                    <option value="completed">완료</option>
+                    <option value="held">보류</option>
+                    <option value="dropped">드랍</option>
+                  </select>
+                  <select id="home-sort" class="form-select form-select-sm" aria-label="정렬">
+                    <option value="default">상태·최근 수정순</option>
+                    <option value="deadline_asc">마감 임박순</option>
+                    <option value="completion_desc">완성도순</option>
+                    <option value="updated_desc">최근 수정순</option>
+                    <option value="created_desc">생성일 최신순</option>
+                    <option value="created_asc">생성일 오래된순</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -203,10 +204,11 @@
           <div id="home-loading" class="text-center py-5">
             <span class="spinner-border text-primary" aria-hidden="true"></span><span class="visually-hidden">불러오는 중</span>
           </div>
-          <div id="home-empty"
-               class="card border-0 shadow-sm d-none">
+          <div id="home-empty" class="card border-0 shadow-sm d-none">
             <div class="card-body idea-empty-state idea-empty-state--home">
-              <img class="idea-empty-illustration" src="{% static 'idea/assets/illustrations/first-page.svg' %}" alt="">
+              <img class="idea-empty-illustration"
+                   src="{% static 'idea/assets/illustrations/first-page.svg' %}"
+                   alt="">
               <span class="idea-empty-kicker">START WITH ONE BRIEF</span>
               <h3 id="home-empty-title" class="idea-empty-title">조건에 맞는 PRD가 없습니다.</h3>
               <p id="home-empty-copy" class="idea-empty-copy">첫 문서를 만들면 아이디어부터 작성 진행 상황까지 한곳에서 이어서 관리할 수 있어요.</p>

@@ -30,7 +30,9 @@
       <a class="write-back"
          href="{% url 'ideas:home' %}"
          aria-label="PRD 목록으로 돌아가기"><i class="idea-icon idea-icon-arrow-left"></i></a>
-      <span class="write-doc-mark" aria-hidden="true"><img src="{% static 'idea/assets/brand/id-mark-primary.svg' %}" alt=""></span>
+      <span class="write-doc-mark" aria-hidden="true">
+        <img src="{% static 'idea/assets/brand/id-mark-primary.svg' %}" alt="">
+      </span>
       <div class="write-doc-copy">
         <div class="write-title-row">
           <h1 id="prd-heading">{{ prd.title }}</h1>
@@ -321,8 +323,11 @@
           </div>
           <div id="write-section-diagnostics" class="write-diagnosis-list">
             <div class="evaluation-empty evaluation-empty--review">
-              <img src="{% static 'idea/assets/illustrations/focused-review.svg' %}" alt="">
-              <div><strong>아직 AI 진단 전입니다.</strong><span>진단을 실행하면 섹션별 충족도와 보완점을 여기에서 확인할 수 있어요.</span></div>
+              <img src="{% static 'idea/assets/illustrations/focused-review.svg' %}"
+                   alt="">
+              <div>
+                <strong>아직 AI 진단 전입니다.</strong><span>진단을 실행하면 섹션별 충족도와 보완점을 여기에서 확인할 수 있어요.</span>
+              </div>
             </div>
           </div>
         </section>

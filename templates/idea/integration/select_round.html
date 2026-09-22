@@ -2,11 +2,18 @@
 {% load static %}
 {% block title %}회차 선택 | Idea Developer{% endblock %}
 {% block content %}
-  <section class="idea-dev idea-integration-state" aria-labelledby="idea-integration-title">
+  <section class="idea-dev idea-integration-state"
+           aria-labelledby="idea-integration-title">
     <div class="idea-integration-card">
       <header class="idea-integration-head">
-        <img class="idea-brand-mark" src="{% static 'idea/assets/brand/id-mark-primary.svg' %}" alt="" aria-hidden="true">
-        <div><span>IDEA DEVELOPER</span><h1 id="idea-integration-title">작업할 회차를 선택해 주세요.</h1></div>
+        <img class="idea-brand-mark"
+             src="{% static 'idea/assets/brand/id-mark-primary.svg' %}"
+             alt=""
+             aria-hidden="true">
+        <div>
+          <span>IDEA DEVELOPER</span>
+          <h1 id="idea-integration-title">작업할 회차를 선택해 주세요.</h1>
+        </div>
       </header>
       <div class="idea-integration-body">
         <p>현재 참여 가능한 회차가 여러 개입니다. Idea Developer에서 사용할 회차를 하나 선택해 주세요.</p>

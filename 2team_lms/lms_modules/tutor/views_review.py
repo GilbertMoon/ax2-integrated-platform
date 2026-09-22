@@ -161,6 +161,8 @@ def submission_review(request, pk):
                 title=title,
                 message=f"과제명: {assignment.title}",
                 link=reverse("lms:student:submission-result", args=[submission.pk]),
+                target_type=lms_notifications.TargetType.SUBMISSION,
+                target_id=submission.pk,
             )
 
             messages.success(request, "평가를 저장했습니다.")

@@ -173,6 +173,8 @@ def tutor_lecture_update_api(request):
                 title="새 강의가 등록되었습니다.",
                 message=f"{lesson.lesson_date} - {lesson.title}",
                 link=reverse("lms:student:lecture-detail", args=[lesson.id]),
+                target_type=lms_notifications.TargetType.LESSON,
+                target_id=lesson.id,
             )
 
     return JsonResponse(payload)

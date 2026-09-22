@@ -325,6 +325,8 @@ def assignment_create(request):
                 title="새 과제가 등록되었습니다.",
                 message=f"과제명: {assignment.title}",
                 link=reverse("lms:student:assignment-submit", args=[assignment.id]),
+                target_type=lms_notifications.TargetType.ASSIGNMENT,
+                target_id=assignment.id,
             )
 
             messages.success(

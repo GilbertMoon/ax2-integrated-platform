@@ -8,6 +8,7 @@
   const DELETE_ALL_URL = "/lms/notifications/delete-all/";
   const markReadUrl = (id) => `/lms/notifications/${id}/read/`;
   const deleteUrl = (id) => `/lms/notifications/${id}/delete/`;
+  const openUrl = (id) => `/lms/notifications/${id}/open/`;
 
   function csrfToken() {
     const input = document.querySelector('input[name="csrfmiddlewaretoken"]');
@@ -164,7 +165,7 @@
             <i class="bi bi-x-lg"></i>
           </button>
         `;
-        row.querySelector(".ax-notification-item-body-btn").addEventListener("click", () => this._openItem(item));
+        row.querySelector(".ax-notification-item-body-btn").addEventListener("click", () => this._openItem(item, row));
         row.querySelector(".ax-notification-item-delete").addEventListener("click", (event) => {
           event.stopPropagation();
           this.deleteItem(item.id);
@@ -173,18 +174,47 @@
       });
     }
 
-    async _openItem(item) {
-      if (!item.is_read) {
-        await fetch(markReadUrl(item.id), {
+    async _openItem(item, rowEl) {
+      // mark-read로 바로 이동시키지 않고 서버에 존재 여부를 먼저 확인한다 —
+      // 과제/강의가 이미 삭제됐으면 이동 대신 그 자리에 에러를 보여주고 알림을 지운다.
+      let response = null;
+      let data = null;
+      try {
+        response = await fetch(openUrl(item.id), {
           method: "POST",
           headers: { "X-CSRFToken": csrfToken() },
         });
+        data = await response.json().catch(() => null);
+      } catch (error) {
+        response = null;
       }
-      if (item.link) {
-        window.location.href = item.link;
+      if (data && data.ok && data.link) {
+        window.location.href = data.link;
         return;
       }
-      this.refresh();
+      if (!response) {
+        // 네트워크 자체가 끊긴 경우 — 대상이 삭제됐다고 단정할 수 없으니 조용히 재시도만 유도한다.
+        return;
+      }
+      // 서버가 응답은 했는데 ok가 아님 = 대상이 삭제돼 알림 자체가 서버에서 지워진 상태.
+      if (rowEl) {
+        this._showStaleItem(rowEl);
+      }
+      this._renderBadge(data ? data.unread_count : 0);
+    }
+
+    // 대상(과제/강의 등)이 삭제돼 열 수 없는 알림 — 자리에 빨간 안내를 잠깐 보여주고
+    // 그 알림은 서버에서 이미 지워졌으니 목록에서도 없앤다.
+    _showStaleItem(rowEl) {
+      rowEl.classList.add("ax-notification-item--stale");
+      rowEl.innerHTML = `<div class="ax-notification-item-stale-msg">삭제된 게시물입니다.</div>`;
+      setTimeout(() => {
+        rowEl.remove();
+        const list = this.panel.querySelector("#axNotificationList");
+        if (list && !list.children.length) {
+          list.innerHTML = '<p class="ax-notification-empty">알림이 없습니다.</p>';
+        }
+      }, 1500);
     }
 
     async markAllRead() {

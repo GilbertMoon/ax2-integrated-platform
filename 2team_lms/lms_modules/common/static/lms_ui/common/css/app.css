@@ -294,6 +294,16 @@ body {
 }
 .ax-notification-item:hover { background: var(--color-surface-subtle); }
 .ax-notification-item.unread { background: var(--color-primary-container); }
+/* 클릭한 알림의 대상(과제/강의)이 이미 삭제된 경우 - 이동하지 않고 이 자리에 잠깐 표시한 뒤 사라진다. */
+.ax-notification-item--stale { background: var(--color-error-bg); }
+.ax-notification-item-stale-msg {
+  width: 100%;
+  padding: 6px 4px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-error);
+}
 .ax-notification-item-body-btn {
   display: flex;
   align-items: flex-start;

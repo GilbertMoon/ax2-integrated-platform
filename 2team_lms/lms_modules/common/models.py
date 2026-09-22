@@ -15,6 +15,11 @@ class LmsNotification(models.Model):
     title = models.CharField(max_length=200)
     message = models.CharField(max_length=500, blank=True)
     link = models.CharField(max_length=200, blank=True)
+    target_type = models.CharField(
+        max_length=20, blank=True,
+        help_text="link이 가리키는 대상 종류(assignment/lesson/submission). 클릭 시 삭제 여부 확인용, FK 아님",
+    )
+    target_id = models.IntegerField(null=True, blank=True, help_text="target_type 대상의 pk, FK 아님")
     created_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
 

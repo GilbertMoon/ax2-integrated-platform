@@ -347,6 +347,8 @@ def assignment_submit(request, assignment_id):
                 title="팀 과제가 제출되었습니다.",
                 message=f"과제명: {assignment.title}",
                 link=reverse("lms:student:assignment-preview", args=[assignment.id]),
+                target_type=lms_notifications.TargetType.ASSIGNMENT,
+                target_id=assignment.id,
             )
         messages.success(request, submit_msg)
         return redirect("lms:student:assignment-preview", assignment_id=assignment.id)

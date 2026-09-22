@@ -3,4 +3,5 @@ flask
 flask-cors
 tf-keras
 opencv-python==4.10.0.84
+--extra-index-url https://download.pytorch.org/whl/cpu
 torch

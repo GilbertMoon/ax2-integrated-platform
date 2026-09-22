@@ -1,5 +1,7 @@
-{% comment %} 차시 등록/수정 모달 — lecture_manage.html 에서 include {% endcomment %}
-<div id="lesson-modal" class="modal-backdrop" onclick="handleBackdropClick(event, 'lesson-modal')">
+{% comment %} 차시 등록/수정 모달 — lecture_manage.html 에서 include.
+입력 필드가 많은 폼이라 배경 클릭으로는 안 닫히게 한다 (실수로 눌러 입력 내용이
+날아가는 것 방지) — X·취소 버튼으로만 닫는다. {% endcomment %}
+<div id="lesson-modal" class="modal-backdrop">
   <div class="modal-box">
     <div class="modal-head">
       <h3 class="modal-title" id="modal-title">새 차시 등록</h3>

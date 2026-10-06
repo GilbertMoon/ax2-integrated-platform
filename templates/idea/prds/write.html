@@ -3,7 +3,8 @@
 {% block title %}{{ prd.title }} | Idea Developer{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/write.css' %}?v=20261006-final33" rel="stylesheet">
+  <link href="{% static 'prds/css/write.css' %}?v=20261006-final33"
+        rel="stylesheet">
 {% endblock %}
 {% block content %}
   <div id="prd-write-app"
@@ -139,14 +140,14 @@
             </div>
           </div>
         </div>
-          <button id="prd-settings-button"
-                  class="write-summary-edit d-none"
-                  type="button"
-                  data-bs-toggle="modal"
-                  data-bs-target="#prd-settings-modal"
-                  aria-label="PRD 설정 열기">
-            <i class="idea-icon idea-icon-gear"></i>
-          </button>
+        <button id="prd-settings-button"
+                class="write-summary-edit d-none"
+                type="button"
+                data-bs-toggle="modal"
+                data-bs-target="#prd-settings-modal"
+                aria-label="PRD 설정 열기">
+          <i class="idea-icon idea-icon-gear"></i>
+        </button>
       </div>
       <div class="write-actions">
         <a class="btn btn-sm btn-outline-secondary brainstorm-launch"
@@ -188,12 +189,23 @@
       </div>
     </header>
     <nav class="v34-views d-flex gap-2" aria-label="PRD 화면">
-      <button type="button" class="btn btn-sm btn-light" data-write-view="write" aria-pressed="true">작성</button>
-      <button type="button" class="btn btn-sm btn-light" data-write-view="full" aria-pressed="false">전체 보기</button>
-      <button type="button" class="btn btn-sm btn-light" data-write-view="report" aria-pressed="false">점검·공유</button>
+      <button type="button"
+              class="btn btn-sm btn-light"
+              data-write-view="write"
+              aria-pressed="true">작성</button>
+      <button type="button"
+              class="btn btn-sm btn-light"
+              data-write-view="full"
+              aria-pressed="false">전체 보기</button>
+      <button type="button"
+              class="btn btn-sm btn-light"
+              data-write-view="report"
+              aria-pressed="false">점검·공유</button>
     </nav>
     <nav class="write-stepper" aria-label="PRD 섹션 진행 단계">
-      <div id="section-rail-tools" class="v9-section-rail-tools" aria-label="섹션 펼침 제어">
+      <div id="section-rail-tools"
+           class="v9-section-rail-tools"
+           aria-label="섹션 펼침 제어">
         <span>SECTIONS</span>
         <div>
           <button id="expand-all-sections" type="button">모두 펼치기</button>
@@ -226,334 +238,436 @@
           <i class="idea-icon idea-icon-cloud-check"></i> 전체 저장
         </button>
       </section>
-      <nav class="v34-mode v34-mode-tabs v8-author-tabs" role="group" aria-label="작성 방식">
+      <nav class="v34-mode v34-mode-tabs v8-author-tabs"
+           role="group"
+           aria-label="작성 방식">
         <span id="v34-mode-label" class="visually-hidden">단계별 작성</span>
-        <button class="v34-mode-tab active" id="structure-view" type="button" aria-pressed="true">단계별 작성</button>
-        <button class="v34-mode-tab" id="question-view" type="button" aria-pressed="false">섹션별 작성</button>
+        <button class="v34-mode-tab active"
+                id="structure-view"
+                type="button"
+                aria-pressed="true">단계별 작성</button>
+        <button class="v34-mode-tab"
+                id="question-view"
+                type="button"
+                aria-pressed="false">섹션별 작성</button>
       </nav>
       <div class="write-workspace">
-      <section class="write-structure" aria-labelledby="structure-heading">
-        <div id="prd-sections" class="write-section-list" aria-live="polite">
-          <div class="text-center py-5">
-            <span class="spinner-border text-primary" aria-hidden="true"></span>
-          </div>
-        </div>
-      </section>
-      <section id="v34-full" aria-label="전체 보기"></section>
-      <button id="v34-context-toggle" type="button" class="btn btn-outline-secondary" data-bs-toggle="offcanvas" data-bs-target="#v34-context">앞에서 쓴 내용 0개</button>
-      <aside id="v34-context" class="offcanvas-lg offcanvas-end v34-context" tabindex="-1" aria-labelledby="v34-context-heading">
-        <div class="offcanvas-header"><div><span class="v34-context-eyebrow">REFERENCE</span><h2 id="v34-context-heading" class="h6">참고 정보</h2></div><button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#v34-context" aria-label="닫기"></button></div>
-        <div id="v34-context-body" class="offcanvas-body"></div>
-      </aside>
-      <button id="section-back-to-top" class="v31-section-back-to-top" type="button" aria-label="섹션별 작성 맨 위로" aria-hidden="true" tabindex="-1"><i class="idea-icon idea-icon-arrow-up"></i><span>맨 위로</span></button>
-      <aside class="write-evaluation" aria-labelledby="evaluation-heading">
-        <div class="write-evaluation-title v9-page-heading">
-          <div>
-            <span>CHECK &amp; SHARE</span>
-            <h2 id="evaluation-heading">점검하고 공유하기</h2>
-            <p class="text-secondary">빠진 내용이 있는지 확인하고, 필요한 곳부터 보완해요.</p>
-          </div>
-          <div class="v34-review-actions"><span id="score-state" data-state="empty">진단 전</span><button id="run-evaluation" class="btn btn-sm btn-primary v15-review-run" type="button"><i class="idea-icon idea-icon-stars"></i> AI 관점 진단</button><button id="cancel-evaluation" class="btn btn-sm btn-outline-secondary d-none" type="button"><i class="idea-icon idea-icon-x-lg"></i> 진단 취소</button><button type="button" class="btn btn-sm btn-outline-secondary" data-write-view="write">계속 수정</button></div>
-        </div>
-        <p class="v34-report-guide">평가 기준 · 전체 품질 80+ / 각 관점 80+ · 점수보다 어디를 먼저 보완할지 확인하는 화면이에요.</p>
-        <section id="v34-executive-summary" class="v34-executive-summary" aria-label="현재 PRD 요약">
-          <div class="v34-executive-copy">
-            <span>EXECUTIVE SUMMARY</span>
-            <h3 id="v34-executive-title">아직 품질 진단 전입니다.</h3>
-            <p id="v34-executive-description">AI 진단 후 현재 상태, 가장 큰 리스크, 다음에 확인할 내용을 실제 결과 기준으로 보여줘요.</p>
-          </div>
-          <div class="v34-executive-signals">
-            <div><span>현재 상태</span><strong id="v34-signal-state">진단 전</strong></div>
-            <div><span>가장 큰 리스크</span><strong id="v34-signal-risk">—</strong></div>
-            <div><span>다음 확인</span><strong id="v34-signal-next">—</strong></div>
-          </div>
-        </section>
-        <section class="v34-perspective-guide" aria-labelledby="v34-perspective-guide-title">
-          <div class="v34-perspective-guide-head">
-            <div><span>3 PERSPECTIVES</span><h3 id="v34-perspective-guide-title">세 관점으로 보면 지금 부족한 부분이 더 명확해져요.</h3><p>제품 방향 · 구현 가능성 · 검증 가치를 각각 확인하고, 실제 진단 결과에서 가장 약한 영역을 연결해 보여줘요.</p></div>
-            <strong id="v34-perspective-pass">0 / 3 충족</strong>
-          </div>
-          <div class="v34-perspective-guide-grid">
-            <article data-guide-persona="pm"><div><b>PM</b><span>무엇을 만들지 확인</span></div><strong data-persona-score>—</strong><p><span>현재 부족</span><b data-persona-gap>진단 전</b></p></article>
-            <article data-guide-persona="engineering"><div><b>Engineering</b><span>실제로 만들 수 있는지 확인</span></div><strong data-persona-score>—</strong><p><span>현재 부족</span><b data-persona-gap>진단 전</b></p></article>
-            <article data-guide-persona="investor"><div><b>Business</b><span>만들 가치가 있는지 확인</span></div><strong data-persona-score>—</strong><p><span>현재 부족</span><b data-persona-gap>진단 전</b></p></article>
-          </div>
-        </section>
-        <section class="write-score-card" aria-label="PRD 품질 보고서">
-          <div class="v34-report-top">
-            <section class="v34-overall">
-              <div class="v34-review-empty-copy">
-                <h3 class="h6">아직 품질 진단 전입니다.</h3>
-                <p class="text-secondary">작성한 내용을 기준으로 PM · Engineering · Business 관점에서 보완할 부분을 확인할 수 있어요.</p>
-              </div>
-              <div class="write-score-main">
-            <div id="write-score-ring" class="write-score-ring is-pending">
-              <svg class="write-score-svg" viewBox="0 0 84 84" aria-hidden="true">
-                <circle class="write-score-track" cx="42" cy="42" r="34" pathLength="100"></circle><circle id="write-score-progress" class="write-score-progress" cx="42" cy="42" r="34" pathLength="100"></circle>
-              </svg>
-              <span class="write-score-copy"><strong id="write-score-value">—</strong><small>/ 100</small></span>
+        <section class="write-structure" aria-labelledby="structure-heading">
+          <div id="prd-sections" class="write-section-list" aria-live="polite">
+            <div class="text-center py-5">
+              <span class="spinner-border text-primary" aria-hidden="true"></span>
             </div>
+          </div>
+        </section>
+        <section id="v34-full" aria-label="전체 보기">
+        </section>
+        <button id="v34-context-toggle"
+                type="button"
+                class="btn btn-outline-secondary"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#v34-context">앞에서 쓴 내용 0개</button>
+        <aside id="v34-context"
+               class="offcanvas-lg offcanvas-end v34-context"
+               tabindex="-1"
+               aria-labelledby="v34-context-heading">
+          <div class="offcanvas-header">
             <div>
-              <h3 class="h6">전체 품질</h3>
-              <strong id="write-score-label" class="v34-quality">아직 품질 진단을 하지 않았어요</strong>
-              <p id="write-score-feedback">작성한 내용을 기준으로 세 관점의 품질과 보완할 곳을 확인할 수 있어요.</p>
+              <span class="v34-context-eyebrow">REFERENCE</span>
+              <h2 id="v34-context-heading" class="h6">참고 정보</h2>
+            </div>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="offcanvas"
+                    data-bs-target="#v34-context"
+                    aria-label="닫기"></button>
+          </div>
+          <div id="v34-context-body" class="offcanvas-body"></div>
+        </aside>
+        <button id="section-back-to-top"
+                class="v31-section-back-to-top"
+                type="button"
+                aria-label="섹션별 작성 맨 위로"
+                aria-hidden="true"
+                tabindex="-1">
+          <i class="idea-icon idea-icon-arrow-up"></i><span>맨 위로</span>
+        </button>
+        <aside class="write-evaluation" aria-labelledby="evaluation-heading">
+          <div class="write-evaluation-title v9-page-heading">
+            <div>
+              <span>CHECK &amp; SHARE</span>
+              <h2 id="evaluation-heading">점검하고 공유하기</h2>
+              <p class="text-secondary">빠진 내용이 있는지 확인하고, 필요한 곳부터 보완해요.</p>
+            </div>
+            <div class="v34-review-actions">
+              <span id="score-state" data-state="empty">진단 전</span>
+              <button id="run-evaluation"
+                      class="btn btn-sm btn-primary v15-review-run"
+                      type="button">
+                <i class="idea-icon idea-icon-stars"></i> AI 관점 진단
+              </button>
+              <button id="cancel-evaluation"
+                      class="btn btn-sm btn-outline-secondary d-none"
+                      type="button">
+                <i class="idea-icon idea-icon-x-lg"></i> 진단 취소
+              </button>
+              <button type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      data-write-view="write">계속 수정</button>
             </div>
           </div>
+          <p class="v34-report-guide">평가 기준 · 전체 품질 80+ / 각 관점 80+ · 점수보다 어디를 먼저 보완할지 확인하는 화면이에요.</p>
+          <section id="v34-executive-summary"
+                   class="v34-executive-summary"
+                   aria-label="현재 PRD 요약">
+            <div class="v34-executive-copy">
+              <span>EXECUTIVE SUMMARY</span>
+              <h3 id="v34-executive-title">아직 품질 진단 전입니다.</h3>
+              <p id="v34-executive-description">AI 진단 후 현재 상태, 가장 큰 리스크, 다음에 확인할 내용을 실제 결과 기준으로 보여줘요.</p>
+            </div>
+            <div class="v34-executive-signals">
+              <div>
+                <span>현재 상태</span><strong id="v34-signal-state">진단 전</strong>
+              </div>
+              <div>
+                <span>가장 큰 리스크</span><strong id="v34-signal-risk">—</strong>
+              </div>
+              <div>
+                <span>다음 확인</span><strong id="v34-signal-next">—</strong>
+              </div>
+            </div>
           </section>
-            <section class="v34-overview"><small>3 PERSPECTIVES</small><h3 class="h6">관점별 기준 충족</h3><div id="v34-persona-summary"></div></section>
-            <section class="v34-priority"><small>NEXT ACTION</small><h3 id="v34-priority-heading" class="h6">먼저 보완하면 좋은 곳</h3><div id="v34-priorities"></div></section>
-          </div>
-          <div class="v34-detail-review-head">
-            <span>DETAIL REVIEW</span>
-            <h3>관점별 상세 진단</h3>
-            <p>각 관점에서 왜 이 점수가 나왔는지와 가장 먼저 고칠 내용을 확인하세요.</p>
-          </div>
-          <div id="write-score-personas" class="write-score-personas">
-            <div class="write-score-persona" data-persona="pm">
-              <div class="write-score-persona-inner">
-                <div class="write-score-persona-ring is-pending">
-                  <svg class="write-score-persona-svg"
-                       viewBox="0 0 84 84"
-                       aria-hidden="true">
-                    <circle class="write-score-persona-track" cx="42" cy="42" r="34" pathLength="100"></circle><circle class="write-score-persona-progress" cx="42" cy="42" r="34" pathLength="100"></circle>
-                  </svg>
-                  <span class="write-score-persona-value">—</span>
+          <section class="v34-perspective-guide"
+                   aria-labelledby="v34-perspective-guide-title">
+            <div class="v34-perspective-guide-head">
+              <div>
+                <span>3 PERSPECTIVES</span>
+                <h3 id="v34-perspective-guide-title">세 관점으로 보면 지금 부족한 부분이 더 명확해져요.</h3>
+                <p>제품 방향 · 구현 가능성 · 검증 가치를 각각 확인하고, 실제 진단 결과에서 가장 약한 영역을 연결해 보여줘요.</p>
+              </div>
+              <strong id="v34-perspective-pass">0 / 3 충족</strong>
+            </div>
+            <div class="v34-perspective-guide-grid">
+              <article data-guide-persona="pm">
+                <div>
+                  <b>PM</b><span>무엇을 만들지 확인</span>
                 </div>
-                <div class="write-score-persona-copy">
-                  <strong><i class="idea-icon idea-icon-kanban"></i> PM</strong>
-                  <p class="write-score-persona-feedback">아직 품질 진단을 하지 않았어요.</p>
+                <strong data-persona-score>—</strong>
+                <p>
+                  <span>현재 부족</span><b data-persona-gap>진단 전</b>
+                </p>
+              </article>
+              <article data-guide-persona="engineering">
+                <div>
+                  <b>Engineering</b><span>실제로 만들 수 있는지 확인</span>
+                </div>
+                <strong data-persona-score>—</strong>
+                <p>
+                  <span>현재 부족</span><b data-persona-gap>진단 전</b>
+                </p>
+              </article>
+              <article data-guide-persona="investor">
+                <div>
+                  <b>Business</b><span>만들 가치가 있는지 확인</span>
+                </div>
+                <strong data-persona-score>—</strong>
+                <p>
+                  <span>현재 부족</span><b data-persona-gap>진단 전</b>
+                </p>
+              </article>
+            </div>
+          </section>
+          <section class="write-score-card" aria-label="PRD 품질 보고서">
+            <div class="v34-report-top">
+              <section class="v34-overall">
+                <div class="v34-review-empty-copy">
+                  <h3 class="h6">아직 품질 진단 전입니다.</h3>
+                  <p class="text-secondary">작성한 내용을 기준으로 PM · Engineering · Business 관점에서 보완할 부분을 확인할 수 있어요.</p>
+                </div>
+                <div class="write-score-main">
+                  <div id="write-score-ring" class="write-score-ring is-pending">
+                    <svg class="write-score-svg" viewBox="0 0 84 84" aria-hidden="true">
+                      <circle class="write-score-track" cx="42" cy="42" r="34" pathLength="100"></circle><circle id="write-score-progress" class="write-score-progress" cx="42" cy="42" r="34" pathLength="100"></circle>
+                    </svg>
+                    <span class="write-score-copy"><strong id="write-score-value">—</strong><small>/ 100</small></span>
+                  </div>
+                  <div>
+                    <h3 class="h6">전체 품질</h3>
+                    <strong id="write-score-label" class="v34-quality">아직 품질 진단을 하지 않았어요</strong>
+                    <p id="write-score-feedback">작성한 내용을 기준으로 세 관점의 품질과 보완할 곳을 확인할 수 있어요.</p>
+                  </div>
+                </div>
+              </section>
+              <section class="v34-overview">
+                <small>3 PERSPECTIVES</small>
+                <h3 class="h6">관점별 기준 충족</h3>
+                <div id="v34-persona-summary"></div>
+              </section>
+              <section class="v34-priority">
+                <small>NEXT ACTION</small>
+                <h3 id="v34-priority-heading" class="h6">먼저 보완하면 좋은 곳</h3>
+                <div id="v34-priorities"></div>
+              </section>
+            </div>
+            <div class="v34-detail-review-head">
+              <span>DETAIL REVIEW</span>
+              <h3>관점별 상세 진단</h3>
+              <p>각 관점에서 왜 이 점수가 나왔는지와 가장 먼저 고칠 내용을 확인하세요.</p>
+            </div>
+            <div id="write-score-personas" class="write-score-personas">
+              <div class="write-score-persona" data-persona="pm">
+                <div class="write-score-persona-inner">
+                  <div class="write-score-persona-ring is-pending">
+                    <svg class="write-score-persona-svg"
+                         viewBox="0 0 84 84"
+                         aria-hidden="true">
+                      <circle class="write-score-persona-track" cx="42" cy="42" r="34" pathLength="100"></circle><circle class="write-score-persona-progress" cx="42" cy="42" r="34" pathLength="100"></circle>
+                    </svg>
+                    <span class="write-score-persona-value">—</span>
+                  </div>
+                  <div class="write-score-persona-copy">
+                    <strong><i class="idea-icon idea-icon-kanban"></i> PM</strong>
+                    <p class="write-score-persona-feedback">아직 품질 진단을 하지 않았어요.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="write-score-persona" data-persona="engineering">
+                <div class="write-score-persona-inner">
+                  <div class="write-score-persona-ring is-pending">
+                    <svg class="write-score-persona-svg"
+                         viewBox="0 0 84 84"
+                         aria-hidden="true">
+                      <circle class="write-score-persona-track" cx="42" cy="42" r="34" pathLength="100"></circle><circle class="write-score-persona-progress" cx="42" cy="42" r="34" pathLength="100"></circle>
+                    </svg>
+                    <span class="write-score-persona-value">—</span>
+                  </div>
+                  <div class="write-score-persona-copy">
+                    <strong><i class="idea-icon idea-icon-code-slash"></i> Engineering</strong>
+                    <p class="write-score-persona-feedback">아직 품질 진단을 하지 않았어요.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="write-score-persona" data-persona="investor">
+                <div class="write-score-persona-inner">
+                  <div class="write-score-persona-ring is-pending">
+                    <svg class="write-score-persona-svg"
+                         viewBox="0 0 84 84"
+                         aria-hidden="true">
+                      <circle class="write-score-persona-track" cx="42" cy="42" r="34" pathLength="100"></circle><circle class="write-score-persona-progress" cx="42" cy="42" r="34" pathLength="100"></circle>
+                    </svg>
+                    <span class="write-score-persona-value">—</span>
+                  </div>
+                  <div class="write-score-persona-copy">
+                    <strong><i class="idea-icon idea-icon-graph-up-arrow"></i> Business</strong>
+                    <p class="write-score-persona-feedback">아직 품질 진단을 하지 않았어요.</p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="write-score-persona" data-persona="engineering">
-              <div class="write-score-persona-inner">
-                <div class="write-score-persona-ring is-pending">
-                  <svg class="write-score-persona-svg"
-                       viewBox="0 0 84 84"
-                       aria-hidden="true">
-                    <circle class="write-score-persona-track" cx="42" cy="42" r="34" pathLength="100"></circle><circle class="write-score-persona-progress" cx="42" cy="42" r="34" pathLength="100"></circle>
-                  </svg>
-                  <span class="write-score-persona-value">—</span>
-                </div>
-                <div class="write-score-persona-copy">
-                  <strong><i class="idea-icon idea-icon-code-slash"></i> Engineering</strong>
-                  <p class="write-score-persona-feedback">아직 품질 진단을 하지 않았어요.</p>
-                </div>
+            <div id="evaluation-alert" class="evaluation-alert d-none" role="status"></div>
+            <div id="perspective-draft-alert"
+                 class="evaluation-alert d-none"
+                 role="status"></div>
+            <div class="evaluation-support">
+              <p class="evaluation-caption">
+                <i class="idea-icon idea-icon-info-circle"></i>
+                <span>AI 관점 진단은 PM·Engineering·Business 세 관점을 확인하고, AI 초안 작성은 세 관점을 종합해 PRD 전체 답변 초안을 제안합니다.</span>
+              </p>
+              <div class="evaluation-actions">
+                <button id="run-perspective-draft"
+                        class="btn btn-outline-secondary"
+                        type="button">
+                  <i class="idea-icon idea-icon-magic"></i> AI 초안 작성
+                </button>
               </div>
             </div>
-            <div class="write-score-persona" data-persona="investor">
-              <div class="write-score-persona-inner">
-                <div class="write-score-persona-ring is-pending">
-                  <svg class="write-score-persona-svg"
-                       viewBox="0 0 84 84"
-                       aria-hidden="true">
-                    <circle class="write-score-persona-track" cx="42" cy="42" r="34" pathLength="100"></circle><circle class="write-score-persona-progress" cx="42" cy="42" r="34" pathLength="100"></circle>
-                  </svg>
-                  <span class="write-score-persona-value">—</span>
-                </div>
-                <div class="write-score-persona-copy">
-                  <strong><i class="idea-icon idea-icon-graph-up-arrow"></i> Business</strong>
-                  <p class="write-score-persona-feedback">아직 품질 진단을 하지 않았어요.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div id="evaluation-alert" class="evaluation-alert d-none" role="status"></div>
-          <div id="perspective-draft-alert"
-               class="evaluation-alert d-none"
-               role="status"></div>
-          <div class="evaluation-support">
-            <p class="evaluation-caption">
-              <i class="idea-icon idea-icon-info-circle"></i>
-              <span>AI 관점 진단은 PM·Engineering·Business 세 관점을 확인하고, AI 초안 작성은 세 관점을 종합해 PRD 전체 답변 초안을 제안합니다.</span>
+          </section>
+          <section class="v34-empty-perspectives"
+                   aria-labelledby="v34-empty-perspectives-title">
+            <small class="text-secondary">WHY 3 PERSPECTIVES?</small>
+            <h3 id="v34-empty-perspectives-title">왜 PM · Engineering · Business 세 관점으로 보나요?</h3>
+            <p class="text-secondary">
+              좋은 PRD는 아이디어만 좋아서는 부족해요.
+              <br>
+              무엇을 만들지, 실제로 만들 수 있는지,
+              <br>
+              만들 가치가 있는지를 함께 확인해야 해요.
             </p>
-            <div class="evaluation-actions">
-              <button id="run-perspective-draft" class="btn btn-outline-secondary" type="button">
-                <i class="idea-icon idea-icon-magic"></i> AI 초안 작성
+            <div class="v34-empty-perspectives-grid">
+              <div>
+                <h4>PM</h4>
+                <strong>제품 문제 · 우선순위</strong>
+                <p>사용자 문제, 목표, 가설, 우선순위가 명확한지 봐요.</p>
+              </div>
+              <div>
+                <h4>Engineering</h4>
+                <strong>구현 · 데이터 · 예외</strong>
+                <p>기능 범위, 데이터 흐름, 오류·예외 조건이 충분한지 봐요.</p>
+              </div>
+              <div>
+                <h4>Business</h4>
+                <strong>가치 · 시장 · 검증</strong>
+                <p>성과 기준, 비즈니스 가치, 실제 검증 가능성이 있는지 봐요.</p>
+              </div>
+            </div>
+          </section>
+          <section class="write-diagnosis" aria-labelledby="diagnosis-heading">
+            <div class="write-diagnosis-head">
+              <div>
+                <span>SECTION HEALTH</span>
+                <h3 id="diagnosis-heading">섹션별 상태</h3>
+              </div>
+              <small>행을 선택하면 상세 진단을 확인합니다</small>
+            </div>
+            <div id="write-section-diagnostics" class="write-diagnosis-list">
+              <div class="evaluation-empty evaluation-empty--review">
+                <img src="{% static 'idea/assets/illustrations/focused-review-product.svg' %}"
+                     alt="">
+                <div>
+                  <strong>아직 AI 진단 전입니다.</strong><span>작성한 내용을 기준으로 세 관점의 품질과 보완할 곳을 확인할 수 있어요.</span>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section id="v34-diagnosis-detail" aria-live="polite" hidden>
+          </section>
+          <section class="write-section-score" aria-labelledby="section-score-heading">
+            <div class="write-section-score-head">
+              <h3 id="section-score-heading">작성 현황 · 품질 점수와는 다른 지표예요</h3>
+              <small>답변한 질문 기준 · AI 점수 아님</small>
+            </div>
+            <div id="write-section-progress" class="write-section-progress"></div>
+          </section>
+        </aside>
+        <aside class="offcanvas offcanvas-end write-insight"
+               tabindex="-1"
+               id="write-support-panel"
+               aria-labelledby="write-support-title">
+          <div class="offcanvas-header write-support-head">
+            <div>
+              <span>AI COACH</span>
+              <h2 id="write-support-title">AI 코치</h2>
+            </div>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="offcanvas"
+                    aria-label="닫기"></button>
+          </div>
+          <div class="offcanvas-body write-support-body">
+            <section id="coach-panel" class="ai-coach-panel">
+              <div class="coach-header">
+                <div>
+                  <span class="coach-mark"><i class="idea-icon idea-icon-stars"></i></span>
+                  <div>
+                    <h2 id="coach-heading">AI 코치</h2>
+                    <p>PRD 맥락을 기반으로 피드백합니다</p>
+                  </div>
+                </div>
+                <select id="coach-scope"
+                        class="form-select form-select-sm"
+                        aria-label="AI 코치 범위">
+                  <option value="">전체 PRD</option>
+                </select>
+              </div>
+              <div class="coach-notice">
+                <i class="idea-icon idea-icon-lightbulb"></i> 내용을 임의로 추가하지 않고 현재 PRD를 기준으로 답합니다.
+              </div>
+              <div id="coach-messages" class="ai-coach-messages" aria-live="polite"></div>
+              <form id="coach-form" class="coach-form">
+                <textarea id="coach-input"
+                          class="form-control"
+                          rows="2"
+                          maxlength="4000"
+                          required
+                          placeholder="질문하거나 피드백을 요청하세요"></textarea>
+                <div>
+                  <small>Enter로 전송 · 최근 3턴 전달</small><span>
+                    <button id="coach-cancel"
+                            type="button"
+                            class="btn btn-outline-secondary btn-sm d-none">취소</button>
+                    <button id="coach-submit" type="submit" class="btn btn-primary btn-sm">
+                      <i class="idea-icon idea-icon-send"></i>
+                    </button>
+                  </span>
+                </div>
+              </form>
+            </section>
+          </div>
+        </aside>
+        <aside class="offcanvas offcanvas-end write-comments"
+               tabindex="-1"
+               id="write-comments-panel"
+               aria-labelledby="write-comments-title">
+          <div class="offcanvas-header comment-panel-head">
+            <div>
+              <span>COMMENTS</span>
+              <h2 id="write-comments-title">PRD 코멘트</h2>
+              <p>팀원과 PRD 전체에 대한 의견을 나눠보세요.</p>
+            </div>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="offcanvas"
+                    aria-label="닫기"></button>
+          </div>
+          <div id="comment-panel-alert"
+               class="alert d-none comment-panel-alert"
+               role="alert"></div>
+          <div id="comment-list"
+               class="offcanvas-body comment-list"
+               aria-live="polite">
+            <div class="text-center py-5">
+              <span class="spinner-border spinner-border-sm text-primary"></span>
+            </div>
+          </div>
+          <nav id="comment-pagination"
+               class="comment-pagination d-none"
+               aria-label="코멘트 페이지">
+          </nav>
+          <form id="comment-form" class="comment-form">
+            <label class="form-label" for="comment-target">코멘트 위치</label>
+            <select id="comment-target" class="form-select form-select-sm">
+              <option value="">PRD 전체</option>
+            </select>
+            <label class="visually-hidden" for="comment-input">코멘트 내용</label>
+            <textarea id="comment-input"
+                      class="form-control mt-2"
+                      rows="3"
+                      maxlength="4000"
+                      placeholder="PRD에 대한 의견을 남겨주세요."></textarea>
+            <div>
+              <small id="comment-permission-hint">PRD 전체 또는 질문을 선택해 의견을 남길 수 있습니다.</small>
+              <button id="comment-submit" class="btn btn-primary btn-sm" type="submit">
+                <i class="idea-icon idea-icon-send"></i> 등록
               </button>
             </div>
-          </div>
-
-        </section>
-        <section class="v34-empty-perspectives" aria-labelledby="v34-empty-perspectives-title">
-          <small class="text-secondary">WHY 3 PERSPECTIVES?</small>
-          <h3 id="v34-empty-perspectives-title">왜 PM · Engineering · Business 세 관점으로 보나요?</h3>
-          <p class="text-secondary">좋은 PRD는 아이디어만 좋아서는 부족해요.<br>무엇을 만들지, 실제로 만들 수 있는지,<br>만들 가치가 있는지를 함께 확인해야 해요.</p>
-          <div class="v34-empty-perspectives-grid">
+          </form>
+        </aside>
+        <aside class="offcanvas offcanvas-end write-contributions"
+               tabindex="-1"
+               id="write-contribution-panel"
+               aria-labelledby="write-contribution-title">
+          <div class="offcanvas-header contribution-panel-head">
             <div>
-              <h4>PM</h4>
-              <strong>제품 문제 · 우선순위</strong>
-              <p>사용자 문제, 목표, 가설, 우선순위가 명확한지 봐요.</p>
+              <span>ADMIN ONLY</span>
+              <h2 id="write-contribution-title">팀원 기여도 평가</h2>
+              <p>완료 시점별 평가 결과이며 관리자만 조회할 수 있습니다.</p>
             </div>
-            <div>
-              <h4>Engineering</h4>
-              <strong>구현 · 데이터 · 예외</strong>
-              <p>기능 범위, 데이터 흐름, 오류·예외 조건이 충분한지 봐요.</p>
-            </div>
-            <div>
-              <h4>Business</h4>
-              <strong>가치 · 시장 · 검증</strong>
-              <p>성과 기준, 비즈니스 가치, 실제 검증 가능성이 있는지 봐요.</p>
-            </div>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="offcanvas"
+                    aria-label="닫기"></button>
           </div>
-        </section>
-        <section class="write-diagnosis" aria-labelledby="diagnosis-heading">
-          <div class="write-diagnosis-head">
-            <div>
-              <span>SECTION HEALTH</span>
-              <h3 id="diagnosis-heading">섹션별 상태</h3>
-            </div>
-            <small>행을 선택하면 상세 진단을 확인합니다</small>
-          </div>
-          <div id="write-section-diagnostics" class="write-diagnosis-list">
-            <div class="evaluation-empty evaluation-empty--review">
-              <img src="{% static 'idea/assets/illustrations/focused-review-product.svg' %}"
-                   alt="">
-              <div>
-                <strong>아직 AI 진단 전입니다.</strong><span>작성한 내용을 기준으로 세 관점의 품질과 보완할 곳을 확인할 수 있어요.</span>
-              </div>
+          <div id="contribution-alert"
+               class="alert d-none contribution-alert"
+               role="alert"></div>
+          <div id="contribution-list"
+               class="offcanvas-body contribution-list"
+               aria-live="polite">
+            <div class="text-center py-5">
+              <span class="spinner-border spinner-border-sm text-primary"></span>
             </div>
           </div>
-        </section>
-        <section id="v34-diagnosis-detail" aria-live="polite" hidden></section>
-        <section class="write-section-score" aria-labelledby="section-score-heading">
-          <div class="write-section-score-head">
-            <h3 id="section-score-heading">작성 현황 · 품질 점수와는 다른 지표예요</h3>
-            <small>답변한 질문 기준 · AI 점수 아님</small>
-          </div>
-          <div id="write-section-progress" class="write-section-progress"></div>
-        </section>
-      </aside>
-      <aside class="offcanvas offcanvas-end write-insight"
-             tabindex="-1"
-             id="write-support-panel"
-             aria-labelledby="write-support-title">
-        <div class="offcanvas-header write-support-head">
-          <div>
-            <span>AI COACH</span>
-            <h2 id="write-support-title">AI 코치</h2>
-          </div>
-          <button type="button"
-                  class="btn-close"
-                  data-bs-dismiss="offcanvas"
-                  aria-label="닫기"></button>
-        </div>
-        <div class="offcanvas-body write-support-body">
-          <section id="coach-panel" class="ai-coach-panel">
-            <div class="coach-header">
-              <div>
-                <span class="coach-mark"><i class="idea-icon idea-icon-stars"></i></span>
-                <div>
-                  <h2 id="coach-heading">AI 코치</h2>
-                  <p>PRD 맥락을 기반으로 피드백합니다</p>
-                </div>
-              </div>
-              <select id="coach-scope"
-                      class="form-select form-select-sm"
-                      aria-label="AI 코치 범위">
-                <option value="">전체 PRD</option>
-              </select>
-            </div>
-            <div class="coach-notice">
-              <i class="idea-icon idea-icon-lightbulb"></i> 내용을 임의로 추가하지 않고 현재 PRD를 기준으로 답합니다.
-            </div>
-            <div id="coach-messages" class="ai-coach-messages" aria-live="polite"></div>
-            <form id="coach-form" class="coach-form">
-              <textarea id="coach-input"
-                        class="form-control"
-                        rows="2"
-                        maxlength="4000"
-                        required
-                        placeholder="질문하거나 피드백을 요청하세요"></textarea>
-              <div>
-                <small>Enter로 전송 · 최근 3턴 전달</small><span>
-                  <button id="coach-cancel"
-                          type="button"
-                          class="btn btn-outline-secondary btn-sm d-none">취소</button>
-                  <button id="coach-submit" type="submit" class="btn btn-primary btn-sm">
-                    <i class="idea-icon idea-icon-send"></i>
-                  </button>
-                </span>
-              </div>
-            </form>
-          </section>
-        </div>
-      </aside>
-      <aside class="offcanvas offcanvas-end write-comments"
-             tabindex="-1"
-             id="write-comments-panel"
-             aria-labelledby="write-comments-title">
-        <div class="offcanvas-header comment-panel-head">
-          <div>
-            <span>COMMENTS</span>
-            <h2 id="write-comments-title">PRD 코멘트</h2>
-            <p>팀원과 PRD 전체에 대한 의견을 나눠보세요.</p>
-          </div>
-          <button type="button"
-                  class="btn-close"
-                  data-bs-dismiss="offcanvas"
-                  aria-label="닫기"></button>
-        </div>
-        <div id="comment-panel-alert"
-             class="alert d-none comment-panel-alert"
-             role="alert"></div>
-        <div id="comment-list"
-             class="offcanvas-body comment-list"
-             aria-live="polite">
-          <div class="text-center py-5">
-            <span class="spinner-border spinner-border-sm text-primary"></span>
-          </div>
-        </div>
-        <nav id="comment-pagination"
-             class="comment-pagination d-none"
-             aria-label="코멘트 페이지">
-        </nav>
-        <form id="comment-form" class="comment-form">
-          <label class="form-label" for="comment-target">코멘트 위치</label>
-          <select id="comment-target" class="form-select form-select-sm">
-            <option value="">PRD 전체</option>
-          </select>
-          <label class="visually-hidden" for="comment-input">코멘트 내용</label>
-          <textarea id="comment-input"
-                    class="form-control mt-2"
-                    rows="3"
-                    maxlength="4000"
-                    placeholder="PRD에 대한 의견을 남겨주세요."></textarea>
-          <div>
-            <small id="comment-permission-hint">PRD 전체 또는 질문을 선택해 의견을 남길 수 있습니다.</small>
-            <button id="comment-submit" class="btn btn-primary btn-sm" type="submit">
-              <i class="idea-icon idea-icon-send"></i> 등록
-            </button>
-          </div>
-        </form>
-      </aside>
-      <aside class="offcanvas offcanvas-end write-contributions"
-             tabindex="-1"
-             id="write-contribution-panel"
-             aria-labelledby="write-contribution-title">
-        <div class="offcanvas-header contribution-panel-head">
-          <div>
-            <span>ADMIN ONLY</span>
-            <h2 id="write-contribution-title">팀원 기여도 평가</h2>
-            <p>완료 시점별 평가 결과이며 관리자만 조회할 수 있습니다.</p>
-          </div>
-          <button type="button"
-                  class="btn-close"
-                  data-bs-dismiss="offcanvas"
-                  aria-label="닫기"></button>
-        </div>
-        <div id="contribution-alert"
-             class="alert d-none contribution-alert"
-             role="alert"></div>
-        <div id="contribution-list"
-             class="offcanvas-body contribution-list"
-             aria-live="polite">
-          <div class="text-center py-5">
-            <span class="spinner-border spinner-border-sm text-primary"></span>
-          </div>
-        </div>
-      </aside>
-    </div>
+        </aside>
+      </div>
     </div>
   </div>
   <form class="d-none" aria-hidden="true">

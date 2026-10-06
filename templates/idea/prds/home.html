@@ -3,7 +3,8 @@
 {% block title %}PRD 홈 | 아이디어 디벨로퍼{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/home.css' %}?v=20261006-final33" rel="stylesheet">
+  <link href="{% static 'prds/css/home.css' %}?v=20261006-final33"
+        rel="stylesheet">
 {% endblock %}
 {% block content %}
   <div id="prd-home-app"
@@ -95,7 +96,8 @@
                         type="button"
                         data-bs-toggle="modal"
                         data-bs-target="#prd-trash-modal"
-                        aria-label="휴지통 열기" title="휴지통">
+                        aria-label="휴지통 열기"
+                        title="휴지통">
                   <i class="idea-icon idea-icon-trash3"></i>
                   <span>휴지통</span>
                 </button>

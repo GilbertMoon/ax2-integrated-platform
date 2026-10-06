@@ -3,7 +3,8 @@
 {% block title %}새 PRD 만들기 | 아이디어 디벨로퍼{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/new.css' %}?v=20261006-final33" rel="stylesheet">
+  <link href="{% static 'prds/css/new.css' %}?v=20261006-final33"
+        rel="stylesheet">
 {% endblock %}
 {% block breadcrumb %}
   <a class="idea-breadcrumb-link" href="{% url 'ideas:home' %}">PRD</a>
@@ -227,9 +228,14 @@
   </div>
 {% endblock %}
 {% block modals %}
-  <div id="new-created" class="modal fade idea-dev-modal" tabindex="-1"
-       aria-labelledby="new-created-heading" aria-describedby="new-created-description"
-       aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div id="new-created"
+       class="modal fade idea-dev-modal"
+       tabindex="-1"
+       aria-labelledby="new-created-heading"
+       aria-describedby="new-created-description"
+       aria-hidden="true"
+       data-bs-backdrop="static"
+       data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content new-created-content">
         <div class="modal-header new-created-header">
@@ -237,7 +243,12 @@
             <h2 id="new-created-heading" class="modal-title h5">PRD가 생성됐어요</h2>
             <p id="new-created-description" class="text-secondary mb-0 mt-2">어떻게 시작할까요?</p>
           </div>
-          <button type="button" class="new-created-close" data-bs-dismiss="modal" aria-label="닫기"><span aria-hidden="true">×</span></button>
+          <button type="button"
+                  class="new-created-close"
+                  data-bs-dismiss="modal"
+                  aria-label="닫기">
+            <span aria-hidden="true">×</span>
+          </button>
         </div>
         <div class="modal-body new-created-choices">
           <div class="new-created-choice">
@@ -246,7 +257,8 @@
           </div>
           <div class="new-created-choice">
             <p class="new-created-choice-copy">이미 작성할 내용이 있다면</p>
-            <a id="new-start-write" class="btn btn-outline-primary new-created-action">바로 작성하기</a>
+            <a id="new-start-write"
+               class="btn btn-outline-primary new-created-action">바로 작성하기</a>
           </div>
         </div>
       </div>

@@ -786,6 +786,7 @@
         event.preventDefault();
 
         const form = event.currentTarget;
+        if (document.getElementById("create-prd").disabled) return;
 
         if (!form.checkValidity()) {
           form.classList.add(
@@ -837,10 +838,16 @@
             }
           );
 
-          window.location.href =
-            "/ideas/prds/" +
-            data.prd.id +
-            "/write/";
+          const prdPath = "/ideas/prds/" + encodeURIComponent(data.prd.id);
+          document.getElementById("new-start-brainstorm").href = prdPath + "/brainstorm/";
+          document.getElementById("new-start-write").href = prdPath + "/write/";
+          setPicker(false);
+          alertBox.classList.add("d-none");
+          submit.textContent = "생성 완료";
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("new-created"), {
+            backdrop: "static",
+            keyboard: false
+          }).show();
         } catch (error) {
           showError(error);
           submit.disabled = false;

@@ -11,6 +11,94 @@
   var h = window.React.createElement;
   var apiBase = root.dataset.apiBase;
   var prdTitle = root.dataset.prdTitle || "PRD";
+  var prdId = root.dataset.prdId;
+  var prdDetailApi = "/api/v1/prds/" + prdId + "/";
+  var demoMode = new URLSearchParams(window.location.search).get("ui_demo") === "1";
+  var demoAnswerStorageKey = "idea-prd-demo-answers:" + prdId;
+  function readDemoAnswerOverrides() {
+    if (!demoMode) return {};
+    try { return JSON.parse(window.localStorage.getItem(demoAnswerStorageKey) || "{}"); }
+    catch (error) { return {}; }
+  }
+  function writeDemoAnswerOverride(questionId, content) {
+    if (!demoMode) return;
+    var current = readDemoAnswerOverrides();
+    current[String(questionId)] = String(content || "");
+    try { window.localStorage.setItem(demoAnswerStorageKey, JSON.stringify(current)); } catch (error) {}
+  }
+  var structuredTransferPrefix = "idea-prd-structured-state:" + prdId + ":";
+  function writeStructuredTransfer(questionId, composedAnswer, state) {
+    if (!state || !composedAnswer) return;
+    try {
+      window.localStorage.setItem(structuredTransferPrefix + String(questionId), JSON.stringify({
+        composedAnswer:String(composedAnswer), state:state, savedAt:Date.now()
+      }));
+    } catch (error) {}
+  }
+  var demoAnswersBySection = {
+    1: ["프로젝트 경험 정리 노트","부트캠프 수강생이 프로젝트 활동과 근거를 한곳에서 정리하고 포트폴리오 문장으로 빠르게 전환하는 서비스입니다.","취업 포트폴리오를 준비하는 수강생이 흩어진 프로젝트 기록과 근거를 다시 찾는 문제를 해결합니다.","핵심 가치는 활동과 근거를 같은 맥락으로 보관해 재탐색 시간을 줄이는 것입니다.","팀이 작성한 프로젝트 경험을 포트폴리오 문장과 면접 근거까지 이어 활용할 수 있게 합니다."],
+    2: ["프로젝트 활동 기록과 근거 탐색에 쓰는 시간을 줄이고 포트폴리오 초안 작성 시간을 기존 대비 40% 단축합니다.","사용자가 활동을 기록한 뒤 근거와 의사결정 맥락을 한 화면에서 바로 확인할 수 있어야 합니다.","기록 → 근거 연결 → 포트폴리오 문장 정리까지 이어지는 흐름을 끊김 없이 제공합니다.","초안 작성 시간과 자료 재탐색 횟수 감소로 목표 달성 여부를 확인합니다."],
+    3: ["현재는 노션·메신저·GitHub·드라이브를 오가며 활동 기록과 근거를 수동으로 다시 찾고 있습니다.","자료가 여러 도구에 흩어져 있고 당시의 의사결정 맥락이 함께 남지 않아 시간이 지나면 다시 설명하기 어렵습니다.","사용자 인터뷰와 수업 회고에서 근거를 다시 찾는 시간이 가장 오래 걸린다는 의견이 반복되었습니다.","기록 시점에 활동과 근거를 함께 남기면 포트폴리오 정리 때 재탐색 비용을 줄일 수 있습니다."],
+    4: ["핵심 사용자는 프로젝트 경험을 정리해 취업 포트폴리오를 준비하는 부트캠프 수강생입니다.","프로젝트 직후 기록은 남기지만 포트폴리오를 만들 때 근거와 의사결정 이유를 다시 찾는 상황이 반복됩니다.","사용자는 짧은 시간 안에 무엇을 했고 왜 했는지 다시 복원하고 싶어 합니다.","팀 프로젝트에서는 본인 기여와 공동 결과를 구분해 설명할 수 있어야 합니다.","데스크톱에서 자료를 비교하며 정리하는 사용 맥락을 우선합니다."],
+    5: ["가장 큰 문제는 프로젝트가 끝난 뒤 활동 근거와 의사결정 맥락을 다시 찾기 어렵다는 점입니다.","문제의 원인은 활동 기록과 근거 자료가 서로 다른 도구에 저장되고 연결 정보가 남지 않는 데 있습니다.","기록 단계에서 활동과 근거를 함께 연결하면 포트폴리오 작성 시 재탐색 시간을 줄일 수 있다는 가설을 검증합니다.","시간이 지난 뒤 기록을 다시 꺼내 쓸 때 체감 가치가 가장 크게 나타날 것으로 예상합니다."],
+    6: ["1) 프로젝트 활동 기록 → 2) 관련 근거 연결 → 3) 핵심 경험 선택 → 4) 포트폴리오 문장 초안 확인의 흐름으로 사용합니다.","MVP에는 활동 기록, 근거 연결, 검색, 핵심 경험 묶기, 포트폴리오 문장 초안까지 포함합니다.","자동 포트폴리오 완성, 외부 채용 사이트 직접 제출, 고급 협업 권한 기능은 이번 범위에서 제외합니다.","기존 기록 데이터와 연결되는 화면·권한·검색 흐름은 유지합니다.","근거가 없는 활동도 먼저 저장하고 나중에 보완할 수 있어야 합니다."],
+    7: ["포트폴리오 초안 작성 시간, 근거 재탐색 횟수, 기록 재사용률을 핵심 지표로 확인합니다.","기존 방식 대비 초안 작성 시간을 40% 줄이고 핵심 근거를 3분 안에 다시 찾는 것을 목표로 둡니다.","부트캠프 수강생 5~8명을 대상으로 실제 프로젝트 기록을 입력한 뒤 초안을 만드는 과정을 관찰합니다.","테스트 전후 시간을 비교하고 누락된 맥락과 다시 찾은 자료 수를 함께 기록합니다.","목표를 달성하지 못하면 검색·근거 연결 단계에서 가장 오래 머문 지점을 우선 개선합니다."]
+  };
+  function demoAnswerFor(section, question, index) {
+    var override = readDemoAnswerOverrides()[String(question.id)];
+    if (override !== undefined) return override;
+    var rows = demoAnswersBySection[Number(section.position)] || [];
+    return rows[index % Math.max(1, rows.length)] || (section.title + "에 대한 데모 답변입니다.");
+  }
+  var demoNotesBySection = {
+    1:["프로젝트 기록과 근거를 한 화면에서 묶어 보여주기", "포트폴리오 문장까지 이어지는 흐름이 핵심"],
+    2:["초안 작성 시간 40% 단축을 목표값으로 두기", "자료 재탐색 횟수도 함께 측정"],
+    3:["노션·메신저·GitHub에 근거가 흩어져 있음", "수업 회고에서 근거 재탐색 시간이 길다는 의견 반복"],
+    4:["취업 포트폴리오를 준비하는 부트캠프 수강생", "팀 결과와 본인 기여를 구분해 설명할 수 있어야 함"],
+    5:["활동과 근거가 분리 저장되어 맥락 복원이 어려움", "기록 시점에 근거를 연결하면 재탐색 시간이 줄어들 것"],
+    6:["기록 → 근거 연결 → 핵심 경험 선택 → 초안 확인", "외부 채용 사이트 직접 제출은 이번 MVP에서 제외"],
+    7:["초안 작성 시간·재탐색 횟수·기록 재사용률 측정", "5~8명 사용성 테스트 후 병목 단계를 우선 개선"]
+  };
+  function decorateDemoState(data) {
+    if (!demoMode || !data || !Array.isArray(data.sections)) return data;
+    var currentUserId = data.current_user_id || (data.current_user && data.current_user.user_id) || null;
+    var sections = data.sections.map(function (section) {
+      return Object.assign({}, section, {
+        questions: (section.questions || []).map(function (question, index) {
+          var content = demoAnswerFor(section, question, index);
+          return Object.assign({}, question, {answer: content, is_completed: Boolean(content.trim()), is_held: false});
+        })
+      });
+    });
+    var existing = Array.isArray(data.nodes) ? data.nodes.slice() : [];
+    var existingIds = new Set(existing.map(function (node) { return String(node.id); }));
+    sections.forEach(function (section) {
+      (demoNotesBySection[Number(section.position)] || []).forEach(function (content, index) {
+        var id = "demo-note-" + section.position + "-" + (index + 1);
+        if (existingIds.has(id)) return;
+        existing.push({
+          id:id, version:1, node_type:"note", status:"accepted", section_id:section.id,
+          content:content, color:["yellow","blue","green","pink","orange","purple"][Number(section.position) % 6],
+          x:880 + Number(section.position) * 90 + index * 36, y:720 + Number(section.position) * 70 + index * 28,
+          author_id:currentUserId, assignee_id:currentUserId, introduced_in_version:data.canvas && data.canvas.version ? data.canvas.version : 1
+        });
+      });
+    });
+    var regularNotes = existing.filter(function (node) { return node.node_type === "note" && node.status !== "held"; });
+    return Object.assign({}, data, {
+      sections:sections,
+      nodes:existing,
+      counts:Object.assign({}, data.counts || {}, {
+        total:regularNotes.length,
+        unclassified:regularNotes.filter(function (node) { return !node.section_id; }).length,
+        accepted:regularNotes.filter(function (node) { return !!node.section_id; }).length,
+        held:(data.held_nodes || []).length
+      })
+    });
+  }
+  function isDemoSyntheticNode(node) {
+    return demoMode && node && String(node.id || "").indexOf("demo-note-") === 0;
+  }
   var brandMarkUrl = root.dataset.brandMarkUrl || "";
   var firstPageIllustration = root.dataset.firstPageIllustration || "";
   var ideaDocumentIllustration = root.dataset.ideaDocumentIllustration || "";
@@ -126,6 +214,32 @@
       document.addEventListener("mousedown", clearFocusedNode);
       return function () { document.removeEventListener("mousedown", clearFocusedNode); };
     }, []);
+    window.React.useEffect(function () {
+      function closeDirectPickers(except) {
+        document.querySelectorAll("#brainstorm-root details.brain-direct-picker[open]").forEach(function (picker) {
+          if (picker !== except) picker.removeAttribute("open");
+        });
+      }
+      function manageDirectPickerDismiss(event) {
+        var target = event.target;
+        var picker = target && target.closest ? target.closest("details.brain-direct-picker") : null;
+        if (!picker) {
+          closeDirectPickers(null);
+          return;
+        }
+        var summary = target.closest ? target.closest("summary") : null;
+        if (summary && picker.contains(summary)) closeDirectPickers(picker);
+      }
+      function closeDirectPickersOnEscape(event) {
+        if (event.key === "Escape") closeDirectPickers(null);
+      }
+      document.addEventListener("mousedown", manageDirectPickerDismiss);
+      document.addEventListener("keydown", closeDirectPickersOnEscape);
+      return function () {
+        document.removeEventListener("mousedown", manageDirectPickerDismiss);
+        document.removeEventListener("keydown", closeDirectPickersOnEscape);
+      };
+    }, []);
     var fullSyncGenerationRef = window.React.useRef(0);
 
     function fullSync(canvasId) {
@@ -138,6 +252,7 @@
       return request(apiBase + "canvas/", {headers: {"Idempotency-Key": key()}})
         .then(function (data) {
           if (generation !== fullSyncGenerationRef.current) return;
+          data = decorateDemoState(data);
           activeCanvasId = data.canvas.id;
           cursorRef.current = data.cursor; setState(data); setSync("connected");
           if (!initialViewport.current) {
@@ -524,6 +639,11 @@
     }
 
     async function deleteNode(node) {
+      // 삭제 확인 모달이 열릴 때 선택 툴바가 뒤에 남아 겹치지 않도록
+      // 현재 선택/포커스/담당자 메뉴를 먼저 정리한다.
+      setSelected([]);
+      setFocused(null);
+      setAssigneeMenu(null);
       var confirmed = await window.IdeaUI.confirm({
         title: "메모를 삭제할까요?",
         message: "삭제된 메모는 일반 화면에서 복원할 수 없습니다.",
@@ -867,6 +987,7 @@
     }
 
     function beginMove(event, node) {
+      if (!state.permissions.can_edit || state.permissions.is_completed) return;
       event.stopPropagation(); setFocused(node.id);
       if (tool === "connect") {
         setFocused(node.id);
@@ -882,7 +1003,7 @@
         });
         return;
       }
-      if (!state.permissions.can_edit || state.permissions.is_completed || event.button !== 0) return;
+      if (event.button !== 0) return;
 
       var movingIds = selected.length > 1 && selected.includes(node.id) ? selected.slice() : [node.id];
       if (movingIds.length === 1) setSelected([]);
@@ -897,6 +1018,19 @@
         : null;
       var previewOffsetX = sourceRect ? sx - sourceRect.left : 20;
       var previewOffsetY = sourceRect ? sy - sourceRect.top : 20;
+      // Preserve the source sticky-note palette while dragging. The preview is
+      // portaled to <body>, so root-scoped note color selectors do not always
+      // apply there. Capture the rendered colors from the real source instead.
+      var sourceStyle = sourceElement && window.getComputedStyle
+        ? window.getComputedStyle(sourceElement)
+        : null;
+      var sourceVisual = sourceStyle ? {
+        backgroundColor: sourceStyle.backgroundColor,
+        borderTopColor: sourceStyle.borderTopColor,
+        borderRightColor: sourceStyle.borderRightColor,
+        borderBottomColor: sourceStyle.borderBottomColor,
+        borderLeftColor: sourceStyle.borderLeftColor
+      } : null;
 
       function boundedDelta(rawX, rawY) {
         var minX = Math.min.apply(null, movingNodes.map(function (item) { return starts[item.id].x; }));
@@ -938,6 +1072,7 @@
             width: sourceRect ? sourceRect.width : NODE_W,
             height: sourceRect ? sourceRect.height : NODE_H,
             scale: sourceRect ? Math.max(0.35, Math.min(1.25, sourceRect.width / NODE_W)) : 1,
+            sourceVisual: sourceVisual,
             overHeld: heldBoundsAt(moveEvent.clientX, moveEvent.clientY)
           });
           return;
@@ -1161,13 +1296,359 @@
         .catch(function (error) { setNotice({kind: "danger", text: error.message}); })
         .finally(function () { setBusy(false); });
     }
-    function previewPrd() {
+    function directWords(value) {
+      var stop = new Set(["그리고","하지만","대한","관련","현재","지금","이번","사용자","질문","내용","기능","서비스","프로젝트","있는","하는","한다","위해","으로","에서","까지","또는","정도","대한"]);
+      return String(value || "").toLowerCase().replace(/[^0-9a-zA-Z가-힣%]+/g, " ").split(/\s+/).filter(function (word) {
+        return word.length >= 2 && !stop.has(word);
+      });
+    }
+    function directOverlap(left, right) {
+      var rightSet = new Set(directWords(right));
+      return directWords(left).reduce(function (score, word) { return score + (rightSet.has(word) ? 1 : 0); }, 0);
+    }
+    function directTypeBonus(noteText, config) {
+      var text = String(noteText || "").toLowerCase();
+      var type = config?.type || "";
+      var signals = {
+        metric:["지표","목표","시간","분","건","%","퍼센트","비율","감소","증가","완료율","누락률"],
+        baseline:["지표","현재","기준","표본","기간","로그","데이터"],
+        evidence:["근거","인터뷰","설문","로그","데이터","의견","회고","관찰"],
+        background:["배경","계기","반복","이유","근거"],
+        current_pain:["불편","문제","어려","시간","재탐색","흩어","반복"],
+        problem:["문제","막히","어려","불편","원인"],
+        problem_statement:["문제","막히","어려","불편","원인"],
+        goal:["목표","단축","감소","증가","개선","완료"],
+        outcome:["결과","완료","성과","목표"],
+        target:["대상","사용자","수강생","고객","팀원"],
+        context:["상황","진입","현재","사용","이용"],
+        flow:["단계","흐름","순서","선택","연결","확인","이동"],
+        current_flow:["단계","흐름","순서","선택","연결","확인","이동"]
+      };
+      return (signals[type] || []).reduce(function (score, token) { return score + (text.includes(token) ? 1 : 0); }, 0);
+    }
+    function directConfig(prdDetail, detailSection, question) {
+      var schema = (window.IdeaGuidedSchema || window.IdeaGuidedSchemaV34);
+      if (!schema || !prdDetail?.prd) return null;
+      return schema.getConfig(prdDetail.prd.prd_type, detailSection.position, question.position);
+    }
+    function directQuestionScore(note, question, config) {
+      var corpus = [question.prompt, config?.purpose || ""].concat((config?.fields || []).map(function (field) { return field.label + " " + (field.placeholder || ""); })).join(" ");
+      return directOverlap(note.content, corpus) * 3 + directTypeBonus(note.content, config);
+    }
+    function directSlots(config) {
+      if (!config) return [{key:"raw", label:"질문 답변 전체"}];
+      if (config.type === "metric" || config.type === "baseline") {
+        var keys = ["metric","current","target","period"];
+        return keys.map(function (key, index) { return {key:key, label:config.tableHeaders?.[index] || key}; });
+      }
+      if (config.type === "flow" || config.type === "current_flow") {
+        return (config.fields || []).map(function (field, index) { return {key:"step:" + index, label:field.label || (index + 1) + "단계"}; });
+      }
+      if ((config.fields || []).length) {
+        return config.fields.map(function (field, index) { return {key:"field:" + index, label:field.label || "입력 " + (index + 1)}; });
+      }
+      return [{key:"raw", label:"질문 답변 전체"}];
+    }
+    function bestDirectSlot(note, config, usedKeys) {
+      var slots = directSlots(config);
+      if (slots.length === 1) return {slot:slots[0], confident:true};
+      var scored = slots.map(function (slot, index) {
+        var field = config?.fields?.[index];
+        var corpus = [slot.label, field?.placeholder || ""].join(" ");
+        return {slot:slot, score:directOverlap(note.content, corpus), used:usedKeys.has(slot.key)};
+      }).sort(function (a,b) { return (b.score - a.score) || (Number(a.used) - Number(b.used)); });
+      var best = scored.find(function (row) { return !row.used && row.score > 0; });
+      if (best) return {slot:best.slot, confident:true};
+      var free = scored.find(function (row) { return !row.used; }) || scored[0];
+      return {slot:free.slot, confident:false};
+    }
+    function directQuestionOptions(prdDetail, sectionId) {
+      var section = (prdDetail.sections || []).find(function (item) { return String(item.id) === String(sectionId); });
+      return section ? (section.questions || []).filter(function (question) { return !question.is_held; }) : [];
+    }
+    function directCandidate(note, rankedItem) {
+      if (!rankedItem) return null;
+      var question = rankedItem.question;
+      var slotChoice = bestDirectSlot(note, rankedItem.config, new Set());
+      var current = question.answer && question.answer.content ? question.answer.content.trim() : "";
+      return {
+        question_id: question.id,
+        question_prompt: question.prompt,
+        question_position: question.position,
+        target_slot: slotChoice.slot.key,
+        target_label: slotChoice.slot.label,
+        score: rankedItem.score,
+        has_existing_answer: !!current
+      };
+    }
+    function directRecommendations(note, ranked) {
+      return ranked.filter(function (item) { return item.score > 0; }).slice(0, 3).map(function (item) {
+        return directCandidate(note, item);
+      }).filter(Boolean);
+    }
+    function applyDirectRecommendation(rowKey, candidate) {
+      setAiPanel(function (current) {
+        if (!current || current.type !== "direct_prd") return current;
+        return Object.assign({}, current, {rows: current.rows.map(function (row) {
+          if (row.row_key !== rowKey) return row;
+          var detailSection = (current.detail.sections || []).find(function (section) { return String(section.id) === String(row.section_id); });
+          var question = (detailSection?.questions || []).find(function (item) { return String(item.id) === String(candidate.question_id); });
+          if (!question) return row;
+          var answer = question.answer && question.answer.content ? question.answer.content.trim() : "";
+          return Object.assign({}, row, {
+            question_id: question.id,
+            question_prompt: question.prompt,
+            question_version: question.version,
+            current: answer,
+            target_slot: candidate.target_slot,
+            target_label: candidate.target_label,
+            mapping_state: answer ? "review" : "safe",
+            selected: !answer,
+            confirmed_target: true
+          });
+        })});
+      });
+    }
+    function renderDirectPicker(label, value, options, onPick, extraClass) {
+      var current = options.find(function (option) { return String(option.value) === String(value); }) || options[0];
+      return h("div", {className: "brain-direct-field" + (extraClass ? " " + extraClass : "")},
+        h("span", {className: "brain-direct-field-label"}, label),
+        h("details", {className: "brain-direct-picker"},
+          h("summary", null,
+            h("span", {title: current ? current.label : "선택"}, current ? current.label : "선택"),
+            h("i", {className: "idea-icon idea-icon-chevron-down", "aria-hidden": "true"})
+          ),
+          h("div", {className: "brain-direct-picker-menu"}, options.map(function (option) {
+            var active = String(option.value) === String(value);
+            return h("button", {key: String(option.value), type: "button", className: active ? "active" : "", onClick: function (event) {
+              onPick(option.value);
+              var details = event.currentTarget.closest("details");
+              if (details) details.removeAttribute("open");
+            }},
+              h("span", null, option.label),
+              (option.meta || active) ? h("small", null, (option.meta ? option.meta : "") + (active ? (option.meta ? " · 선택됨" : "선택됨") : "")) : null
+            );
+          }))
+        )
+      );
+    }
+    function buildDirectPrdRows(prdDetail) {
+      var rows = [], usedSlotsByQuestion = {};
+      (state.sections || []).forEach(function (brainSection) {
+        var detailSection = (prdDetail.sections || []).find(function (section) { return String(section.id) === String(brainSection.id); });
+        if (!detailSection) return;
+        var notes = (state.nodes || []).filter(function (node) {
+          return node.node_type === "note" && node.status === "accepted" && String(node.section_id) === String(brainSection.id);
+        });
+        var questions = (detailSection.questions || []).filter(function (question) { return !question.is_held; });
+        if (!notes.length || !questions.length) return;
+        notes.forEach(function (note) {
+          var ranked = questions.map(function (question) {
+            var config = directConfig(prdDetail, detailSection, question);
+            return {question:question, config:config, score:directQuestionScore(note, question, config)};
+          }).sort(function (a,b) {
+            var aEmpty = !(a.question.answer && a.question.answer.content && a.question.answer.content.trim());
+            var bEmpty = !(b.question.answer && b.question.answer.content && b.question.answer.content.trim());
+            return (b.score - a.score) || (Number(bEmpty) - Number(aEmpty)) || (a.question.position - b.question.position);
+          });
+          var choice = ranked[0];
+          if (!choice) return;
+          var question = choice.question, current = question.answer && question.answer.content ? question.answer.content.trim() : "";
+          var used = usedSlotsByQuestion[String(question.id)] || (usedSlotsByQuestion[String(question.id)] = new Set());
+          var slotChoice = bestDirectSlot(note, choice.config, used);
+          used.add(slotChoice.slot.key);
+          var recommendations = directRecommendations(note, ranked);
+          var clearlyMatched = choice.score >= 2 && slotChoice.confident;
+          var mappingState = current ? "review" : (clearlyMatched ? "safe" : (recommendations.length ? "suggested" : "needs_target"));
+          rows.push({
+            row_key: String(brainSection.id) + ":" + String(note.id),
+            section_id: brainSection.id,
+            section_title: brainSection.title,
+            note_id: note.id,
+            note_text: String(note.content || "").trim(),
+            question_id: question.id,
+            question_prompt: question.prompt,
+            question_version: question.version,
+            target_slot: slotChoice.slot.key,
+            target_label: slotChoice.slot.label,
+            current: current,
+            match_score: choice.score,
+            mapping_state: mappingState,
+            recommendations: recommendations,
+            selected: mappingState === "safe",
+            confirmed_target: mappingState === "safe"
+          });
+        });
+      });
+      return rows;
+    }
+    function retargetDirectPrdRow(rowKey, questionId) {
+      setAiPanel(function (current) {
+        if (!current || current.type !== "direct_prd") return current;
+        var row = current.rows.find(function (item) { return item.row_key === rowKey; });
+        if (!row) return current;
+        var detailSection = (current.detail.sections || []).find(function (section) { return String(section.id) === String(row.section_id); });
+        var question = (detailSection?.questions || []).find(function (item) { return String(item.id) === String(questionId); });
+        if (!question) return current;
+        var config = directConfig(current.detail, detailSection, question);
+        var slot = bestDirectSlot({content:row.note_text}, config, new Set());
+        var currentAnswer = question.answer && question.answer.content ? question.answer.content.trim() : "";
+        var score = directQuestionScore({content:row.note_text}, question, config);
+        var stateName = currentAnswer ? "review" : "safe";
+        return Object.assign({}, current, {rows:current.rows.map(function (item) {
+          return item.row_key === rowKey ? Object.assign({}, item, {
+            question_id:question.id, question_prompt:question.prompt, question_version:question.version,
+            current:currentAnswer, target_slot:slot.slot.key, target_label:slot.slot.label,
+            match_score:score, mapping_state:stateName, selected:!currentAnswer, confirmed_target:true
+          }) : item;
+        })});
+      });
+    }
+    function retargetDirectPrdSlot(rowKey, slotKey) {
+      setAiPanel(function (current) {
+        if (!current || current.type !== "direct_prd") return current;
+        return Object.assign({}, current, {rows:current.rows.map(function (row) {
+          if (row.row_key !== rowKey) return row;
+          var detailSection = (current.detail.sections || []).find(function (section) { return String(section.id) === String(row.section_id); });
+          var question = (detailSection?.questions || []).find(function (item) { return String(item.id) === String(row.question_id); });
+          var config = question ? directConfig(current.detail, detailSection, question) : null;
+          var slot = directSlots(config).find(function (item) { return item.key === slotKey; }) || directSlots(config)[0];
+          var stateName = row.current ? "review" : "safe";
+          return Object.assign({}, row, {target_slot:slot.key, target_label:slot.label, mapping_state:stateName, selected:!row.current, confirmed_target:true});
+        })});
+      });
+    }
+    function buildDirectApplyPayload(rows, prdDetail) {
+      var grouped = {};
+      rows.filter(function (row) { return row.selected; }).forEach(function (row) {
+        var keyName = String(row.question_id);
+        if (!grouped[keyName]) grouped[keyName] = {question_id:row.question_id, section_id:row.section_id, rows:[]};
+        grouped[keyName].rows.push(row);
+      });
+      return Object.keys(grouped).map(function (questionId) {
+        var group = grouped[questionId];
+        var detailSection = (prdDetail.sections || []).find(function (section) { return String(section.id) === String(group.section_id); });
+        var question = (detailSection?.questions || []).find(function (item) { return String(item.id) === String(group.question_id); });
+        if (!question) return null;
+        var current = question.answer && question.answer.content ? question.answer.content.trim() : "";
+        var noteText = group.rows.map(function (row) { return row.note_text; }).filter(Boolean).join("\n");
+        if (current) {
+          return {question_id:question.id, question_version:question.version, draft:current + "\n\n[브레인스토밍에서 반영]\n" + noteText, structured_state:null};
+        }
+        var schema = (window.IdeaGuidedSchema || window.IdeaGuidedSchemaV34), config = directConfig(prdDetail, detailSection, question);
+        if (!schema || !config) return {question_id:question.id, question_version:question.version, draft:noteText, structured_state:null};
+        var structured = schema.emptyState(config), valid = true;
+        group.rows.forEach(function (row) {
+          var keyName = row.target_slot || "";
+          if (keyName === "raw") { valid = false; return; }
+          if (keyName.indexOf("step:") === 0 && Array.isArray(structured.steps)) structured.steps[Number(keyName.split(":")[1])] = row.note_text;
+          else if (keyName.indexOf("field:") === 0 && Array.isArray(structured.fields)) structured.fields[Number(keyName.split(":")[1])] = row.note_text;
+          else if (["metric","current","target","period"].includes(keyName) && Array.isArray(structured.rows)) structured.rows[0][keyName] = row.note_text;
+          else valid = false;
+        });
+        var draft = valid ? schema.compose(structured, config) : noteText;
+        return {question_id:question.id, question_version:question.version, draft:draft || noteText, structured_state:valid ? structured : null};
+      }).filter(Boolean);
+    }
+
+    function previewDirectPrd() {
+      setQuestionsOpen(false);
+      setBusy(true); setNotice(null);
+      request(prdDetailApi, {method: "GET"}).then(function (prdDetail) {
+        if (demoMode) {
+          prdDetail = Object.assign({}, prdDetail, {sections: (prdDetail.sections || []).map(function (section) {
+            return Object.assign({}, section, {questions: (section.questions || []).map(function (question, index) {
+              return Object.assign({}, question, {answer: Object.assign({}, question.answer || {}, {content: demoAnswerFor(section, question, index)}), is_completed: true});
+            })});
+          })});
+        }
+        var rows = buildDirectPrdRows(prdDetail);
+        if (!rows.length) {
+          setNotice({kind: "info", text: "채택되어 섹션에 배치된 메모가 없습니다. 먼저 반영할 메모를 채택해 주세요."});
+          return;
+        }
+        setAiPanel({type: "direct_prd", rows: rows, detail: prdDetail});
+      }).catch(function (error) {
+        setNotice({kind: "danger", text: error.message});
+      }).finally(function () { setBusy(false); });
+    }
+
+    function toggleDirectPrdRow(rowKey) {
+      setAiPanel(function (current) {
+        if (!current || current.type !== "direct_prd") return current;
+        return Object.assign({}, current, {rows: current.rows.map(function (row) {
+          return row.row_key === rowKey ? Object.assign({}, row, {selected: !row.selected}) : row;
+        })});
+      });
+    }
+
+    function applyDirectPrd() {
+      if (!aiPanel || aiPanel.type !== "direct_prd") return;
+      var selectedRows = aiPanel.rows.filter(function (row) { return row.selected; });
+      if (!selectedRows.length) return setNotice({kind: "warning", text: "반영할 메모를 하나 이상 선택해 주세요."});
+      var payloadRows = buildDirectApplyPayload(selectedRows, aiPanel.detail);
+      if (!payloadRows.length) return setNotice({kind: "warning", text: "반영할 위치를 확인해 주세요."});
+      setBusy(true); setNotice(null);
+      if (demoMode) {
+        payloadRows.forEach(function (row) {
+          writeDemoAnswerOverride(row.question_id, row.draft);
+          if (row.structured_state) writeStructuredTransfer(row.question_id, row.draft, row.structured_state);
+        });
+        setState(function (previous) {
+          if (!previous) return previous;
+          var sections = previous.sections.map(function (section) {
+            return Object.assign({}, section, {questions: (section.questions || []).map(function (question) {
+              var row = payloadRows.find(function (item) { return String(item.question_id) === String(question.id); });
+              return row ? Object.assign({}, question, {answer: row.draft, is_completed: true}) : question;
+            })});
+          });
+          return Object.assign({}, previous, {sections: sections});
+        });
+        setAiPanel(null); setBusy(false);
+        setNotice({kind: "success", text: payloadRows.length + "개 PRD 질문에 메모를 반영했습니다. AI는 사용하지 않았습니다."});
+        return;
+      }
+      Promise.all(payloadRows.map(function (row) {
+        return request(prdDetailApi + "questions/" + row.question_id + "/answer/", {
+          method: "PATCH",
+          body: JSON.stringify({content: row.draft, version: row.question_version})
+        });
+      })).then(function () {
+        payloadRows.forEach(function (row) {
+          if (row.structured_state) writeStructuredTransfer(row.question_id, row.draft, row.structured_state);
+        });
+        return request(prdDetailApi, {method: "GET"});
+      }).then(function (latest) {
+        setState(function (previous) {
+          if (!previous) return previous;
+          var sections = previous.sections.map(function (section) {
+            var fresh = (latest.sections || []).find(function (item) { return String(item.id) === String(section.id); });
+            if (!fresh) return section;
+            return Object.assign({}, section, {questions: fresh.questions.map(function (question) {
+              return {id: question.id, prompt: question.prompt, position: question.position, is_completed: question.is_completed, is_held: question.is_held, answer: question.answer && question.answer.content ? question.answer.content : ""};
+            })});
+          });
+          return Object.assign({}, previous, {sections: sections});
+        });
+        setAiPanel(null);
+        setNotice({kind: "success", text: payloadRows.length + "개 PRD 질문에 메모를 반영했습니다. AI는 사용하지 않았습니다."});
+      }).catch(function (error) {
+        setNotice({kind: "danger", text: error.message});
+      }).finally(function () { setBusy(false); });
+    }
+
+    function previewPrd(sectionId) {
       setQuestionsOpen(false);
       var selectedDefaults = [];
-      // 성공 응답은 작업 필드가 최상위에 그대로 펼쳐져 있어 job이라는 키가 없다.
-      // 반영할 메모가 없을 때만 서버가 {job: null, message: "..."}를 따로 보낸다.
-      // result.job으로 나누면 성공 응답도 매번 이 없음 판정에 걸려 결과를 못 받았다.
-      setBusy(true); request(apiBase + "ai/prd-apply/preview/", {method: "POST", headers: {"Idempotency-Key": key()}, body: JSON.stringify({selected_default_nodes: selectedDefaults})}).then(function (result) { if (!result.id) { setBusy(false); return setNotice({kind: "info", text: result.message}); } pollJob(result.id, function (job) { setAiPanel({type: "prd", job: job}); }); }).catch(function (error) { setBusy(false); setNotice({kind: "danger", text: error.message}); });
+      var payload = {selected_default_nodes: selectedDefaults};
+      if (sectionId !== undefined && sectionId !== null) payload.section_id = Number(sectionId);
+      setBusy(true);
+      request(apiBase + "ai/prd-apply/preview/", {method: "POST", headers: {"Idempotency-Key": key()}, body: JSON.stringify(payload)})
+        .then(function (result) {
+          if (!result.id) { setBusy(false); return setNotice({kind: "info", text: result.message}); }
+          pollJob(result.id, function (job) { setAiPanel({type: "prd", job: job, sectionId: sectionId ?? null}); });
+        })
+        .catch(function (error) { setBusy(false); setNotice({kind: "danger", text: error.message}); });
     }
     function applyPrd() {
       var job = aiPanel.job;
@@ -1180,7 +1661,21 @@
     var visible = state.nodes.filter(function (node) { return node.node_type === "title" || filter === "all" || node.status === filter; });
     var positions = layoutPositions(visible);
 
-    function toolButton(value, icon, label) { return h("button", {type: "button", className: "brain-tool " + (tool === value ? "active" : ""), onClick: function () { setTool(value); if (value !== "connect") { setSource(null); setSourceDirection(null); setConnectPointer(null); } }}, h("i", {className: icon}), label); }
+    function toolButton(value, icon, label) {
+      var editTool = value === "select" || value === "connect";
+      var disabled = editTool && !canEdit;
+      return h("button", {
+        type: "button",
+        className: "brain-tool " + (tool === value && !disabled ? "active" : ""),
+        disabled: disabled,
+        title: disabled ? "완료된 PRD에서는 브레인스토밍을 수정할 수 없습니다." : "",
+        onClick: function () {
+          if (disabled) return;
+          setTool(value);
+          if (value !== "connect") { setSource(null); setSourceDirection(null); setConnectPointer(null); }
+        }
+      }, h("i", {className: icon}), label);
+    }
     // 연결선이 상관없는 메모 위를 지나가면 그 메모까지 이어진 것처럼 보이고,
     // 항목 이름 위를 지나가면 글자를 읽기 어렵다. 둘 다 피해서 잇는다.
     // 조종점 두 개를 따로 밀 수 있어야 한쪽 끝에 가까이 붙은 것도 비켜 갈 수 있다.
@@ -1324,6 +1819,7 @@
         canEdit && !connection.pending ? h("circle", {cx: handleX, cy: handleY, r: 9, className: "brain-connection-delete" + emphasis, onClick: function () { deleteConnection(connection); }}) : null);
     }
     function note(node) {
+      var syntheticDemo = isDemoSyntheticNode(node);
       var p = positions[node.id], isFocused = focused === node.id, isMultiSelected = selected.includes(node.id), connect = source?.id === node.id;
       var dragging = draggingRef.current;
       var isDragging = Array.isArray(dragging)
@@ -1343,7 +1839,7 @@
           onMouseDown: function (event) { event.preventDefault(); event.stopPropagation(); },
           onClick: function (event) {
             event.preventDefault(); event.stopPropagation();
-            if (!canEdit) return;
+            if (!canEdit || syntheticDemo) return;
             if (!source) {
               startConnection(node, direction);
               return;
@@ -1365,22 +1861,22 @@
         "data-node": "true",
         "data-node-id": node.id,
         "data-color": node.color,
-        className: "brain-note " + (isFocused ? "selected " : "") + (isMultiSelected ? "multi-selected " : "") + (connect ? "connect-source " : "") + (connectTarget ? "connect-target " : ""),
+        className: "brain-note " + (canEdit && isFocused ? "selected " : "") + (canEdit && isMultiSelected ? "multi-selected " : "") + (canEdit && connect ? "connect-source " : "") + (canEdit && connectTarget ? "connect-target " : ""),
         style: {left: p.x, top: p.y},
-        onMouseDown: function (event) { beginMove(event, node); },
-        onMouseEnter: function () { setHoveredNode(node.id); },
-        onMouseLeave: function () { setHoveredNode(function (current) { return current === node.id ? null : current; }); },
-        onDoubleClick: function (event) { event.stopPropagation(); if (canEdit) editNode(node); }
+        onMouseDown: function (event) { if (canEdit && !syntheticDemo) beginMove(event, node); },
+        onMouseEnter: function () { if (canEdit) setHoveredNode(node.id); },
+        onMouseLeave: function () { if (canEdit) setHoveredNode(function (current) { return current === node.id ? null : current; }); },
+        onDoubleClick: function (event) { event.stopPropagation(); if (canEdit && !syntheticDemo) editNode(node); }
       },
         h("div", {className: "brain-note-top"},
           h("span", {className: "brain-note-status " + node.status}, node.status === "accepted" ? "채택" : "아이디어")
         ),
-        h("p", {title: node.content}, node.content),
+        h("p", {title: canEdit ? node.content : undefined}, node.content),
         h("footer", null,
           h("span", null, "ver." + node.introduced_in_version),
-          h("span", {title: assignee ? "담당자 " + assignee.display_name : "담당자 없음"}, assignee ? "담당 " + assignee.display_name : "담당자 없음")
+          h("span", {title: canEdit ? (assignee ? "담당자 " + assignee.display_name : "담당자 없음") : undefined}, assignee ? "담당 " + assignee.display_name : "담당자 없음")
         ),
-        (isFocused || tool === "connect") && canEdit && !isDragging ? h(window.React.Fragment, null, handle("top"), handle("right"), handle("bottom"), handle("left")) : null
+        (isFocused || tool === "connect") && canEdit && !syntheticDemo && !isDragging ? h(window.React.Fragment, null, handle("top"), handle("right"), handle("bottom"), handle("left")) : null
       );
     }
 
@@ -1513,17 +2009,18 @@
     }
 
     function compactCard(node) {
+      var syntheticDemo = isDemoSyntheticNode(node);
       var owner = member(node.author_id), assignee = member(node.assignee_id);
       var isFocused = focused === node.id;
       var isBoardDragging = !!(dragPreview && dragPreview.source === "board" && dragPreview.node && dragPreview.node.id === node.id);
       return h("article", {
         key: node.id,
-        className: "brain-board-card" + (isFocused ? " selected" : "") + (isBoardDragging ? " is-dragging-source" : ""),
+        className: "brain-board-card" + (canEdit && isFocused ? " selected" : "") + (isBoardDragging ? " is-dragging-source" : ""),
         "data-color": node.color,
-        draggable: canEdit && tool !== "pan",
-        tabIndex: 0,
-        onClick: function (event) { if (tool === "pan") return; event.stopPropagation(); setFocused(node.id); setSelected([]); },
-        onDoubleClick: function (event) { if (tool === "pan") return; event.stopPropagation(); if (canEdit) editNode(node); },
+        draggable: canEdit && !syntheticDemo && tool !== "pan",
+        tabIndex: canEdit ? 0 : -1,
+        onClick: function (event) { if (!canEdit || tool === "pan") return; event.stopPropagation(); setFocused(node.id); setSelected([]); },
+        onDoubleClick: function (event) { if (tool === "pan") return; event.stopPropagation(); if (canEdit && !syntheticDemo) editNode(node); },
         onDragStart: function (event) {
           // Mark the source as visually suppressed without removing it from layout.
           // The CSS uses opacity only; visibility:hidden would cancel native drag in Chromium.
@@ -1580,12 +2077,12 @@
       h("div", {className: "brain-board-card-head"},
         h("span", {className: "brain-note-status " + node.status}, node.status === "accepted" ? "✓ 채택" : "아이디어")
       ),
-      h("p", {title: node.content}, node.content),
+      h("p", {title: canEdit ? node.content : undefined}, node.content),
       h("div", {className: "brain-card-people"},
-        h("span", {className: "brain-person", title: "작성자 " + (owner?.display_name || "알 수 없음")}, h("b", {style: participantAvatarStyle(owner)}, initials(owner?.display_name)), h("small", null, owner?.display_name || "작성자")),
-        h("span", {className: "brain-person assignee", title: "담당자 " + (assignee?.display_name || "없음")}, h("i", null, "→"), h("b", {style: participantAvatarStyle(assignee)}, initials(assignee?.display_name)), h("small", null, assignee?.display_name || "담당자 없음"))
+        h("span", {className: "brain-person", title: canEdit ? "작성자 " + (owner?.display_name || "알 수 없음") : undefined}, h("b", {style: participantAvatarStyle(owner)}, initials(owner?.display_name)), h("small", null, owner?.display_name || "작성자")),
+        h("span", {className: "brain-person assignee", title: canEdit ? "담당자 " + (assignee?.display_name || "없음") : undefined}, h("i", null, "→"), h("b", {style: participantAvatarStyle(assignee)}, initials(assignee?.display_name)), h("small", null, assignee?.display_name || "담당자 없음"))
       ),
-      isFocused && canEdit && !(dragPreview && dragPreview.source === "board" && dragPreview.node && dragPreview.node.id === node.id) ? h("div", {className: "brain-board-card-toolbar brain-action-toolbar", onClick: function (event) { event.stopPropagation(); }},
+      isFocused && canEdit && !syntheticDemo && !(dragPreview && dragPreview.source === "board" && dragPreview.node && dragPreview.node.id === node.id) ? h("div", {className: "brain-board-card-toolbar brain-action-toolbar", onClick: function (event) { event.stopPropagation(); }},
         h("button", {type: "button", onClick: function () { editNode(node); }, "aria-label": "메모 수정"}, h("i", {className: "idea-icon idea-icon-pencil-square"}), h("span", null, "수정")),
         assigneeButton(node),
         h("button", {type: "button", onClick: function () { statusNode(node, "held"); }, "aria-label": "메모 보류"}, h("i", {className: "idea-icon idea-icon-pause-circle"}), h("span", null, "보류")),
@@ -1637,7 +2134,7 @@
         h("header", null,
           h("span", null, String(index + 1).padStart(2, "0")),
           h("div", null, h("strong", null, section.title), h("small", null, nodes.length + "개 아이디어")),
-          state.permissions.can_apply_ai && !state.permissions.is_completed ? h("button", {type: "button", onClick: previewPrd}, "✦ AI PRD 적용") : null
+          state.permissions.can_apply_ai && !state.permissions.is_completed ? h("button", {type: "button", className: "brain-section-ai", onClick: function () { previewPrd(section.id); }}, "✦ 이 섹션 AI로 정리") : null
         ),
         h("div", {className: "brain-board-stack"}, nodes.length ? nodes.map(compactCard) : h("div", {className: "brain-column-empty"}, h("i", {className: "idea-icon idea-icon-lightbulb"}), h("span", null, "아이디어를 이 칸으로 끌어오세요")))
       );
@@ -1709,7 +2206,7 @@
           var nodes = listNotes.filter(function (node) { return node.section_id === group.id; });
           return h("section", {key: group.id || "none", className: "brain-list-group"},
             h("header", null, h("i", {style: {background: laneColors[index % laneColors.length][2]}}), h("strong", null, group.title), h("span", null, nodes.length)),
-            nodes.length ? h("div", null, nodes.map(function (node) { var assigned = member(node.assignee_id); return h("article", {key: node.id}, h("span", {className: "brain-note-status " + node.status}, node.status === "accepted" ? "채택" : "기본"), h("p", {title: node.content}, node.content), h("small", null, "담당 " + (assigned?.display_name || "없음")), canEdit ? h("button", {type: "button", onClick: function () { editNode(node); }}, "열기") : null); })) : h("p", {className: "brain-list-empty"}, "등록된 아이디어가 없습니다."));
+            nodes.length ? h("div", null, nodes.map(function (node) { var assigned = member(node.assignee_id); return h("article", {key: node.id}, h("span", {className: "brain-note-status " + node.status}, node.status === "accepted" ? "채택" : "기본"), h("p", {title: canEdit ? node.content : undefined}, node.content), h("small", null, "담당 " + (assigned?.display_name || "없음")), canEdit && !isDemoSyntheticNode(node) ? h("button", {type: "button", onClick: function () { editNode(node); }}, "열기") : null); })) : h("p", {className: "brain-list-empty"}, "등록된 아이디어가 없습니다."));
         })
       ));
     }
@@ -1728,7 +2225,7 @@
         onMouseDown: pan,
         onWheel: wheelCanvas,
         onMouseMove: function (event) {
-          if (tool !== "connect" || !source) return;
+          if (!canEdit || tool !== "connect" || !source) return;
           var rect = event.currentTarget.getBoundingClientRect();
           setConnectPointer({
             x: (event.clientX - rect.left - view.x) / view.zoom,
@@ -1757,7 +2254,7 @@
             })),
           h("svg", {className: "brain-lines", width: canvasWidth(), height: CANVAS_H},
             state.connections.map(line),
-            tool === "connect" && source && connectPointer ? (function () {
+            canEdit && tool === "connect" && source && connectPointer ? (function () {
               var sourceSpot = positions[source.id] || displayPosition(source);
               var targetNode = hoveredNode ? state.nodes.find(function (item) { return item.id === hoveredNode && item.id !== source.id; }) : null;
               var targetSpot = targetNode ? (positions[targetNode.id] || displayPosition(targetNode)) : null;
@@ -1791,7 +2288,7 @@
       if (boardView !== "canvas" || !focused || !canEdit || editor || draggingRef.current) return null;
       var node = state.nodes.find(function (item) { return item.id === focused; });
       var p = node ? positions[node.id] : null;
-      if (!node || !p) return null;
+      if (!node || !p || isDemoSyntheticNode(node)) return null;
       var stage = document.querySelector(".brain-stage");
       if (!stage) return null;
       var noteElement = stage.querySelector('[data-node-id="' + node.id + '"]');
@@ -1892,7 +2389,12 @@
             width: NODE_W,
             height: NODE_H,
             transform: "scale(" + (dragPreview.scale || 1) + ")",
-            transformOrigin: "top left"
+            transformOrigin: "top left",
+            backgroundColor: dragPreview.sourceVisual?.backgroundColor || undefined,
+            borderTopColor: dragPreview.sourceVisual?.borderTopColor || undefined,
+            borderRightColor: dragPreview.sourceVisual?.borderRightColor || undefined,
+            borderBottomColor: dragPreview.sourceVisual?.borderBottomColor || undefined,
+            borderLeftColor: dragPreview.sourceVisual?.borderLeftColor || undefined
           },
           "aria-hidden": "true"
         },
@@ -1917,7 +2419,7 @@
       var current = member(editor.node ? editor.node.author_id : state.current_user_id);
       return window.ReactDOM.createPortal(h("div", {className: "brain-editor-backdrop", onMouseDown: function (event) { if (event.target === event.currentTarget) closeEditorWithConfirmation(); }},
         h("section", {className: "brain-editor-modal", role: "dialog", "aria-modal": "true", "aria-labelledby": "brain-editor-title"},
-          h("header", null, h("div", null, h("span", null, editor.node ? "EDIT IDEA" : "NEW IDEA"), h("h2", {id: "brain-editor-title"}, editor.node ? "아이디어 수정" : "새 메모 추가")), h("button", {type: "button", onClick: function () { closeEditorWithConfirmation(); }, "aria-label": "닫기"}, "×")),
+          h("header", null, h("div", null, h("span", null, editor.node ? "EDIT IDEA" : "NEW IDEA"), h("h2", {id: "brain-editor-title"}, editor.node ? "아이디어 수정" : "새 메모 추가")), h("button", {type: "button", onClick: function () { closeEditorWithConfirmation(); }, "aria-label": "닫기"})),
           h("div", {className: "brain-editor-body"},
             !editor.node ? h("div", {className: "brain-color-picker"}, colorOptions.map(function (color) { return h("button", {key: color, type: "button", "data-color": color, className: editor.color === color ? "active" : "", onClick: function () { setEditor(Object.assign({}, editor, {color: color})); }, "aria-label": color + " 색상"}); })) : null,
             h("textarea", {autoFocus: true, rows: 5, maxLength: 2000, value: editor.content, placeholder: "아이디어를 자유롭게 적어보세요…", onChange: function (event) { setEditor(Object.assign({}, editor, {content: event.target.value})); }}),
@@ -1930,7 +2432,78 @@
     function renderAiPanel() {
       if (!aiPanel) return null;
       var body;
-      if (aiPanel.type === "classification_result") {
+      if (aiPanel.type === "direct_prd") {
+        var directRows = aiPanel.rows || [];
+        var directGroups = [], directBySection = {};
+        directRows.forEach(function (row) {
+          var keyName = String(row.section_id);
+          if (!directBySection[keyName]) {
+            directBySection[keyName] = {sectionId: row.section_id, title: row.section_title, rows: []};
+            directGroups.push(directBySection[keyName]);
+          }
+          directBySection[keyName].rows.push(row);
+        });
+        var selectedCount = directRows.filter(function (row) { return row.selected; }).length;
+        body = h("div", {className: "brain-direct-review"},
+          h("div", {className: "brain-direct-summary"},
+            h("strong", null, "기본 반영은 AI를 사용하지 않습니다."),
+            h("p", null, "채택 메모를 같은 섹션의 PRD 질문과 단계별 입력 위치에 규칙 기반으로 연결합니다. 확실한 항목은 바로 선택하고, 애매한 항목은 추천 위치를 제안합니다. 추천은 사용자가 확정하기 전에는 저장되지 않습니다.")
+          ),
+          h("div", {className: "brain-direct-groups"}, directGroups.map(function (group) {
+            return h("section", {key: group.sectionId, className: "brain-direct-group"},
+              h("header", null, h("strong", null, group.title), h("span", null, group.rows.length + "개 메모")),
+              group.rows.map(function (row) {
+                var detailSection = (aiPanel.detail.sections || []).find(function (section) { return String(section.id) === String(row.section_id); });
+                var question = (detailSection?.questions || []).find(function (item) { return String(item.id) === String(row.question_id); });
+                var config = question ? directConfig(aiPanel.detail, detailSection, question) : null;
+                var slots = directSlots(config);
+                var stateLabel = row.mapping_state === "safe" ? "바로 반영 가능" : row.mapping_state === "review" ? "확인 필요" : row.mapping_state === "suggested" ? "추천 위치 있음" : "직접 선택 필요";
+                var stateClass = row.mapping_state === "safe" ? "safe" : row.mapping_state === "review" ? "review" : row.mapping_state === "suggested" ? "suggested" : "needs-target";
+                var questionOptions = directQuestionOptions(aiPanel.detail, row.section_id).map(function (option) {
+                  return {value:String(option.id), label:option.prompt, meta:"Q" + option.position};
+                });
+                var slotOptions = slots.map(function (slot) { return {value:slot.key, label:slot.label}; });
+                var recommendations = row.recommendations || [];
+                return h("article", {key: row.row_key, className: "brain-direct-row " + stateClass},
+                  h("div", {className: "brain-direct-select"},
+                    h("input", {type: "checkbox", checked: !!row.selected, disabled: row.mapping_state === "needs_target" || row.mapping_state === "suggested", onChange: function () { toggleDirectPrdRow(row.row_key); }, "aria-label": row.note_text + " 반영 선택"})
+                  ),
+                  h("div", {className: "brain-direct-row-copy"},
+                    h("div", {className: "brain-direct-note-line"},
+                      h("p", {className: "brain-direct-note"}, row.note_text),
+                      h("span", {className: "brain-direct-state " + stateClass}, stateLabel)
+                    ),
+                    (row.mapping_state === "suggested" && recommendations.length) ? h("div", {className: "brain-direct-recommend"},
+                      h("div", {className: "brain-direct-recommend-head"}, h("span", null, "추천 위치"), h("small", null, "규칙 기반 후보 · 자동 저장 안 함")),
+                      recommendations.map(function (candidate, index) {
+                        return h("div", {key: String(candidate.question_id) + ":" + candidate.target_slot, className: "brain-direct-recommend-row"},
+                          h("div", null,
+                            h("b", null, (index === 0 ? "1순위 · " : "다른 후보 · ") + candidate.question_prompt),
+                            h("small", null, "→ " + candidate.target_label + (candidate.has_existing_answer ? " · 기존 답변 있음" : ""))
+                          ),
+                          h("button", {type:"button", className:"btn btn-sm btn-outline-primary", onClick:function () { applyDirectRecommendation(row.row_key, candidate); }}, "이 위치 사용")
+                        );
+                      })
+                    ) : null,
+                    h("div", {className: "brain-direct-targets"},
+                      renderDirectPicker("PRD 질문", String(row.question_id), questionOptions, function (value) { retargetDirectPrdRow(row.row_key, value); }, "brain-direct-question-picker"),
+                      renderDirectPicker("단계별 입력 위치", row.target_slot || "", slotOptions, function (value) { retargetDirectPrdSlot(row.row_key, value); }, "brain-direct-slot-picker")
+                    ),
+                    row.current ? h("small", {className: "brain-direct-current"}, "기존 답변이 있어 자동 덮어쓰지 않습니다. 선택하면 기존 답변 뒤에 메모가 추가됩니다.") : h("small", {className:"brain-direct-location"}, "반영 위치 · " + row.target_label)
+                  )
+                );
+              })
+            );
+          }))
+        );
+        var directFooter = h("footer", {className: "brain-direct-actions"},
+          h("span", {className:"brain-direct-selected-count"}, selectedCount + "개 선택"),
+          h("div", {className:"brain-direct-action-buttons"},
+            state.permissions.can_apply_ai ? h("button", {type: "button", className: "btn btn-outline-primary", disabled: busy, onClick: function () { previewPrd(); }}, "✦ AI로 정리") : null,
+            h("button", {type: "button", className: "btn btn-primary", disabled: busy || selectedCount === 0, onClick: applyDirectPrd}, "선택한 내용 반영 · " + selectedCount)
+          )
+        );
+      } else if (aiPanel.type === "classification_result") {
         var result = aiPanel.result, counts = result.counts;
         body = h("div", null,
           h("p", {className: "lead"}, "활성 메모 " + counts.total + "개 중 " + counts.classified + "개가 섹션에 분류되어 있습니다."),
@@ -1999,15 +2572,17 @@
               })) : null
             );
           }),
-          h("button", {className: "btn btn-primary w-100", onClick: applyPrd}, "질문별 통합 답변 저장")
+          h("button", {className: "btn btn-primary w-100", onClick: applyPrd}, "AI 결과 반영")
         );
       }
-      return h("aside", {className: "brain-ai-panel" + (aiPanel.type === "classification_result" ? " brain-classification-panel" : "")},
+      var directPanel = aiPanel.type === "direct_prd";
+      return h("aside", {className: "brain-ai-panel" + (aiPanel.type === "classification_result" ? " brain-classification-panel" : ""), "data-panel-type": aiPanel.type},
         h("header", null,
-          h("div", null, h("span", null, aiPanel.type === "classification_result" ? "CLASSIFICATION RESULT" : "AI RESULT"), h("h2", null, aiPanel.type === "classification_result" ? "분류 결과" : "PRD 반영 미리보기")),
-          h("button", {type: "button", onClick: function () { setAiPanel(null); }}, "×")
+          h("div", null, h("span", null, directPanel ? "PRD APPLY" : aiPanel.type === "classification_result" ? "CLASSIFICATION RESULT" : "AI RESULT"), h("h2", null, directPanel ? "PRD에 반영" : aiPanel.type === "classification_result" ? "분류 결과" : "AI 정리 미리보기")),
+          h("button", {type: "button", onClick: function () { setAiPanel(null); }, "aria-label": "패널 닫기"})
         ),
-        h("div", {className: "brain-ai-body"}, body)
+        h("div", {className: "brain-ai-body"}, body),
+        directPanel ? directFooter : null
       );
     }
 
@@ -2025,7 +2600,7 @@
       return h("aside", {className: "brain-question-panel", role: "dialog", "aria-modal": "false", "aria-labelledby": "brain-question-panel-title"},
         h("header", null,
           h("div", null, h("span", null, "PRD REFERENCE"), h("h2", {id: "brain-question-panel-title"}, "PRD 질문"), h("small", null, total + "개 질문")),
-          h("button", {type: "button", onClick: function () { setQuestionsOpen(false); }, "aria-label": "질문 목록 닫기"}, "×")
+          h("button", {type: "button", onClick: function () { setQuestionsOpen(false); }, "aria-label": "질문 목록 닫기"})
         ),
         h("div", {className: "brain-question-search"}, h("i", {className: "idea-icon idea-icon-search"}), h("input", {type: "search", value: questionSearch, placeholder: "질문 또는 답변 검색", onChange: function (event) { setQuestionSearch(event.target.value); }})),
         h("div", {className: "brain-question-body"},
@@ -2169,13 +2744,13 @@
       );
     }
 
-    return h("div", {className: "brain-react-shell"},
+    return h("div", {className: "brain-react-shell" + (state.permissions.is_completed ? " is-completed" : "")},
       h("header", {className: "brain-topbar"},
-        h("div", {className: "brain-project"}, h("a", {href: "/ideas/prds/" + root.dataset.prdId + "/write/", className: "brain-back"}, h("i", {className: "idea-icon idea-icon-arrow-left"}), " PRD로 돌아가기"), h("span", {className: "brain-divider"}), brandMarkUrl ? h("img", {className: "brain-brand-mark", src: brandMarkUrl, alt: "", "aria-hidden": "true"}) : null, h("div", null, h("strong", {className: "brain-title"}, prdTitle), h("small", null, "Idea Developer · 브레인스토밍 보드"))),
+        h("div", {className: "brain-project"}, h("a", {href: "/ideas/prds/" + root.dataset.prdId + "/write/" + (demoMode ? "?ui_demo=1" : ""), className: "brain-back"}, h("i", {className: "idea-icon idea-icon-arrow-left"}), " PRD로 돌아가기"), h("span", {className: "brain-divider"}), brandMarkUrl ? h("img", {className: "brain-brand-mark", src: brandMarkUrl, alt: "", "aria-hidden": "true"}) : null, h("div", null, h("strong", {className: "brain-title"}, prdTitle), h("small", null, "Idea Developer · 브레인스토밍 보드"))),
         h("nav", {className: "brain-view-tabs", "aria-label": "브레인스토밍 보기 방식"}, [
           ["board", "idea-icon idea-icon-kanban", "섹션 보드"], ["canvas", "idea-icon idea-icon-bounding-box", "자유 캔버스"], ["list", "idea-icon idea-icon-list-ul", "아이디어 목록"]
         ].map(function (item) { return h("button", {key: item[0], type: "button", className: boardView === item[0] ? "active" : "", onClick: function () { changeBoard(item[0]); }}, h("i", {className: item[1]}), item[2]); })),
-        h("div", {className: "brain-top-actions"}, h("span", {className: "brain-sync " + sync}, sync === "connected" ? "● 동기화됨" : "● 재연결 중"), state.permissions.can_apply_ai && canEdit ? h("button", {type: "button", className: "btn btn-sm btn-outline-primary", disabled: busy, onClick: previewPrd}, "PRD에 반영") : null)
+        h("div", {className: "brain-top-actions"}, h("span", {className: "brain-sync " + sync}, sync === "connected" ? "● 동기화됨" : "● 재연결 중"), canEdit ? h("button", {type: "button", className: "btn btn-sm btn-primary brain-direct-apply-trigger", disabled: busy, onClick: previewDirectPrd}, "PRD에 반영") : null)
       ),
       h("div", {className: "brain-toolbar"},
         h("div", {className: "brain-counts"}, h("span", null, state.counts.total + "개 메모"), h("span", {className: "warn"}, "미분류 " + state.counts.unclassified), h("span", {className: "good"}, "✓ " + state.counts.accepted + "개 채택")),
@@ -2192,9 +2767,9 @@
       h("div", {className: "brain-workspace"},
         renderVersionSidebar(),
         h("div", {className: "brain-version-content"},
-          !state.permissions.is_latest_canvas ? h("div", {className: "brain-readonly-banner"}, h("i", {className: "idea-icon idea-icon-lock"}), " 이전 버전은 조회 전용입니다. 최신 보드에서만 편집할 수 있습니다.") : null,
-          boardView === "canvas" && tool === "connect" ? h("div", {className: "brain-connect-banner"}, source ? "다른 메모의 연결 점을 선택해 주세요" : "메모 가장자리의 연결 점을 선택해 주세요", h("button", {onClick: function () { setTool("select"); setSource(null); setSourceDirection(null); setConnectPointer(null); }}, "취소")) : null,
-          boardView === "canvas" && selected.length > 1 && tool !== "connect" ? h("div", {className: "brain-multi-banner"}, selected.length + "개 메모 선택됨", h("button", {type: "button", onClick: function () { setSelected([]); setFocused(null); }}, "선택 해제")) : null,
+          state.permissions.is_completed ? h("div", {className: "brain-readonly-banner brain-completed-banner"}, h("i", {className: "idea-icon idea-icon-lock"}), h("span", null, h("strong", null, "완료된 PRD는 브레인스토밍 내용을 수정할 수 없습니다."), h("small", null, "메모·연결·분류·PRD 반영은 비활성화되며 현재 내용은 조회만 할 수 있습니다."))) : !state.permissions.is_latest_canvas ? h("div", {className: "brain-readonly-banner"}, h("i", {className: "idea-icon idea-icon-lock"}), " 이전 버전은 조회 전용입니다. 최신 보드에서만 편집할 수 있습니다.") : null,
+          boardView === "canvas" && canEdit && tool === "connect" ? h("div", {className: "brain-connect-banner"}, source ? "다른 메모의 연결 점을 선택해 주세요" : "메모 가장자리의 연결 점을 선택해 주세요", h("button", {onClick: function () { setTool("select"); setSource(null); setSourceDirection(null); setConnectPointer(null); }}, "취소")) : null,
+          boardView === "canvas" && canEdit && selected.length > 1 && tool !== "connect" ? h("div", {className: "brain-multi-banner"}, selected.length + "개 메모 선택됨", h("button", {type: "button", onClick: function () { setSelected([]); setFocused(null); }}, "선택 해제")) : null,
           notice ? h("div", {className: "brain-notice alert alert-" + notice.kind}, notice.text, h("button", {type: "button", className: "btn-close", onClick: function () { setNotice(null); }})) : null,
           boardView === "board" ? renderBoard() : boardView === "canvas" ? renderCanvas() : renderList(),
           h("section", {
@@ -2235,7 +2810,7 @@
             h("div", {className: "brain-held-list"}, state.held_nodes.map(function (node) {
               return h("article", {key: node.id, className: "brain-held-card", "data-color": node.color},
                 h("span", {className: "brain-note-status held"}, "보류"),
-                h("p", {title: node.content}, node.content),
+                h("p", {title: canEdit ? node.content : undefined}, node.content),
                 canEdit ? h("footer", null, h("button", {type: "button", onClick: function () { statusNode(node, "default"); }}, "보류 해제")) : null
               );
             }))

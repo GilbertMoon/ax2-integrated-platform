@@ -104,3 +104,69 @@ body:has(#brainstorm-root) #content-area > main #brainstorm-root {
 @container idea-content (max-width: 720px) {
   .home-activity-sidebar { grid-template-columns: 1fr; }
 }
+
+/* PRD content adapter only. AX shell and Brainstorm layout remain unchanged. */
+body:has(#prd-write-app) #content-area > main {
+  width: 100%; max-width: none; padding: 0; min-height: 0; overflow: hidden; background: transparent;
+}
+body:has(#prd-write-app) #content-area > main #prd-write-app {
+  height: calc(100dvh - var(--topbar-height)); min-height: 0; max-width: none; overflow: hidden;
+  display: flex; flex-direction: column;
+  border: 0; border-radius: 0; background: transparent; box-shadow: none;
+}
+
+/* Light PRD canvas belongs to the full-width content area, not the bounded workspace. */
+body:not([data-bs-theme="dark"]):not([data-bs-theme="dark"] *):has(:is(#prd-home-app,#prd-write-app)):not(:has(:is(#prd-home-app,#prd-write-app)[data-bs-theme="dark"])) #content-area { background-color: #F7F8FA; }
+body:not([data-bs-theme="dark"]):not([data-bs-theme="dark"] *):has(:is(#prd-home-app,#prd-write-app)):not(:has(:is(#prd-home-app,#prd-write-app)[data-bs-theme="dark"])) #content-area > main { background-color: transparent; }
+body:not([data-bs-theme="dark"]):not([data-bs-theme="dark"] *):has(:is(#prd-home-app,#prd-write-app)):not(:has(:is(#prd-home-app,#prd-write-app)[data-bs-theme="dark"])) :is(#prd-home-app,#prd-write-app) {
+  --idea-prd-canvas: transparent;
+  background: transparent !important;
+}
+
+/* ============================================================
+   FINAL 2026-09-30 — Full/Review focus mode
+   Hide AX global left navigation only while reading/reviewing an Idea PRD.
+   AX CSS itself is not modified.
+   ============================================================ */
+@media (min-width: 992px) {
+  body:has(#prd-write-app[data-write-view="full"]) #sidebar,
+  body:has(#prd-write-app[data-write-view="report"]) #sidebar {
+    display: none !important;
+  }
+
+  body:has(#prd-write-app[data-write-view="full"]) #content-area,
+  body:has(#prd-write-app[data-write-view="report"]) #content-area {
+    width: 100%;
+    max-width: none;
+  }
+
+  body:has(#prd-write-app[data-write-view="full"]) #content-area > main,
+  body:has(#prd-write-app[data-write-view="report"]) #content-area > main {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+}
+
+
+/* FINAL v7 — robust PRD reading/review focus mode. */
+@media (min-width: 992px) {
+  body.idea-prd-focus #sidebar { display:none !important; }
+  body.idea-prd-focus #content-area { width:100% !important; max-width:none !important; margin-left:0 !important; }
+  body.idea-prd-focus #content-area > main { width:100%; max-width:none; padding:0; }
+}
+body:not([data-bs-theme="dark"]):has(#prd-home-app,#prd-write-app) #content-area { background:#F6F7FA; }
+
+/* ============================================================
+   FINAL v15 — dark PRD canvas source of truth
+   The AX content area must not stay light when Idea Developer is dark.
+   ============================================================ */
+[data-bs-theme="dark"] body:has(#prd-home-app, #new-prd-app, #prd-write-app) #content-area,
+[data-bs-theme="dark"] body:has(#prd-home-app, #new-prd-app, #prd-write-app) #content-area > main {
+  background: #0F1722 !important;
+}
+[data-bs-theme="dark"] body:has(#prd-home-app) #prd-home-app,
+[data-bs-theme="dark"] body:has(#new-prd-app) #new-prd-app,
+[data-bs-theme="dark"] body:has(#prd-write-app) #prd-write-app {
+  background: #0F1722 !important;
+}

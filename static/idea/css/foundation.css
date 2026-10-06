@@ -54,11 +54,11 @@
   --idea-neutral-950: #101725;
 
   /* Semantic — tuned to ID Origin */
-  --idea-color-primary: #4f46e5;
-  --idea-color-primary-hover: #4338ca;
-  --idea-color-primary-pressed: #3730a3;
-  --idea-color-primary-soft: #eef2ff;
-  --idea-color-primary-subtle: #c7d2fe;
+  --idea-color-primary: #5b5ce2;
+  --idea-color-primary-hover: #4f50d2;
+  --idea-color-primary-pressed: #4142b8;
+  --idea-color-primary-soft: #f0f0ff;
+  --idea-color-primary-subtle: #d9daff;
 
   --idea-color-success: #18704d;
   --idea-color-success-soft: #e8f4ed;
@@ -94,20 +94,20 @@
   --idea-color-deadline-today-soft: #fcebec;
 
   /* Surfaces */
-  --idea-bg-page: #f7f8fc;
+  --idea-bg-page: #f6f7fa;
   --idea-surface-default: #ffffff;
   --idea-surface-subtle: #f2f4f8;
   --idea-surface-muted: #edf0f4;
-  --idea-text-primary: #172033;
+  --idea-text-primary: #1b2233;
   --idea-text-secondary: #4c5668;
   --idea-text-muted: #667085;
   --idea-text-placeholder: #818b9d;
   --idea-text-disabled: #aab2c1;
   --idea-text-inverse: #ffffff;
   --idea-border-subtle: #eef0f4;
-  --idea-border-default: #e7eaf0;
+  --idea-border-default: #e1e5ec;
   --idea-border-strong: #d2d7e1;
-  --idea-border-focus: #4f46e5;
+  --idea-border-focus: #5b5ce2;
 
   /* Spacing — 4 px rhythm */
   --idea-space-0: 0;
@@ -179,8 +179,8 @@
    ============================================================ */
 .idea-dev,
 .idea-dev-modal {
-  --bs-primary: #4f46e5;
-  --bs-primary-rgb: 79, 70, 229;
+  --bs-primary: #5b5ce2;
+  --bs-primary-rgb: 91, 92, 226;
   --studio-primary: var(--idea-color-primary);
   --studio-primary-dark: var(--idea-color-primary-pressed);
   --studio-primary-soft: var(--idea-color-primary-soft);
@@ -1416,4 +1416,1045 @@ body:has(.idea-dev) :is(
 }
 [data-bs-theme="dark"] .idea-dev-modal .modal-footer {
   border-top-color: var(--idea-border-subtle) !important;
+}
+
+
+/* ============================================================
+   Idea Developer v6.0 — final visual source of truth
+   Scope: Idea Developer only. No AX global layout/backend contract changes.
+   Light = Stripe-like structure / Dark = Linear-like depth / Pretendard UI.
+   ============================================================ */
+:root {
+  --idea-bg-page: #F6F7FA;
+  --idea-surface-default: #FFFFFF;
+  --idea-surface-subtle: #F2F4F7;
+  --idea-surface-muted: #ECEFF4;
+  --idea-surface-elevated: #FFFFFF;
+  --idea-text-primary: #1B2233;
+  --idea-text-secondary: #626B7A;
+  --idea-text-muted: #7B8492;
+  --idea-text-placeholder: #9298A3;
+  --idea-text-disabled: #B1B6BF;
+  --idea-text-inverse: #FFFFFF;
+  --idea-border-subtle: #ECEDEF;
+  --idea-border-default: #E1E5EC;
+  --idea-border-strong: #CBD2DD;
+  --idea-border-focus: #5B5CE2;
+  --idea-color-primary: #5B5CE2;
+  --idea-color-primary-hover: #4F50D2;
+  --idea-color-primary-soft: #F0F0FF;
+  --idea-color-primary-subtle: #D9DAFF;
+  --idea-radius-xs: 4px;
+  --idea-radius-sm: 4px;
+  --idea-radius-md: 6px;
+  --idea-radius-lg: 6px;
+  --idea-radius-xl: 8px;
+  --idea-shadow-card: none;
+  --idea-shadow-floating: 0 12px 30px rgba(17,24,39,.12);
+  --idea-shadow-overlay: 0 20px 56px rgba(17,24,39,.16);
+  --idea-focus-ring: 0 0 0 3px rgba(91,92,226,.14);
+}
+
+.idea-dev,
+.idea-dev-modal,
+.brain-editor-modal,
+.brain-assignee-menu,
+.brain-question-panel,
+.brain-ai-panel,
+.idea-date-popover {
+  font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.idea-dev :is(.card,.list-group-item,.table),
+.idea-dev-modal .modal-content {
+  box-shadow: none;
+}
+
+.idea-dev :is(.card,.form-control,.form-select,.btn,.dropdown-menu),
+.idea-dev-modal :is(.modal-content,.form-control,.form-select,.btn,.dropdown-menu) {
+  border-color: var(--idea-border-default);
+}
+
+.idea-dev :is(.form-control,.form-select),
+.idea-dev-modal :is(.form-control,.form-select) {
+  min-height: 40px;
+  border-radius: var(--idea-radius-xs);
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+}
+.idea-dev :is(.form-control,.form-select):focus,
+.idea-dev-modal :is(.form-control,.form-select):focus {
+  border-color: var(--idea-border-focus);
+  box-shadow: var(--idea-focus-ring);
+}
+
+.idea-dev .btn,
+.idea-dev-modal .btn {
+  border-radius: var(--idea-radius-xs);
+  font-weight: 600;
+}
+.idea-dev .btn-primary,
+.idea-dev-modal .btn-primary {
+  border-color: var(--idea-color-primary);
+  background: var(--idea-color-primary);
+}
+.idea-dev .btn-primary:hover,
+.idea-dev-modal .btn-primary:hover {
+  border-color: var(--idea-color-primary-hover);
+  background: var(--idea-color-primary-hover);
+}
+
+/* Floating UI is the only place that receives elevation. */
+.idea-dev .dropdown-menu,
+.idea-dev-modal .dropdown-menu,
+.idea-date-popover,
+.brain-assignee-menu,
+.brain-editor-modal,
+.brain-question-panel,
+.brain-ai-panel {
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-md);
+  background: var(--idea-surface-elevated, var(--idea-surface-default));
+  box-shadow: var(--idea-shadow-floating);
+}
+.idea-dev-modal .modal-content {
+  overflow: hidden;
+  border: 1px solid var(--idea-border-default);
+  border-radius: var(--idea-radius-xl);
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-elevated, var(--idea-surface-default));
+  box-shadow: var(--idea-shadow-overlay);
+}
+.idea-dev-modal .modal-header,
+.idea-dev-modal .modal-footer {
+  padding: 16px 20px;
+  border-color: var(--idea-border-subtle);
+  background: var(--idea-surface-elevated, var(--idea-surface-default));
+}
+.idea-dev-modal .modal-body {
+  padding: 20px;
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-elevated, var(--idea-surface-default));
+}
+
+/* Final dark source of truth. This deliberately comes last to override legacy generations. */
+[data-bs-theme="dark"] .idea-dev,
+[data-bs-theme="dark"] .idea-dev-modal,
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-assignee-menu,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-ai-panel,
+[data-bs-theme="dark"] .idea-date-popover {
+  --idea-bg-page: #0D1117;
+  --idea-surface-default: #141B25;
+  --idea-surface-subtle: #18212D;
+  --idea-surface-muted: #202B39;
+  --idea-surface-elevated: #18212D;
+  --idea-text-primary: #F4F6F8;
+  --idea-text-secondary: #A8B0BC;
+  --idea-text-muted: #7F8997;
+  --idea-text-placeholder: #6F7B8A;
+  --idea-text-disabled: #5D6877;
+  --idea-text-inverse: #0D1117;
+  --idea-border-subtle: rgba(255,255,255,.055);
+  --idea-border-default: rgba(255,255,255,.08);
+  --idea-border-strong: rgba(255,255,255,.14);
+  --idea-border-focus: #8B8DFF;
+  --idea-color-primary: #8B8DFF;
+  --idea-color-primary-hover: #9B9DFF;
+  --idea-color-primary-soft: rgba(124,116,255,.12);
+  --idea-color-primary-subtle: rgba(124,116,255,.24);
+  --idea-focus-ring: 0 0 0 3px rgba(124,116,255,.14);
+  --idea-shadow-floating: 0 18px 42px rgba(0,0,0,.28);
+  --idea-shadow-overlay: 0 24px 64px rgba(0,0,0,.36);
+  color-scheme: dark;
+}
+
+[data-bs-theme="dark"] .idea-dev,
+[data-bs-theme="dark"] .idea-dev-modal .modal-body,
+[data-bs-theme="dark"] .idea-dev-modal .modal-header,
+[data-bs-theme="dark"] .idea-dev-modal .modal-footer {
+  color: var(--idea-text-primary);
+}
+[data-bs-theme="dark"] .idea-dev :is(.card,.list-group-item,.table,.table > :not(caption) > * > *),
+[data-bs-theme="dark"] .idea-dev-modal :is(.modal-content,.modal-body,.modal-header,.modal-footer) {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default);
+  background-color: var(--idea-surface-default);
+}
+[data-bs-theme="dark"] .idea-dev :is(.form-control,.form-select),
+[data-bs-theme="dark"] .idea-dev-modal :is(.form-control,.form-select) {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-strong);
+  background: var(--idea-surface-default);
+}
+[data-bs-theme="dark"] .idea-dev :is(.form-control,.form-select):hover,
+[data-bs-theme="dark"] .idea-dev-modal :is(.form-control,.form-select):hover {
+  background: var(--idea-surface-subtle);
+}
+[data-bs-theme="dark"] .idea-dev .dropdown-menu,
+[data-bs-theme="dark"] .idea-dev-modal .dropdown-menu,
+[data-bs-theme="dark"] .idea-date-popover,
+[data-bs-theme="dark"] .brain-assignee-menu,
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-ai-panel {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-elevated);
+}
+[data-bs-theme="dark"] .idea-dev .dropdown-item,
+[data-bs-theme="dark"] .idea-dev-modal .dropdown-item {
+  color: var(--idea-text-secondary);
+}
+[data-bs-theme="dark"] .idea-dev .dropdown-item:hover,
+[data-bs-theme="dark"] .idea-dev-modal .dropdown-item:hover {
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-muted);
+}
+
+/* v6.1 — final Idea-only token authority.
+ * Preserve legacy rules; resolve palette, aliases and elevation here for every portal.
+ * No :root/body/AX layout overrides. */
+:is(.idea-dev, .idea-dev-modal, .idea-date-popover, .brain-editor-modal, .brain-assignee-menu, .brain-question-panel, .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview) {
+  --idea-bg-page: #F6F7FA;
+  --idea-surface-default: #FFFFFF;
+  --idea-surface-subtle: #F2F4F7;
+  --idea-surface-muted: #F5F6F7;
+  --idea-surface-elevated: #FFFFFF;
+  --idea-text-primary: #1B2233;
+  --idea-text-secondary: #626B7A;
+  --idea-text-muted: #5F6672;
+  --idea-text-placeholder: #707784;
+  --idea-text-disabled: #9298A3;
+  --idea-text-inverse: #FFFFFF;
+  --idea-border-default: #E1E5EC;
+  --idea-border-subtle: #E5E7EB;
+  --idea-border-strong: #CBD2DD;
+  --idea-color-primary: #5B5CE2;
+  --idea-color-primary-hover: #4F50D2;
+  --idea-color-primary-pressed: #3730A3;
+  --idea-color-primary-soft: #F0F0FF;
+  --idea-color-primary-subtle: #D9DAFF;
+  --idea-color-success: #18704D;
+  --idea-color-success-soft: #E8F4ED;
+  --idea-color-success-border: #B7D8C6;
+  --idea-color-warning: #8B5B10;
+  --idea-color-warning-soft: #FFF3D6;
+  --idea-color-warning-border: #EFD79E;
+  --idea-color-danger: #B63239;
+  --idea-color-danger-soft: #FCEBEC;
+  --idea-color-danger-border: #EDBDC0;
+  --idea-shadow-floating: 0 12px 30px rgba(17,24,39,.12);
+  --idea-shadow-overlay: 0 20px 56px rgba(17,24,39,.16);
+  color-scheme: light;
+}
+[data-bs-theme="dark"] :is(.idea-dev, .idea-dev-modal, .idea-date-popover, .brain-editor-modal, .brain-assignee-menu, .brain-question-panel, .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview),
+:is(.idea-dev, .idea-dev-modal, .idea-date-popover, .brain-editor-modal, .brain-assignee-menu, .brain-question-panel, .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview)[data-bs-theme="dark"] {
+  --idea-bg-page: #0D1117;
+  --idea-surface-default: #141B25;
+  --idea-surface-subtle: #18212D;
+  --idea-surface-muted: #18212D;
+  --idea-surface-elevated: #18212D;
+  --idea-text-primary: #F4F6F8;
+  --idea-text-secondary: #A8B0BC;
+  --idea-text-muted: #A8B0BC;
+  --idea-text-placeholder: #8B95A4;
+  --idea-text-disabled: #707B8A;
+  --idea-text-inverse: #0D1117;
+  --idea-border-default: rgba(255,255,255,.08);
+  --idea-border-subtle: rgba(255,255,255,.08);
+  --idea-border-strong: rgba(255,255,255,.16);
+  --idea-color-primary: #8B8DFF;
+  --idea-color-primary-hover: #9B9DFF;
+  --idea-color-primary-pressed: #6D65EC;
+  --idea-color-primary-soft: rgba(124,116,255,.12);
+  --idea-color-primary-subtle: rgba(124,116,255,.24);
+  --idea-color-success: #75C9A2;
+  --idea-color-success-soft: #19372B;
+  --idea-color-success-border: #2C5542;
+  --idea-color-warning: #DDBB72;
+  --idea-color-warning-soft: #352C1B;
+  --idea-color-warning-border: #5B4C2D;
+  --idea-color-danger: #EE959B;
+  --idea-color-danger-soft: #3B242C;
+  --idea-color-danger-border: #663640;
+  --idea-shadow-floating: 0 18px 42px rgba(0,0,0,.28);
+  --idea-shadow-overlay: 0 24px 64px rgba(0,0,0,.36);
+  color-scheme: dark;
+}
+/* Resolve old palette names locally so inherited, pre-resolved aliases cannot leak. */
+:is(.idea-dev, .idea-dev-modal, .idea-date-popover, .brain-editor-modal, .brain-assignee-menu, .brain-question-panel, .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview),
+[data-bs-theme="dark"] :is(.idea-dev, .idea-dev-modal, .idea-date-popover, .brain-editor-modal, .brain-assignee-menu, .brain-question-panel, .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview),
+:is(.idea-dev, .idea-dev-modal, .idea-date-popover, .brain-editor-modal, .brain-assignee-menu, .brain-question-panel, .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview)[data-bs-theme="dark"] {
+  --idea-border-focus: var(--idea-color-primary);
+  --idea-color-info: var(--idea-color-primary);
+  --idea-color-info-soft: var(--idea-color-primary-soft);
+  --idea-color-info-border: var(--idea-color-primary-subtle);
+  --idea-color-new: var(--idea-text-secondary);
+  --idea-color-new-soft: var(--idea-surface-muted);
+  --idea-color-new-border: var(--idea-border-default);
+  --idea-color-deadline-today: var(--idea-color-danger);
+  --idea-color-deadline-today-soft: var(--idea-color-danger-soft);
+  --idea-radius-xs: 4px;
+  --idea-radius-sm: 4px;
+  --idea-radius-md: 6px;
+  --idea-radius-lg: 6px;
+  --idea-radius-xl: 6px;
+  --idea-shadow-card: none;
+  --idea-shadow-raised: none;
+  --idea-shadow-1: none;
+  --idea-shadow-2: none;
+  --idea-shadow-3: var(--idea-shadow-floating);
+  --idea-focus-ring: 0 0 0 3px color-mix(in srgb, var(--idea-color-primary) 16%, transparent);
+  --idea-font-size-caption: max(12px, .75rem);
+  --idea-font-size-overline: max(12px, .75rem);
+  --idea-font-size-label: max(12px, .8125rem);
+  --bs-body-color: var(--idea-text-primary);
+  --bs-body-bg: var(--idea-bg-page);
+  --bs-secondary-color: var(--idea-text-secondary);
+  --bs-border-color: var(--idea-border-default);
+  font-family: var(--idea-font-family);
+  color: var(--idea-text-primary);
+  --idea-neutral-0: var(--idea-surface-default);
+  --idea-neutral-25: var(--idea-surface-default);
+  --idea-neutral-50: var(--idea-bg-page);
+  --idea-neutral-100: var(--idea-surface-subtle);
+  --idea-neutral-200: var(--idea-surface-muted);
+  --idea-neutral-300: var(--idea-border-strong);
+  --idea-neutral-400: var(--idea-text-disabled);
+  --idea-neutral-500: var(--idea-text-placeholder);
+  --idea-neutral-600: var(--idea-text-muted);
+  --idea-neutral-700: var(--idea-text-secondary);
+  --idea-neutral-800: var(--idea-text-primary);
+  --idea-neutral-900: var(--idea-text-primary);
+  --idea-neutral-950: var(--idea-text-primary);
+  --idea-indigo-50: var(--idea-color-primary-soft);
+  --idea-indigo-100: var(--idea-color-primary-soft);
+  --idea-indigo-200: var(--idea-color-primary-subtle);
+  --idea-indigo-300: var(--idea-color-primary-subtle);
+  --idea-indigo-400: var(--idea-color-primary);
+  --idea-indigo-500: var(--idea-color-primary);
+  --idea-indigo-600: var(--idea-color-primary);
+  --idea-indigo-700: var(--idea-color-primary-hover);
+  --idea-indigo-800: var(--idea-color-primary-hover);
+  --idea-indigo-900: var(--idea-color-primary-pressed);
+  --idea-status-progress: var(--idea-color-success);
+  --idea-status-progress-soft: var(--idea-color-success-soft);
+  --idea-status-progress-border: var(--idea-color-success-border);
+  --idea-status-completed: var(--idea-color-primary);
+  --idea-status-completed-soft: var(--idea-color-primary-soft);
+  --idea-status-completed-border: var(--idea-color-primary-subtle);
+  --idea-status-held: var(--idea-color-warning);
+  --idea-status-held-soft: var(--idea-color-warning-soft);
+  --idea-status-held-border: var(--idea-color-warning-border);
+  --idea-status-dropped: var(--idea-text-secondary);
+  --idea-status-dropped-soft: var(--idea-surface-muted);
+  --idea-status-dropped-border: var(--idea-border-default);
+}
+.idea-dev:not(.idea-dev--home):not(.idea-dev--new):not(.idea-dev--write) { background-color: var(--idea-bg-page); }
+/* PRD canvases are white in light mode; dark mode reveals the AX shell. */
+.idea-dev:is(.idea-dev--home, .idea-dev--new, .idea-dev--write) {
+  --idea-prd-canvas: #FFFFFF;
+  background-color: var(--idea-prd-canvas);
+}
+[data-bs-theme="dark"] .idea-dev:is(.idea-dev--home, .idea-dev--new, .idea-dev--write),
+.idea-dev:is(.idea-dev--home, .idea-dev--new, .idea-dev--write)[data-bs-theme="dark"] {
+  --idea-prd-canvas: transparent;
+  background-color: var(--idea-prd-canvas);
+}
+:is(.idea-dev, .idea-dev-modal, .idea-date-popover, .brain-editor-modal, .brain-assignee-menu, .brain-question-panel, .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview) :is(.card, .list-group-item, .table) { box-shadow: none !important; }
+:is(.idea-dev, .idea-dev-modal, .idea-date-popover, .brain-editor-modal, .brain-assignee-menu, .brain-question-panel, .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview) :is(small, .small, .badge, .form-text) { font-size: var(--idea-font-size-caption); }
+:is(.idea-dev, .idea-dev-modal, .idea-date-popover, .brain-editor-modal, .brain-assignee-menu, .brain-question-panel, .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview) :is(.dropdown-menu, .popover),
+.idea-date-popover, .brain-editor-modal, .brain-assignee-menu, .brain-question-panel, .brain-ai-panel {
+  color: var(--idea-text-primary);
+  background-color: var(--idea-surface-elevated);
+  border-color: var(--idea-border-default);
+  border-radius: var(--idea-radius-md);
+  box-shadow: var(--idea-shadow-floating);
+}
+.idea-dev-modal .modal-content, .idea-dev .offcanvas {
+  border-color: var(--idea-border-default);
+  border-radius: var(--idea-radius-md);
+  background-color: var(--idea-surface-elevated);
+  box-shadow: var(--idea-shadow-overlay);
+}
+
+
+/* ============================================================
+   Idea Developer FINAL — semantic design system authority
+   Scope is intentionally limited to Idea Developer surfaces and portals.
+   AX Console shell/layout is not styled here.
+   ============================================================ */
+:is(.idea-dev, .idea-dev-modal, .idea-date-popover,
+    .brain-editor-modal, .brain-assignee-menu, .brain-question-panel,
+    .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview) {
+  --idea-canvas: #F7F8FA;
+  --idea-surface-default: #FFFFFF;
+  --idea-surface-subtle: #F2F4F7;
+  --idea-surface-muted: #ECEFF4;
+  --idea-surface-elevated: #FFFFFF;
+  --idea-text-primary: #1B2233;
+  --idea-text-secondary: #626B7A;
+  --idea-text-muted: #7B8492;
+  --idea-text-placeholder: #9298A3;
+  --idea-text-disabled: #B1B6BF;
+  --idea-border-subtle: #ECEDEF;
+  --idea-border-default: #E1E5EC;
+  --idea-border-strong: #CBD2DD;
+  --idea-border-focus: #5B5CE2;
+  --idea-color-primary: #5B5CE2;
+  --idea-color-primary-hover: #4F50D2;
+  --idea-color-primary-soft: #F0F0FF;
+  --idea-color-primary-subtle: #D9DAFF;
+
+  --idea-color-success: #18704D;
+  --idea-color-success-soft: #E8F4ED;
+  --idea-color-success-border: #B7D8C6;
+  --idea-color-warning: #8B5B10;
+  --idea-color-warning-soft: #FFF3D6;
+  --idea-color-warning-border: #EFD79E;
+  --idea-color-danger: #B63239;
+  --idea-color-danger-soft: #FCEBEC;
+  --idea-color-danger-border: #EDBDC0;
+
+  /* Novelty is not a workflow status. */
+  --idea-color-new: #C94F32;
+  --idea-color-new-soft: #FFF1ED;
+  --idea-color-new-border: #F6C2B4;
+
+  /* Deadline semantics. */
+  --idea-deadline-unset: #8B5B10;
+  --idea-deadline-unset-soft: #FFF7E6;
+  --idea-deadline-unset-border: #EFD79E;
+  --idea-deadline-danger: #B63239;
+  --idea-deadline-danger-soft: #FCEBEC;
+  --idea-deadline-danger-border: #EDBDC0;
+
+  --idea-radius-xs: 4px;
+  --idea-radius-sm: 4px;
+  --idea-radius-md: 6px;
+  --idea-radius-lg: 6px;
+  --idea-radius-xl: 8px;
+  --idea-shadow-card: none;
+  --idea-shadow-raised: none;
+  --idea-shadow-floating: 0 12px 30px rgba(17,24,39,.12);
+  --idea-shadow-overlay: 0 20px 56px rgba(17,24,39,.16);
+}
+
+[data-bs-theme="dark"] :is(.idea-dev, .idea-dev-modal, .idea-date-popover,
+    .brain-editor-modal, .brain-assignee-menu, .brain-question-panel,
+    .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview),
+:is(.idea-dev, .idea-dev-modal, .idea-date-popover,
+    .brain-editor-modal, .brain-assignee-menu, .brain-question-panel,
+    .brain-ai-panel, .brain-floating-toolbar, .brain-drag-preview)[data-bs-theme="dark"] {
+  --idea-canvas: #0D1117;
+  --idea-surface-default: #141B25;
+  --idea-surface-subtle: #18212D;
+  --idea-surface-muted: #202B39;
+  --idea-surface-elevated: #18212D;
+  --idea-text-primary: #F4F6F8;
+  --idea-text-secondary: #A8B0BC;
+  --idea-text-muted: #8893A2;
+  --idea-text-placeholder: #778392;
+  --idea-text-disabled: #687483;
+  --idea-border-subtle: rgba(255,255,255,.055);
+  --idea-border-default: rgba(255,255,255,.08);
+  --idea-border-strong: rgba(255,255,255,.15);
+  --idea-border-focus: #8B8DFF;
+  --idea-color-primary: #8B8DFF;
+  --idea-color-primary-hover: #9B9DFF;
+  --idea-color-primary-soft: rgba(124,116,255,.12);
+  --idea-color-primary-subtle: rgba(124,116,255,.24);
+  --idea-color-success: #75C9A2;
+  --idea-color-success-soft: #19372B;
+  --idea-color-success-border: #2C5542;
+  --idea-color-warning: #DDBB72;
+  --idea-color-warning-soft: #352C1B;
+  --idea-color-warning-border: #5B4C2D;
+  --idea-color-danger: #EE959B;
+  --idea-color-danger-soft: #3B242C;
+  --idea-color-danger-border: #663640;
+  --idea-color-new: #F39A82;
+  --idea-color-new-soft: #3B2824;
+  --idea-color-new-border: #65443B;
+  --idea-deadline-unset: #E0BE76;
+  --idea-deadline-unset-soft: #352C1B;
+  --idea-deadline-unset-border: #5B4C2D;
+  --idea-deadline-danger: #F09AA0;
+  --idea-deadline-danger-soft: #3B242C;
+  --idea-deadline-danger-border: #663640;
+  --idea-shadow-floating: 0 18px 42px rgba(0,0,0,.28);
+  --idea-shadow-overlay: 0 24px 64px rgba(0,0,0,.36);
+}
+
+/* Shared typography / geometry. */
+.idea-dev,
+.idea-dev-modal,
+.brain-editor-modal,
+.brain-assignee-menu,
+.brain-question-panel,
+.brain-ai-panel {
+  font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.idea-dev :is(.card,.list-group-item),
+.idea-dev-modal .modal-content { box-shadow: none; }
+.idea-dev :is(.btn,.form-control,.form-select),
+.idea-dev-modal :is(.btn,.form-control,.form-select) { border-radius: 4px; }
+.idea-dev :is(.form-control,.form-select),
+.idea-dev-modal :is(.form-control,.form-select) { font-size: 14px; }
+.idea-dev :is(.btn,.badge),
+.idea-dev-modal :is(.btn,.badge) { font-size: max(12px, .8125rem); }
+
+/* Reusable semantic primitives. */
+.idea-dev .idea-soft-chip,
+.idea-dev .v34-question-state,
+.idea-dev .write-role-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: 999px;
+  color: var(--idea-text-secondary);
+  background: var(--idea-surface-subtle);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.idea-dev .idea-inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  color: var(--idea-color-primary);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.idea-dev .idea-inline-link:hover { color: var(--idea-color-primary-hover); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Floating surfaces alone receive elevation. */
+.idea-dev :is(.dropdown-menu),
+.idea-dev-modal .modal-content,
+.idea-date-popover,
+.brain-assignee-menu,
+.brain-editor-modal,
+.brain-question-panel,
+.brain-ai-panel {
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-elevated);
+}
+.idea-dev :is(.dropdown-menu),
+.idea-date-popover,
+.brain-assignee-menu,
+.brain-question-panel,
+.brain-ai-panel { box-shadow: var(--idea-shadow-floating); }
+.idea-dev-modal .modal-content { box-shadow: var(--idea-shadow-overlay); }
+
+/* ============================================================
+   FINAL 2026-09-30 — Idea Developer component authority
+   Keeps the current production palette. Alternate palettes live in docs only.
+   ============================================================ */
+
+/* Typography: calm B2B workspace density. */
+.idea-dev :is(h1,h2,h3,h4,h5,h6),
+.idea-dev-modal :is(h1,h2,h3,h4,h5,h6) {
+  color: var(--idea-text-primary);
+  letter-spacing: -.02em;
+}
+.idea-dev :is(p,li,td,th,label,input,textarea,select,button),
+.idea-dev-modal :is(p,li,td,th,label,input,textarea,select,button) {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* Base controls — 4/6px geometry, no inflated pill buttons. */
+.idea-dev :is(.btn,.form-control,.form-select),
+.idea-dev-modal :is(.btn,.form-control,.form-select) {
+  border-radius: 5px;
+}
+.idea-dev :is(.btn,.form-control,.form-select):focus-visible,
+.idea-dev-modal :is(.btn,.form-control,.form-select):focus-visible {
+  outline: 0;
+  box-shadow: var(--idea-focus-ring);
+}
+.idea-dev .btn:not(.btn-link),
+.idea-dev-modal .btn:not(.btn-link) {
+  box-shadow: none;
+}
+
+/* Shared modal grammar — all Idea Developer modals, no AX global modal changes. */
+.idea-dev-modal .modal-dialog {
+  margin-inline: auto;
+}
+.idea-dev-modal .modal-content {
+  overflow: hidden;
+  border: 1px solid var(--idea-border-default);
+  border-radius: 8px;
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-elevated);
+  box-shadow: var(--idea-shadow-overlay);
+}
+.idea-dev-modal .modal-header {
+  min-height: 64px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--idea-border-default);
+  background: var(--idea-surface-elevated);
+}
+.idea-dev-modal .modal-header > div { min-width: 0; }
+.idea-dev-modal .modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.idea-dev-modal .modal-header :is(p,small) {
+  margin: 5px 0 0;
+  color: var(--idea-text-secondary) !important;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.idea-dev-modal .modal-header > div > span:first-child:not(.badge) {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--idea-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+.idea-dev-modal .modal-body {
+  padding: 20px 22px;
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+}
+.idea-dev-modal .modal-footer {
+  min-height: 60px;
+  padding: 12px 22px;
+  gap: 8px;
+  border-top: 1px solid var(--idea-border-default);
+  background: var(--idea-surface-elevated);
+}
+.idea-dev-modal .modal-footer .btn { min-width: 72px; }
+.idea-dev-modal .btn-close { opacity: .62; }
+.idea-dev-modal .btn-close:hover { opacity: .9; }
+.idea-dev-modal .modal-backdrop,
+body:has(.idea-dev-modal.show) .modal-backdrop { backdrop-filter: none; }
+
+/* Modal tabs are navigation, not segmented pills. */
+.idea-dev-modal :is(.nav-tabs,.export-modal-tabs) {
+  border-bottom: 1px solid var(--idea-border-default);
+  background: var(--idea-surface-elevated);
+}
+.idea-dev-modal :is(.nav-tabs .nav-link,.export-modal-tabs > button) {
+  position: relative;
+  border: 0;
+  border-radius: 0 !important;
+  color: var(--idea-text-secondary);
+  background: transparent;
+  box-shadow: none;
+}
+.idea-dev-modal :is(.nav-tabs .nav-link,.export-modal-tabs > button):hover {
+  color: var(--idea-text-primary);
+  background: transparent;
+}
+.idea-dev-modal :is(.nav-tabs .nav-link.active,.export-modal-tabs > button.active) {
+  color: var(--idea-text-primary);
+  background: transparent;
+}
+.idea-dev-modal :is(.nav-tabs .nav-link.active,.export-modal-tabs > button.active)::after {
+  position: absolute;
+  right: 12px;
+  bottom: -1px;
+  left: 12px;
+  height: 2px;
+  background: var(--idea-color-primary);
+  content: "";
+}
+
+/* Shared offcanvas/drawer grammar. */
+.idea-dev .offcanvas,
+.idea-dev-modal.offcanvas {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-default);
+  box-shadow: var(--idea-shadow-overlay);
+}
+.idea-dev .offcanvas > .offcanvas-header {
+  flex: 0 0 auto;
+  min-height: 60px;
+  border-bottom: 1px solid var(--idea-border-default);
+}
+.idea-dev .offcanvas > .offcanvas-body {
+  min-height: 0;
+}
+
+/* Floating surfaces only receive elevation. */
+.idea-dev :is(.dropdown-menu,.popover),
+.idea-date-popover,
+.brain-assignee-menu,
+.brain-editor-modal,
+.brain-question-panel,
+.brain-ai-panel {
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-elevated);
+  box-shadow: var(--idea-shadow-floating);
+}
+
+/* Reusable semantic chips. */
+.idea-dev .idea-status-chip {
+  display: inline-flex;
+  min-height: 23px;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border: 1px solid var(--chip-border, var(--idea-border-default));
+  border-radius: 999px;
+  color: var(--chip-color, var(--idea-text-secondary));
+  background: var(--chip-bg, var(--idea-surface-subtle));
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.idea-dev .idea-status-chip[data-tone="success"] {
+  --chip-color: var(--idea-color-success);
+  --chip-bg: var(--idea-color-success-soft);
+  --chip-border: var(--idea-color-success-border);
+}
+.idea-dev .idea-status-chip[data-tone="warning"] {
+  --chip-color: var(--idea-color-warning);
+  --chip-bg: var(--idea-color-warning-soft);
+  --chip-border: var(--idea-color-warning-border);
+}
+.idea-dev .idea-status-chip[data-tone="danger"] {
+  --chip-color: var(--idea-color-danger);
+  --chip-bg: var(--idea-color-danger-soft);
+  --chip-border: var(--idea-color-danger-border);
+}
+.idea-dev .idea-status-chip[data-tone="primary"] {
+  --chip-color: var(--idea-color-primary);
+  --chip-bg: var(--idea-color-primary-soft);
+  --chip-border: var(--idea-color-primary-subtle);
+}
+
+
+/* ============================================================
+   FINAL v7 — Graphite + Periwinkle product UI authority
+   Idea Developer only. AX shell/global styling is intentionally untouched.
+   ============================================================ */
+:root {
+  --idea-color-primary: #5B5CE2;
+  --idea-color-primary-hover: #4F50D2;
+  --idea-color-primary-pressed: #4142B8;
+  --idea-color-primary-soft: #F0F0FF;
+  --idea-color-primary-subtle: #D9DAFF;
+  --idea-bg-page: #F6F7FA;
+  --idea-surface-default: #FFFFFF;
+  --idea-surface-subtle: #F2F4F7;
+  --idea-surface-muted: #ECEFF4;
+  --idea-surface-elevated: #FFFFFF;
+  --idea-text-primary: #1B2233;
+  --idea-text-secondary: #626B7A;
+  --idea-text-muted: #7B8492;
+  --idea-text-placeholder: #969EAA;
+  --idea-border-subtle: #EDF0F4;
+  --idea-border-default: #E1E5EC;
+  --idea-border-strong: #CBD2DD;
+  --idea-border-focus: #5B5CE2;
+  --idea-focus-ring: 0 0 0 3px rgba(91,92,226,.14);
+  --idea-shadow-card: none;
+}
+.idea-dev, .idea-dev-modal { --bs-primary:#5B5CE2; --bs-primary-rgb:91,92,226; }
+[data-bs-theme="dark"] .idea-dev,
+[data-bs-theme="dark"] .idea-dev-modal,
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-assignee-menu,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-ai-panel,
+[data-bs-theme="dark"] .idea-date-popover {
+  --idea-color-primary:#8B8DFF;
+  --idea-color-primary-hover:#9B9DFF;
+  --idea-color-primary-pressed:#7779E8;
+  --idea-color-primary-soft:rgba(139,141,255,.13);
+  --idea-color-primary-subtle:rgba(139,141,255,.28);
+  --idea-border-focus:#8B8DFF;
+  --idea-bg-page:#0D1117;
+  --idea-surface-default:#141B25;
+  --idea-surface-subtle:#18212D;
+  --idea-surface-muted:#202B39;
+  --idea-surface-elevated:#18212D;
+  --idea-text-primary:#F4F6F8;
+  --idea-text-secondary:#A8B0BC;
+  --idea-border-default:rgba(255,255,255,.08);
+  --idea-border-strong:rgba(255,255,255,.14);
+  --idea-focus-ring:0 0 0 3px rgba(139,141,255,.17);
+}
+/* One modern modal grammar for every Idea Developer modal. */
+.idea-dev-modal .modal-content { border-radius:6px; }
+.idea-dev-modal .modal-header { min-height:60px; padding:16px 20px; }
+.idea-dev-modal .modal-body { padding:20px; }
+.idea-dev-modal .modal-footer { min-height:56px; padding:10px 20px; }
+.idea-dev-modal .modal-title { font-size:18px; line-height:1.4; letter-spacing:-.02em; }
+.idea-dev-modal :is(.btn,.form-control,.form-select) { border-radius:4px; }
+.idea-dev-modal .btn-primary { box-shadow:none; }
+.idea-dev-modal .modal-backdrop, body:has(.idea-dev-modal.show) .modal-backdrop { backdrop-filter:none; }
+
+
+/* ============================================================
+   FINAL v11 — PRD prototype visual-system authority
+   2026-10-01 / Idea Developer only
+   Existing page markup and AX global shell are intentionally untouched.
+   ============================================================ */
+:root {
+  --idea-color-primary: #4F46E5;
+  --idea-color-primary-hover: #4338CA;
+  --idea-color-primary-pressed: #3730A3;
+  --idea-color-primary-soft: #F1F0FF;
+  --idea-color-primary-subtle: #D9D6FF;
+
+  --idea-bg-page: #F7F7F5;
+  --idea-surface-default: #FFFFFF;
+  --idea-surface-subtle: #F5F6F7;
+  --idea-surface-muted: #ECEDEF;
+  --idea-surface-elevated: #FFFFFF;
+
+  --idea-text-primary: #18181B;
+  --idea-text-secondary: #5F6672;
+  --idea-text-muted: #7D8490;
+  --idea-text-placeholder: #8A919D;
+  --idea-text-disabled: #A8AFBA;
+
+  --idea-border-subtle: #EEF0F3;
+  --idea-border-default: #E5E7EB;
+  --idea-border-strong: #D1D5DB;
+  --idea-border-focus: #4F46E5;
+
+  --idea-radius-xs: 4px;
+  --idea-radius-sm: 6px;
+  --idea-radius-md: 6px;
+  --idea-radius-lg: 8px;
+  --idea-radius-xl: 12px;
+
+  --idea-shadow-card: none;
+  --idea-shadow-raised: none;
+  --idea-shadow-floating: 0 12px 30px rgba(17,24,39,.12);
+  --idea-shadow-overlay: 0 18px 48px rgba(17,24,39,.16);
+  --idea-focus-ring: 0 0 0 3px rgba(79,70,229,.10);
+}
+.idea-dev,
+.idea-dev-modal {
+  --bs-primary: #4F46E5;
+  --bs-primary-rgb: 79,70,229;
+}
+.idea-dev :is(.card,.btn,.form-control,.form-select,.dropdown-menu),
+.idea-dev-modal :is(.card,.btn,.form-control,.form-select,.modal-content) {
+  box-shadow: none;
+}
+.idea-dev :is(.form-control,.form-select):focus,
+.idea-dev-modal :is(.form-control,.form-select):focus {
+  border-color: var(--idea-border-focus);
+  box-shadow: var(--idea-focus-ring);
+}
+[data-bs-theme="dark"] .idea-dev,
+[data-bs-theme="dark"] .idea-dev-modal,
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-assignee-menu,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-ai-panel,
+[data-bs-theme="dark"] .idea-date-popover {
+  --idea-color-primary: #7C74FF;
+  --idea-color-primary-hover: #8A83FF;
+  --idea-color-primary-pressed: #6D66E8;
+  --idea-color-primary-soft: rgba(124,116,255,.12);
+  --idea-color-primary-subtle: rgba(124,116,255,.28);
+  --idea-border-focus: #7C74FF;
+  --idea-bg-page: #0D1117;
+  --idea-surface-default: #141B25;
+  --idea-surface-subtle: #18212D;
+  --idea-surface-muted: #202B39;
+  --idea-surface-elevated: #18212D;
+  --idea-text-primary: #F4F6F8;
+  --idea-text-secondary: #A8B0BC;
+  --idea-text-muted: #7F8997;
+  --idea-text-placeholder: #778290;
+  --idea-border-subtle: rgba(255,255,255,.06);
+  --idea-border-default: rgba(255,255,255,.08);
+  --idea-border-strong: rgba(255,255,255,.14);
+  --idea-focus-ring: 0 0 0 3px rgba(124,116,255,.14);
+}
+
+/* ============================================================
+   FINAL v12 — bring back Idea Developer brand color
+   2026-10-01 / shared visual authority only
+   ============================================================ */
+:root {
+  --idea-color-primary: #5B5CE2;
+  --idea-color-primary-hover: #4F50D2;
+  --idea-color-primary-pressed: #4142B8;
+  --idea-color-primary-soft: #F0F0FF;
+  --idea-color-primary-subtle: #D9DAFF;
+
+  --idea-bg-page: #F6F7FA;
+  --idea-surface-default: #FFFFFF;
+  --idea-surface-subtle: #F3F4F8;
+  --idea-surface-muted: #ECEFF5;
+  --idea-surface-elevated: #FFFFFF;
+
+  --idea-text-primary: #1B2233;
+  --idea-text-secondary: #626B7A;
+  --idea-text-muted: #7B8492;
+  --idea-text-placeholder: #969EAA;
+  --idea-text-disabled: #AAB1BD;
+
+  --idea-border-subtle: #EDF0F5;
+  --idea-border-default: #DFE3EC;
+  --idea-border-strong: #C8D0DD;
+  --idea-border-focus: #5B5CE2;
+
+  --idea-gradient-brand: linear-gradient(120deg, #FFFFFF 0%, #F8F7FF 42%, #EEF1FF 100%);
+  --idea-gradient-brand-soft: linear-gradient(135deg, #FFFFFF 0%, #F5F3FF 100%);
+  --idea-gradient-canvas: linear-gradient(180deg, #F8F8FC 0%, #F5F7FB 100%);
+  --idea-focus-ring: 0 0 0 3px rgba(91,92,226,.14);
+}
+.idea-dev,
+.idea-dev-modal {
+  --bs-primary: #5B5CE2;
+  --bs-primary-rgb: 91,92,226;
+}
+
+/* Modal headers retain a visible Idea Developer identity without becoming heavy. */
+.idea-dev-modal .modal-header {
+  background: var(--idea-gradient-brand-soft) !important;
+  border-bottom-color: var(--idea-border-default) !important;
+}
+.idea-dev-modal .modal-footer {
+  background: #FAFAFD;
+}
+
+/* Use the soft brand wash for navigational/selected states, not all surfaces. */
+.idea-dev :is(.nav-link.active,.btn-check:checked + .btn) {
+  accent-color: var(--idea-color-primary);
+}
+
+[data-bs-theme="dark"] .idea-dev,
+[data-bs-theme="dark"] .idea-dev-modal,
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-assignee-menu,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-ai-panel,
+[data-bs-theme="dark"] .idea-date-popover {
+  --idea-color-primary: #8B8DFF;
+  --idea-color-primary-hover: #9A9CFF;
+  --idea-color-primary-pressed: #7779E8;
+  --idea-color-primary-soft: rgba(139,141,255,.13);
+  --idea-color-primary-subtle: rgba(139,141,255,.28);
+  --idea-border-focus: #8B8DFF;
+  --idea-gradient-brand: linear-gradient(120deg, #141B25 0%, #1A2030 45%, #202742 100%);
+  --idea-gradient-brand-soft: linear-gradient(135deg, #141B25 0%, #202742 100%);
+  --idea-gradient-canvas: linear-gradient(180deg, #0D1117 0%, #101621 100%);
+  --idea-focus-ring: 0 0 0 3px rgba(139,141,255,.17);
+}
+[data-bs-theme="dark"] .idea-dev-modal .modal-footer {
+  background: var(--idea-surface-default);
+}
+
+
+/* ============================================================
+   FINAL v13 — modal-cap authority
+   The gradient is reserved for actual modal/drawer headers only.
+   ============================================================ */
+:root {
+  --idea-gradient-modal-cap: linear-gradient(115deg, #FFFFFF 0%, #F6F4FF 46%, #EDEFFF 100%);
+}
+.idea-dev-modal .modal-header {
+  background: var(--idea-gradient-modal-cap) !important;
+}
+.idea-dev-modal .modal-body,
+.idea-dev-modal .modal-footer {
+  background-image: none !important;
+}
+.idea-dev-modal .modal-body :is(.card,.alert,.list-group-item) {
+  background-image: none !important;
+}
+[data-bs-theme="dark"] .idea-dev,
+[data-bs-theme="dark"] .idea-dev-modal,
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-assignee-menu,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-ai-panel,
+[data-bs-theme="dark"] .idea-date-popover {
+  --idea-gradient-modal-cap: linear-gradient(115deg, #171E2A 0%, #1D2336 48%, #262B4B 100%);
+}
+[data-bs-theme="dark"] .idea-dev-modal .modal-header {
+  background: var(--idea-gradient-modal-cap) !important;
+}
+
+/* ============================================================
+   FINAL v17 — shared identity + modal contract
+   2026-10-01
+   - Current-user avatar inherits AX Console profile colors exactly.
+   - Gradients are reserved for the real modal/drawer header cap.
+   ============================================================ */
+.idea-dev,
+.idea-dev-modal,
+.brain-editor-modal,
+.brain-assignee-menu,
+.brain-question-panel,
+.brain-ai-panel,
+.brain-floating-toolbar,
+.brain-drag-preview,
+.idea-date-popover {
+  --idea-avatar-current-fg: var(--ax-primary, #1769E0);
+  --idea-avatar-current-bg: var(--ax-primary-container, #EAF2FF);
+}
+
+.idea-dev-modal .modal-content {
+  overflow: hidden;
+  border: 1px solid var(--idea-border-default) !important;
+  border-radius: 10px !important;
+  background: var(--idea-surface-default) !important;
+  box-shadow: 0 18px 54px rgba(15, 23, 42, .18) !important;
+}
+.idea-dev-modal .modal-header {
+  min-height: 76px;
+  padding: 18px 20px !important;
+  border-bottom: 1px solid var(--idea-border-default) !important;
+  background: var(--idea-gradient-modal-cap) !important;
+}
+.idea-dev-modal .modal-body,
+.idea-dev-modal .modal-footer {
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default) !important;
+  background-image: none !important;
+}
+.idea-dev-modal .btn-close {
+  opacity: .62;
+  transition: opacity .16s ease, background-color .16s ease;
+}
+.idea-dev-modal .btn-close:hover { opacity: 1; }
+[data-bs-theme="dark"] .idea-dev-modal .modal-content {
+  box-shadow: 0 22px 64px rgba(0, 0, 0, .44) !important;
+}
+[data-bs-theme="dark"] .idea-dev-modal .btn-close {
+  filter: invert(1) grayscale(1) brightness(1.55);
+}
+/* Dark mode has a more specific Idea token scope above; repeat the AX bridge
+   at the same specificity so profile identity never falls back to purple. */
+[data-bs-theme="dark"] .idea-dev,
+[data-bs-theme="dark"] .idea-dev-modal,
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-assignee-menu,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-ai-panel,
+[data-bs-theme="dark"] .brain-floating-toolbar,
+[data-bs-theme="dark"] .brain-drag-preview,
+[data-bs-theme="dark"] .idea-date-popover {
+  --idea-avatar-current-fg: var(--ax-primary, #4C93F5);
+  --idea-avatar-current-bg: var(--ax-primary-container, #1C2E47);
 }

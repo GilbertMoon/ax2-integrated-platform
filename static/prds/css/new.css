@@ -298,6 +298,53 @@
   font-weight: var(--idea-font-weight-semibold, 600);
 }
 
+.idea-dev--new .new-optional-details {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--idea-border-default);
+}
+
+.idea-dev--new .new-optional-details > summary {
+  width: fit-content;
+  color: var(--idea-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.idea-dev--new .new-optional-details[open] > summary {
+  margin-bottom: 20px;
+}
+
+.idea-dev--new .new-optional-details > summary:focus-visible {
+  outline: 2px solid var(--idea-color-primary);
+  outline-offset: 4px;
+}
+
+#new-created.idea-dev-modal .modal-dialog {
+  max-width: 480px;
+  margin-inline: auto;
+  width: calc(100% - 32px);
+}
+
+#new-created.idea-dev-modal .new-created-header { padding: 20px 24px; }
+#new-created.idea-dev-modal .modal-title { font-weight: 700; }
+#new-created.idea-dev-modal #new-created-description { font-size: 13px; color: var(--idea-text-muted) !important; }
+#new-created.idea-dev-modal .new-created-choices { padding: 8px 24px 24px; }
+#new-created.idea-dev-modal .new-created-choice {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 60px; gap: 16px;
+}
+#new-created.idea-dev-modal .new-created-choice + .new-created-choice { border-top: 1px solid var(--idea-border-default); }
+#new-created.idea-dev-modal .new-created-choice-copy { margin: 0; font-size: 13px; color: var(--idea-text-secondary); }
+#new-created.idea-dev-modal .new-created-action {
+  flex-shrink: 0; min-height: 36px; border-radius: var(--idea-radius-md); white-space: nowrap;
+}
+@media (max-width: 575px) {
+  #new-created.idea-dev-modal .new-created-choice { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 0; }
+  #new-created.idea-dev-modal .new-created-action { width: 100%; }
+}
+
 /* date field ------------------------------------------------ */
 
 .idea-dev--new .new-deadline-group {
@@ -1108,3 +1155,814 @@
 [data-bs-theme="dark"] .idea-dev--new .prd-type-card.selected { background: color-mix(in srgb, var(--idea-color-primary-soft) 56%, var(--idea-surface-default)); }
 [data-bs-theme="dark"] .idea-dev--new .participant-picker-popover,
 [data-bs-theme="dark"] .idea-dev--new .participant-search-panel { color: var(--idea-text-primary); border-color: var(--idea-border-default); background: var(--idea-surface-default); }
+
+
+/* ============================================================
+   Idea Developer v6.0 — New PRD visual consolidation
+   ============================================================ */
+.idea-dev--new { color: var(--idea-text-primary); }
+.idea-dev--new .new-panel,
+.idea-dev--new .prd-type-card,
+.idea-dev--new .new-form-card {
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  background: var(--idea-surface-default);
+  box-shadow: none;
+}
+.idea-dev--new .prd-type-card:hover {
+  border-color: var(--idea-border-strong);
+  box-shadow: none;
+  transform: none;
+}
+.idea-dev--new .prd-type-card.selected {
+  border-color: var(--idea-color-primary);
+  background: var(--idea-color-primary-soft);
+  box-shadow: inset 0 0 0 1px var(--idea-color-primary-subtle);
+}
+.idea-dev--new .type-icon,
+.idea-dev--new .type-check { border-radius: 4px; }
+.idea-dev--new .new-form-card .form-control { border-radius: 4px; }
+[data-bs-theme="dark"] .idea-dev--new :is(.new-panel,.prd-type-card,.new-form-card) {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-default);
+}
+[data-bs-theme="dark"] .idea-dev--new .prd-type-card.selected {
+  border-color: var(--idea-border-focus);
+  background: var(--idea-color-primary-soft);
+}
+
+
+/* ============================================================
+   FINAL — New PRD form follows the same Product Workspace grammar
+   ============================================================ */
+.idea-dev--new :is(.new-panel,.prd-type-card,.new-form-card) {
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  background: var(--idea-surface-default);
+  box-shadow: none !important;
+}
+.idea-dev--new .prd-type-card:hover { border-color: var(--idea-border-strong); transform: none; box-shadow: none; }
+.idea-dev--new .prd-type-card.selected {
+  border-color: var(--idea-color-primary);
+  background: color-mix(in srgb, var(--idea-color-primary-soft) 58%, var(--idea-surface-default));
+  box-shadow: inset 0 0 0 1px var(--idea-color-primary-subtle) !important;
+}
+.idea-dev--new :is(.form-control,.form-select) { min-height: 40px; border-radius: 4px; font-size: 14px; }
+.idea-dev--new :is(.participant-picker-popover,.participant-search-panel) {
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  background: var(--idea-surface-elevated);
+  box-shadow: var(--idea-shadow-floating);
+}
+
+/* ============================================================
+   FINAL 2026-09-30 — New PRD: flat workflow, visible optional fields
+   ============================================================ */
+
+/* The page canvas owns the background. Do not place the whole step inside a white box. */
+.idea-dev--new .new-panel {
+  margin-top: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none !important;
+}
+.idea-dev--new .new-section-copy {
+  margin-bottom: 20px;
+}
+.idea-dev--new .new-section-copy > span {
+  letter-spacing: .06em;
+}
+
+/* Selectable PRD types remain real surfaces. */
+.idea-dev--new .prd-type-card {
+  min-height: 172px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  background: var(--idea-surface-default);
+  box-shadow: none !important;
+}
+.idea-dev--new .prd-type-card .card-body { padding: 20px; }
+.idea-dev--new .prd-type-card:hover {
+  border-color: var(--idea-border-strong);
+  background: var(--idea-surface-default);
+}
+.idea-dev--new .prd-type-card.selected {
+  border-color: var(--idea-color-primary);
+  background: color-mix(in srgb, var(--idea-color-primary-soft) 52%, var(--idea-surface-default));
+  box-shadow: inset 0 0 0 1px var(--idea-color-primary-subtle) !important;
+}
+.idea-dev--new .type-icon {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 14px;
+  border-radius: 5px;
+}
+
+/* Step 2 is a form section, not a card inside a card. */
+.idea-dev--new .new-form-card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.idea-dev--new .new-form-body {
+  display: grid;
+  gap: 18px;
+  padding: 0;
+}
+.idea-dev--new .new-form-body > .mb-3 {
+  margin-bottom: 0 !important;
+}
+.idea-dev--new .new-form-card .form-label,
+.idea-dev--new .participant-field legend {
+  margin-bottom: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.idea-dev--new .new-form-card .form-control {
+  min-height: 42px;
+  border-radius: 5px;
+  background: var(--idea-surface-default) !important;
+}
+.idea-dev--new .new-form-card .form-text,
+.idea-dev--new .new-field-help {
+  margin: 6px 0 0;
+  color: var(--idea-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Deadline and participants are optional but always visible; no extra disclosure step. */
+.idea-dev--new .new-secondary-fields {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 28px;
+  margin-top: 4px;
+  padding-top: 20px;
+  border-top: 1px solid var(--idea-border-default);
+}
+.idea-dev--new .new-deadline-group,
+.idea-dev--new .participant-field {
+  min-width: 0;
+  margin: 0 !important;
+}
+.idea-dev--new .new-deadline-group .new-field-help,
+.idea-dev--new .participant-field .new-field-help {
+  min-height: 36px;
+  margin: 0 0 8px;
+}
+.idea-dev--new .new-date-input,
+.idea-dev--new .idea-date-field {
+  width: 100%;
+  max-width: none;
+}
+.idea-dev--new .participant-field {
+  padding: 0;
+  border: 0;
+}
+.idea-dev--new .participant-picker-wrap {
+  min-height: 42px;
+  align-items: center;
+}
+.idea-dev--new .selected-participants { min-height: 34px; }
+.idea-dev--new .participant-add-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+
+/* Participant picker uses list hierarchy, not heavy card typography. */
+.idea-dev--new .participant-picker-popover {
+  border-radius: 6px;
+  box-shadow: var(--idea-shadow-floating);
+}
+.idea-dev--new .team-add-row,
+.idea-dev--new .participant-result-row {
+  border-radius: 5px;
+}
+.idea-dev--new .team-add-copy strong,
+.idea-dev--new .participant-result-copy strong {
+  font-size: 13px;
+  font-weight: 600 !important;
+  line-height: 1.35;
+}
+.idea-dev--new .team-add-copy small,
+.idea-dev--new .participant-result-copy small {
+  font-weight: 400;
+}
+.idea-dev--new .team-add-state {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Actions follow the shared 3-level hierarchy. */
+.idea-dev--new .new-form-actions {
+  padding-top: 4px;
+}
+.idea-dev--new .new-form-actions .btn {
+  min-height: 38px;
+  border-radius: 5px;
+}
+
+/* Creation-success modal: one calm decision surface. */
+#new-created.idea-dev-modal .modal-dialog {
+  width: min(460px, calc(100% - 32px));
+  max-width: 460px;
+}
+#new-created.idea-dev-modal .new-created-header {
+  padding: 20px 22px 18px;
+}
+#new-created.idea-dev-modal .new-created-choices {
+  padding: 4px 22px 14px;
+}
+#new-created.idea-dev-modal .new-created-choice {
+  min-height: 62px;
+  padding: 12px 0;
+  gap: 18px;
+}
+#new-created.idea-dev-modal .new-created-choice + .new-created-choice {
+  border-top: 1px solid var(--idea-border-default);
+}
+#new-created.idea-dev-modal .new-created-choice-copy {
+  color: var(--idea-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+#new-created.idea-dev-modal .new-created-action {
+  min-width: 112px;
+  min-height: 36px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .idea-dev--new .new-secondary-fields {
+    grid-template-columns: minmax(0,1fr);
+    gap: 20px;
+  }
+  .idea-dev--new .new-deadline-group .new-field-help,
+  .idea-dev--new .participant-field .new-field-help { min-height: 0; }
+}
+
+/* Final canvas + participant typography correction. */
+.idea-dev--new { background: transparent !important; }
+.idea-dev--new .team-add-copy strong { font-weight: 500 !important; }
+
+
+/* ============================================================
+   FINAL v7 — New PRD layout / participant alignment
+   ============================================================ */
+.idea-dev--new .new-shell { max-width:1320px; margin:0 auto; padding:28px 32px 64px; }
+.idea-dev--new .new-shell > [class*="col-"] { width:100%; max-width:1180px; padding:0; }
+.idea-dev--new .new-heading { margin-bottom:24px !important; }
+.idea-dev--new .new-panel { padding:0 !important; border:0 !important; border-radius:0 !important; background:transparent !important; box-shadow:none !important; }
+.idea-dev--new #new-step-1 .row { margin-top:18px; }
+.idea-dev--new .prd-type-card { min-height:184px; border-radius:6px; box-shadow:none !important; }
+.idea-dev--new .new-section-copy > span { color:var(--idea-color-primary); font-weight:700; letter-spacing:.07em; }
+/* Step 2 keeps its inner input card; only the redundant outer page card is removed. */
+.idea-dev--new .new-form-card { margin-top:18px; padding:0; border:1px solid var(--idea-border-default); border-radius:6px; background:var(--idea-surface-default); box-shadow:none; }
+.idea-dev--new .new-form-body { padding:24px; }
+.idea-dev--new .new-secondary-fields { grid-template-columns:320px minmax(0,1fr); gap:32px; margin-top:20px; padding-top:22px; }
+.idea-dev--new .participant-picker-wrap { display:flex; min-height:42px; align-items:center; gap:8px; }
+.idea-dev--new .selected-participants { display:flex; min-width:0; min-height:36px; align-items:center; flex-wrap:wrap; gap:8px; }
+.idea-dev--new .selected-participant { display:inline-flex; width:auto; min-width:0; align-items:center; gap:7px; padding:0; border:0; background:transparent; }
+.idea-dev--new .selected-participant-avatar { flex:0 0 34px; width:34px; height:34px; }
+.idea-dev--new .selected-participant-name { display:none; }
+.idea-dev--new .selected-participant-owner { position:static; display:inline-flex; min-height:20px; align-items:center; padding:1px 6px; border-radius:999px; font-size:11px; line-height:1.2; }
+.idea-dev--new .participant-add-wrap { flex:0 0 auto; }
+.idea-dev--new .participant-add-button { width:34px; height:34px; border-radius:50%; }
+.idea-dev--new .team-add-row { display:grid; grid-template-columns:36px minmax(0,1fr) auto; gap:10px; align-items:center; }
+.idea-dev--new .team-add-copy { min-width:0; text-align:left; }
+.idea-dev--new .team-add-copy strong { display:block; font-size:13px; font-weight:500 !important; }
+.idea-dev--new .team-add-copy small { display:block; margin-top:2px; }
+.idea-dev--new .team-add-state { justify-self:end; }
+/* Completion modal follows the same quiet B2B hierarchy. */
+.idea-dev-modal#new-created .modal-content { border-radius:6px; }
+.idea-dev-modal#new-created .modal-header { align-items:flex-start; }
+.idea-dev-modal#new-created .modal-body { display:grid; gap:0; padding:8px 20px 18px; }
+.idea-dev-modal#new-created .modal-body .create-route-row { min-height:64px; border-top:1px solid var(--idea-border-default); }
+@media (max-width: 768px) {
+  .idea-dev--new .new-shell { padding:20px 16px 48px; }
+  .idea-dev--new .new-secondary-fields { grid-template-columns:1fr; gap:20px; }
+}
+
+.idea-dev-modal#new-created .modal-dialog { max-width:560px; }
+.idea-dev-modal#new-created .new-created-header { padding:20px 22px 14px; border-bottom:0; }
+.idea-dev-modal#new-created .new-created-choices { padding:6px 22px 20px; }
+.idea-dev-modal#new-created .new-created-choice { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:18px; padding:16px 0; border-top:1px solid var(--idea-border-default); }
+.idea-dev-modal#new-created .new-created-choice-copy { margin:0; color:var(--idea-text-secondary); font-size:14px; }
+.idea-dev-modal#new-created .new-created-action { min-width:126px; min-height:40px; }
+
+/* New-flow modals use the same Idea Developer overlay grammar. */
+.idea-dev-modal .modal-content { border:1px solid var(--idea-border-default) !important; border-radius:6px !important; background:var(--idea-surface-elevated,var(--idea-surface-default)) !important; box-shadow:var(--idea-shadow-overlay) !important; }
+.idea-dev-modal .modal-header { padding:16px 20px !important; border-bottom:1px solid var(--idea-border-default) !important; background:transparent !important; }
+.idea-dev-modal .modal-body { padding:20px !important; background:transparent !important; }
+
+/* ============================================================
+   FINAL v12 — New PRD outer frame + alignment
+   2026-10-01
+   ============================================================ */
+.idea-dev--new .new-shell {
+  max-width: 1280px !important;
+  padding: 32px 32px 72px !important;
+}
+.idea-dev--new .new-shell > [class*="col-"] {
+  width: 100% !important;
+  max-width: 1160px !important;
+}
+.idea-dev--new .new-heading {
+  margin-bottom: 26px !important;
+}
+.idea-dev--new .new-stepper {
+  margin-bottom: 22px !important;
+}
+.idea-dev--new .new-panel {
+  margin-top: 0 !important;
+  padding: 28px !important;
+  border: 1px solid var(--idea-border-default) !important;
+  border-radius: 10px !important;
+  background: var(--idea-surface-default) !important;
+  box-shadow: 0 1px 2px rgba(27,34,51,.03) !important;
+}
+.idea-dev--new .new-panel::before {
+  display: block;
+  width: 52px;
+  height: 3px;
+  margin: -28px 0 24px -28px;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(90deg, var(--idea-color-primary), #8C88FF);
+  content: "";
+}
+.idea-dev--new .new-section-copy {
+  margin-bottom: 22px !important;
+}
+.idea-dev--new .new-section-copy > span {
+  color: var(--idea-color-primary) !important;
+}
+.idea-dev--new #new-step-1 .row {
+  margin-top: 0 !important;
+}
+.idea-dev--new .prd-type-card {
+  min-height: 176px !important;
+  border-radius: 8px !important;
+  background: #FFFFFF !important;
+}
+.idea-dev--new .prd-type-card:hover {
+  border-color: var(--idea-color-primary-subtle) !important;
+  background: #FBFBFF !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 22px rgba(83,84,160,.07) !important;
+}
+.idea-dev--new .prd-type-card.selected {
+  border-color: var(--idea-color-primary) !important;
+  background: linear-gradient(145deg, #FFFFFF 0%, var(--idea-color-primary-soft) 100%) !important;
+  box-shadow: inset 0 0 0 1px rgba(91,92,226,.08) !important;
+}
+.idea-dev--new .type-icon {
+  border-radius: 7px !important;
+}
+.idea-dev--new .new-form-card {
+  margin-top: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.idea-dev--new .new-form-body {
+  gap: 20px !important;
+  padding: 0 !important;
+}
+.idea-dev--new .new-form-card .form-control {
+  min-height: 44px !important;
+  border-color: var(--idea-border-strong) !important;
+  background: #FFFFFF !important;
+}
+.idea-dev--new .new-secondary-fields {
+  grid-template-columns: minmax(260px, 320px) minmax(0,1fr) !important;
+  gap: 36px !important;
+  margin-top: 4px !important;
+  padding-top: 24px !important;
+  border-top-color: var(--idea-border-default) !important;
+}
+.idea-dev--new .new-form-actions {
+  margin-top: 26px !important;
+  padding-top: 20px !important;
+  border-top: 1px solid var(--idea-border-default);
+}
+.idea-dev--new #new-step-1 > .text-end {
+  margin-top: 24px !important;
+  padding-top: 20px;
+  border-top: 1px solid var(--idea-border-default);
+}
+.idea-dev--new .new-back {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+.idea-dev--new .new-stepper li.active span {
+  box-shadow: 0 0 0 4px rgba(91,92,226,.10) !important;
+}
+
+/* Creation and participant overlays follow the same brand cap as Brainstorm. */
+.idea-dev--new .participant-picker-header,
+.idea-dev-modal#new-created .modal-header {
+  background: var(--idea-gradient-brand-soft) !important;
+}
+.idea-dev--new .participant-picker-popover {
+  border-radius: 10px !important;
+}
+.idea-dev-modal#new-created .modal-content {
+  border-radius: 10px !important;
+}
+
+[data-bs-theme="dark"] .idea-dev--new .new-panel,
+[data-bs-theme="dark"] .idea-dev--new .prd-type-card {
+  background: var(--idea-surface-default) !important;
+}
+[data-bs-theme="dark"] .idea-dev--new .prd-type-card:hover {
+  background: var(--idea-surface-subtle) !important;
+}
+[data-bs-theme="dark"] .idea-dev--new .prd-type-card.selected {
+  background: var(--idea-gradient-brand-soft) !important;
+}
+
+@media (max-width: 768px) {
+  .idea-dev--new .new-shell {
+    padding: 20px 16px 52px !important;
+  }
+  .idea-dev--new .new-panel {
+    padding: 20px !important;
+  }
+  .idea-dev--new .new-panel::before {
+    margin: -20px 0 20px -20px;
+  }
+  .idea-dev--new .new-secondary-fields {
+    grid-template-columns: 1fr !important;
+    gap: 22px !important;
+  }
+}
+
+
+/* ============================================================
+   FINAL v14 — New PRD panel / participant alignment
+   2026-10-01
+   ============================================================ */
+/* 9. Outer content card has no decorative accent line on its top edge. */
+.idea-dev--new .new-panel::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* Internal selectable cards stay solid; selected state is border + soft fill only. */
+.idea-dev--new .prd-type-card.selected {
+  background: var(--idea-color-primary-soft) !important;
+  background-image: none !important;
+}
+[data-bs-theme="dark"] .idea-dev--new .prd-type-card.selected {
+  background: var(--idea-color-primary-soft) !important;
+  background-image: none !important;
+}
+
+/* 9–10. Owner avatar and plus control share a top baseline. The owner tag sits
+   beneath the avatar without pushing the add control down. */
+.idea-dev--new .participant-picker-wrap {
+  min-height: 56px !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+}
+.idea-dev--new .selected-participants {
+  min-height: 52px !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+}
+.idea-dev--new .selected-participant {
+  position: relative !important;
+  display: inline-grid !important;
+  width: 38px !important;
+  min-width: 38px !important;
+  min-height: 52px !important;
+  place-items: start center !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+.idea-dev--new .selected-participant-avatar {
+  width: 36px !important;
+  height: 36px !important;
+  flex-basis: 36px !important;
+}
+.idea-dev--new .selected-participant-owner {
+  position: absolute !important;
+  top: 34px !important;
+  left: 50% !important;
+  z-index: 2;
+  min-height: 19px !important;
+  padding: 1px 6px !important;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.idea-dev--new .participant-add-wrap {
+  display: flex !important;
+  min-height: 52px !important;
+  align-items: flex-start !important;
+  padding: 0 !important;
+}
+.idea-dev--new .participant-add-button {
+  width: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+}
+
+
+/* ============================================================
+   FINAL CONSOLIDATED OVERRIDES — 2026-10-06
+   Former version-layer files are merged below in cascade order.
+   ============================================================ */
+
+
+/* ---- consolidated layer: v18-new.css ---- */
+/* ============================================================
+   Idea Developer v17 — New PRD dark inputs + completion modal
+   2026-10-01
+   ============================================================ */
+.idea-dev--new .new-form-card .form-control {
+  color: var(--idea-text-primary) !important;
+  border-color: var(--idea-border-strong) !important;
+  background: var(--idea-surface-default) !important;
+  box-shadow: none !important;
+}
+.idea-dev--new .new-form-card .form-control:focus {
+  border-color: var(--idea-border-focus) !important;
+  box-shadow: var(--idea-focus-ring) !important;
+}
+.idea-dev--new .new-form-card .form-control::placeholder {
+  color: var(--idea-text-placeholder) !important;
+}
+[data-bs-theme="dark"] .idea-dev--new .new-form-card .form-control,
+[data-bs-theme="dark"] .idea-dev--new .new-date-input {
+  color: var(--idea-text-primary) !important;
+  border-color: var(--idea-border-default) !important;
+  background: var(--idea-surface-default) !important;
+  color-scheme: dark;
+}
+[data-bs-theme="dark"] .idea-dev--new .new-form-card .form-control:focus {
+  border-color: var(--idea-border-focus) !important;
+  background: var(--idea-surface-default) !important;
+}
+
+/* The completion modal follows the same modal contract as every Idea overlay. */
+.idea-dev-modal#new-created .modal-dialog {
+  width: min(520px, calc(100% - 32px)) !important;
+  max-width: 520px !important;
+}
+.idea-dev-modal#new-created .modal-content {
+  overflow: hidden !important;
+  border-radius: 10px !important;
+}
+.idea-dev-modal#new-created .new-created-header {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  padding: 20px 22px 18px !important;
+}
+.idea-dev-modal#new-created .new-created-header .btn-close {
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  margin: -3px -5px 0 0 !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+}
+.idea-dev-modal#new-created .new-created-choices {
+  display: grid !important;
+  gap: 0 !important;
+  padding: 8px 22px 18px !important;
+}
+.idea-dev-modal#new-created .new-created-choice {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) 132px !important;
+  gap: 18px !important;
+  align-items: center !important;
+  min-height: 68px !important;
+  padding: 14px 0 !important;
+  border-top: 1px solid var(--idea-border-default) !important;
+}
+.idea-dev-modal#new-created .new-created-choice-copy {
+  margin: 0 !important;
+  color: var(--idea-text-secondary) !important;
+  font-size: 13.5px !important;
+  line-height: 1.5 !important;
+}
+.idea-dev-modal#new-created .new-created-action {
+  width: 132px !important;
+  min-width: 132px !important;
+  min-height: 40px !important;
+  border-radius: 5px !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+.idea-dev-modal#new-created .btn-outline-primary {
+  border-color: var(--idea-border-strong) !important;
+  color: var(--idea-text-primary) !important;
+  background: var(--idea-surface-default) !important;
+}
+.idea-dev-modal#new-created .btn-outline-primary:hover {
+  border-color: var(--idea-color-primary-subtle) !important;
+  color: var(--idea-color-primary) !important;
+  background: var(--idea-color-primary-soft) !important;
+}
+[data-bs-theme="dark"] .idea-dev-modal#new-created .btn-close {
+  filter: invert(1) grayscale(1) brightness(1.6);
+  opacity: .72;
+}
+@media (max-width: 560px) {
+  .idea-dev-modal#new-created .new-created-choice {
+    grid-template-columns: 1fr !important;
+  }
+  .idea-dev-modal#new-created .new-created-action {
+    width: 100% !important;
+  }
+}
+
+/* Page-level legacy modal rules must not change the shared modal surface. */
+.idea-dev-modal#new-created .modal-content,
+[data-bs-theme="dark"] .idea-dev-modal#new-created .modal-content {
+  color: var(--idea-text-primary) !important;
+  background: var(--idea-surface-default) !important;
+  background-image: none !important;
+}
+.idea-dev-modal#new-created .modal-header,
+[data-bs-theme="dark"] .idea-dev-modal#new-created .modal-header {
+  background: var(--idea-gradient-modal-cap) !important;
+  border-bottom-color: var(--idea-border-default) !important;
+}
+
+/* ============================================================
+   Idea Developer v18 — creation form + completion modal hard QA
+   ============================================================ */
+
+/* Inputs remain token-driven even after Bootstrap's late form rules. */
+.idea-dev--new .new-form-card :is(.form-control,.new-date-input) {
+  color: var(--idea-text-primary) !important;
+  border: 1px solid var(--idea-border-default) !important;
+  background-color: var(--idea-surface-default) !important;
+  background-image: none !important;
+}
+[data-bs-theme="dark"] .idea-dev--new .new-form-card :is(.form-control,.new-date-input) {
+  color: var(--idea-text-primary) !important;
+  border-color: var(--idea-border-default) !important;
+  background-color: var(--idea-surface-default) !important;
+  -webkit-text-fill-color: var(--idea-text-primary) !important;
+  color-scheme: dark !important;
+}
+
+/* Completion modal: one shared Idea modal grammar, no page-card styling. */
+.idea-dev-modal#new-created .modal-dialog {
+  width: min(540px, calc(100vw - 32px)) !important;
+  max-width: 540px !important;
+  margin-inline: auto !important;
+}
+.idea-dev-modal#new-created .modal-content,
+[data-bs-theme="dark"] .idea-dev-modal#new-created .modal-content {
+  overflow: hidden !important;
+  border: 1px solid var(--idea-border-default) !important;
+  border-radius: 10px !important;
+  color: var(--idea-text-primary) !important;
+  background: var(--idea-surface-default) !important;
+  background-image: none !important;
+  box-shadow: var(--idea-shadow-overlay) !important;
+}
+.idea-dev-modal#new-created .new-created-header,
+[data-bs-theme="dark"] .idea-dev-modal#new-created .new-created-header {
+  min-height: 92px !important;
+  padding: 20px 22px 18px !important;
+  border-bottom: 1px solid var(--idea-border-default) !important;
+  background: var(--idea-gradient-modal-cap) !important;
+}
+.idea-dev-modal#new-created .new-created-header > div {
+  min-width: 0 !important;
+}
+.idea-dev-modal#new-created .modal-title {
+  margin: 0 !important;
+  color: var(--idea-text-primary) !important;
+  font-size: 19px !important;
+  font-weight: 760 !important;
+  line-height: 1.35 !important;
+  letter-spacing: -.02em !important;
+}
+.idea-dev-modal#new-created #new-created-description {
+  margin: 6px 0 0 !important;
+  color: var(--idea-text-secondary) !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+.idea-dev-modal#new-created .new-created-close {
+  display: inline-grid !important;
+  flex: 0 0 34px !important;
+  width: 34px !important;
+  height: 34px !important;
+  place-items: center !important;
+  margin: -3px -4px 0 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  color: var(--idea-text-muted) !important;
+  background: transparent !important;
+}
+.idea-dev-modal#new-created .new-created-close:hover {
+  color: var(--idea-text-primary) !important;
+  background: color-mix(in srgb, var(--idea-surface-default) 66%, transparent) !important;
+}
+.idea-dev-modal#new-created .new-created-close .idea-icon {
+  width: 15px !important;
+  height: 15px !important;
+}
+.idea-dev-modal#new-created .new-created-choices {
+  display: grid !important;
+  gap: 0 !important;
+  padding: 6px 22px 18px !important;
+  background: var(--idea-surface-default) !important;
+}
+.idea-dev-modal#new-created .new-created-choice {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) 136px !important;
+  gap: 18px !important;
+  align-items: center !important;
+  min-height: 76px !important;
+  padding: 15px 0 !important;
+  border: 0 !important;
+  border-top: 1px solid var(--idea-border-subtle) !important;
+  background: transparent !important;
+}
+.idea-dev-modal#new-created .new-created-choice:first-child {
+  border-top: 0 !important;
+}
+.idea-dev-modal#new-created .new-created-choice-copy {
+  margin: 0 !important;
+  color: var(--idea-text-secondary) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  line-height: 1.55 !important;
+}
+.idea-dev-modal#new-created .new-created-action {
+  display: inline-flex !important;
+  width: 136px !important;
+  min-width: 136px !important;
+  min-height: 40px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+.idea-dev-modal#new-created .new-created-action.btn-primary {
+  border-color: var(--idea-color-primary) !important;
+  color: #fff !important;
+  background: var(--idea-color-primary) !important;
+}
+.idea-dev-modal#new-created .new-created-action.btn-outline-primary {
+  border-color: var(--idea-border-strong) !important;
+  color: var(--idea-text-primary) !important;
+  background: var(--idea-surface-default) !important;
+}
+.idea-dev-modal#new-created .new-created-action.btn-outline-primary:hover {
+  border-color: var(--idea-color-primary-subtle) !important;
+  color: var(--idea-color-primary) !important;
+  background: var(--idea-color-primary-soft) !important;
+}
+[data-bs-theme="dark"] .idea-dev-modal#new-created .new-created-action.btn-outline-primary {
+  border-color: var(--idea-border-strong) !important;
+  color: var(--idea-text-primary) !important;
+  background: var(--idea-surface-subtle) !important;
+}
+
+@media (max-width: 560px) {
+  .idea-dev-modal#new-created .new-created-choice {
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 10px !important;
+  }
+  .idea-dev-modal#new-created .new-created-action {
+    width: 100% !important;
+  }
+}
+
+/* Keep the completion overlay visually uniform over mixed page surfaces. */
+body:has(#new-created.show) .modal-backdrop.show {
+  background: #0B1018 !important;
+  opacity: .62 !important;
+}
+.idea-dev-modal#new-created .new-created-close > span {
+  display: block !important;
+  margin-top: -2px !important;
+  font-size: 24px !important;
+  font-weight: 300 !important;
+  line-height: 1 !important;
+}

@@ -4022,3 +4022,1675 @@ body:has(#brainstorm-root) .studio-header{display:none}.studio-main:has(#brainst
 [data-bs-theme="dark"] .brain-board-drag-preview .brain-card-people { border-top-color:rgba(255,255,255,.10); }
 [data-bs-theme="dark"] .brain-board-drag-preview .brain-person { color:#D7DEEA; }
 [data-bs-theme="dark"] .brain-board-drag-preview .brain-person b { background:#30395C; color:#D8DDFF; }
+
+
+/* ============================================================
+   Idea Developer v6.0 — Brainstorm visual bridge
+   IMPORTANT: React DOM/rendering untouched. Only scoped visual tokens/states.
+   Sticky memo / lane / canvas identity is intentionally preserved.
+   ============================================================ */
+#brainstorm-root.idea-dev--brainstorm {
+  color: var(--idea-text-primary);
+  background: var(--idea-bg-page);
+}
+#brainstorm-root.idea-dev--brainstorm :is(button,input,textarea,select) {
+  font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-tool,.brain-filter button,.brain-auto,.brain-add,.brain-ai-actions button,.brain-view-tabs button) {
+  border-radius: 4px;
+  box-shadow: none;
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-toolbar,.brain-version-sidebar,.brain-question-panel) {
+  border-color: var(--idea-border-default);
+}
+.brain-editor-modal,
+.brain-ai-panel,
+.brain-question-panel,
+.brain-assignee-menu {
+  border: 1px solid var(--idea-border-default);
+  border-radius: 8px;
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-elevated, var(--idea-surface-default));
+  box-shadow: var(--idea-shadow-overlay);
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm {
+  color: var(--idea-text-primary);
+  background: var(--idea-bg-page);
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm :is(.brain-toolbar,.brain-version-sidebar,.brain-board-view,.brain-list-view,.brain-stage,.brain-canvas) {
+  border-color: var(--idea-border-default);
+}
+[data-bs-theme="dark"] :is(.brain-editor-modal,.brain-ai-panel,.brain-question-panel,.brain-assignee-menu) {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-elevated);
+}
+
+
+/* ============================================================
+   FINAL — Brainstorm visual bridge (React structure untouched)
+   ============================================================ */
+#brainstorm-root.idea-dev--brainstorm {
+  color: var(--idea-text-primary);
+  background: transparent;
+}
+#brainstorm-root.idea-dev--brainstorm :is(button,input,textarea,select) { font-family: inherit; }
+#brainstorm-root.idea-dev--brainstorm :is(.brain-toolbar,.brain-panel,.brain-sidebar,.brain-question-panel) {
+  border-color: var(--idea-border-default);
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-toolbar button,.brain-filter button,.brain-view-tabs button) {
+  border-radius: 4px;
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-lane,.brain-memo,.brain-sticky) { box-shadow: none; }
+/* Existing sticky/lane/canvas hues are intentionally preserved. */
+.brain-editor-modal,
+.brain-assignee-menu,
+.brain-question-panel,
+.brain-ai-panel {
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-elevated);
+  box-shadow: var(--idea-shadow-floating);
+}
+
+
+/* ============================================================
+   FINAL v7 — Idea visual alignment (React structure untouched)
+   ============================================================ */
+#brainstorm-root.idea-dev--brainstorm {
+  --brain-primary:var(--idea-color-primary);
+  --brain-canvas:var(--idea-bg-page);
+  --brain-surface:var(--idea-surface-default);
+  --brain-border:var(--idea-border-default);
+  color:var(--idea-text-primary);
+  background:var(--idea-bg-page);
+}
+#brainstorm-root.idea-dev--brainstorm :is(button,input,select,textarea) { border-radius:4px; }
+#brainstorm-root.idea-dev--brainstorm :is(.brain-toolbar,.brain-version-sidebar,.brain-panel,.brain-list-row) { box-shadow:none !important; }
+#brainstorm-root.idea-dev--brainstorm :is(.brain-toolbar,.brain-version-sidebar,.brain-panel) { border-color:var(--idea-border-default); }
+#brainstorm-root.idea-dev--brainstorm .brain-tab[aria-selected="true"],
+#brainstorm-root.idea-dev--brainstorm .active { accent-color:var(--idea-color-primary); }
+.brain-editor-modal,.brain-assignee-menu,.brain-question-panel,.brain-ai-panel { border-radius:6px !important; box-shadow:var(--idea-shadow-floating) !important; }
+
+
+/* ============================================================
+   FINAL v8 — shared Idea Developer shell parity
+   2026-10-01 / React structure untouched
+   The board/sticky-note metaphor remains; surrounding product chrome follows PRD.
+   ============================================================ */
+#brainstorm-root.idea-dev--brainstorm {
+  color: var(--idea-text-primary);
+  background: var(--idea-bg-page);
+}
+#brainstorm-root.idea-dev--brainstorm .brain-topbar {
+  min-height: 72px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--idea-border-default);
+  background: var(--idea-surface-default);
+  box-shadow: none;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-toolbar {
+  min-height: 48px;
+  padding: 7px 20px;
+  border-bottom: 1px solid var(--idea-border-default);
+  background: var(--idea-surface-default);
+  box-shadow: none;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-title {
+  color: var(--idea-text-primary);
+  font-size: var(--idea-font-size-body-lg);
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-project small,
+#brainstorm-root.idea-dev--brainstorm .brain-sync {
+  color: var(--idea-text-muted);
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs,.brain-tools,.brain-filter) {
+  padding: 2px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  background: var(--idea-surface-subtle);
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs button,.brain-tool,.brain-filter button) {
+  min-height: 32px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 4px;
+  color: var(--idea-text-secondary);
+  background: transparent;
+  box-shadow: none !important;
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs button,.brain-tool,.brain-filter button):hover {
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs button,.brain-tool,.brain-filter button).active {
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+  box-shadow: inset 0 0 0 1px var(--idea-border-default) !important;
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-add,.brain-auto,.brain-ai-actions button,.brain-top-actions .btn) {
+  min-height: 34px;
+  border-radius: 4px;
+  box-shadow: none !important;
+  font-size: var(--idea-font-size-label);
+  font-weight: 600;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-ai-actions .brain-classification-trigger,
+#brainstorm-root.idea-dev--brainstorm .brain-top-actions .btn-outline-primary {
+  border-color: var(--idea-border-default);
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-version-sidebar,.brain-question-panel,.brain-ai-panel) {
+  border-color: var(--idea-border-default);
+}
+#brainstorm-root.idea-dev--brainstorm .brain-version-row {
+  border-radius: 4px;
+  box-shadow: none !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-version-row.active {
+  border-color: var(--idea-border-strong);
+  background: var(--idea-surface-subtle);
+  box-shadow: inset 3px 0 0 var(--idea-color-primary) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section,
+#brainstorm-root.idea-dev--brainstorm .brain-ai-section {
+  border-radius: 6px;
+  border-color: var(--idea-border-default);
+  box-shadow: none;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head,
+#brainstorm-root.idea-dev--brainstorm .brain-ai-section-head {
+  background: var(--idea-surface-subtle);
+}
+#brainstorm-root.idea-dev--brainstorm .brain-board-card {
+  box-shadow: none;
+}
+/* Preserve the free-canvas sticky-note affordance: it is content, not product chrome. */
+#brainstorm-root.idea-dev--brainstorm .brain-note { box-shadow: 2px 5px 14px rgba(42,45,55,.12); }
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm :is(.brain-topbar,.brain-toolbar) {
+  background: var(--idea-surface-default);
+  border-color: var(--idea-border-default);
+}
+
+/* ============================================================
+   FINAL v9 — Brainstorm color + modal parity
+   2026-10-01
+   ============================================================ */
+#brainstorm-root.idea-dev--brainstorm {
+  background: var(--idea-gradient-canvas) !important;
+}
+
+/* 6 + 8. Keep the complete Brainstorm header visibly branded. */
+#brainstorm-root.idea-dev--brainstorm .brain-topbar {
+  border-bottom-color: #E4E4F4 !important;
+  background: var(--idea-gradient-brand) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-toolbar {
+  border-bottom-color: var(--idea-border-default) !important;
+  background: linear-gradient(90deg, #FFFFFF 0%, #FBFAFF 52%, #F5F6FF 100%) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-brand-mark {
+  filter: drop-shadow(0 2px 6px rgba(91,92,226,.10));
+}
+#brainstorm-root.idea-dev--brainstorm .brain-view-tabs,
+#brainstorm-root.idea-dev--brainstorm .brain-tools,
+#brainstorm-root.idea-dev--brainstorm .brain-filter {
+  border-color: #DDDEF0 !important;
+  background: rgba(247,247,252,.88) !important;
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs button,.brain-tool,.brain-filter button).active {
+  border-color: var(--idea-color-primary-subtle) !important;
+  color: var(--idea-color-primary) !important;
+  background: #FFFFFF !important;
+  box-shadow: 0 1px 4px rgba(70,72,140,.08) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-counts > span:first-child {
+  color: var(--idea-text-secondary);
+  background: #F1F3F8;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-counts .warn {
+  color: #916116;
+  background: #FFF4DD;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-counts .good {
+  color: #267A52;
+  background: #EAF5EF;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-trigger {
+  border-color: var(--idea-color-primary-subtle) !important;
+  color: var(--idea-color-primary) !important;
+  background: #FBFAFF !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-trigger:hover,
+#brainstorm-root.idea-dev--brainstorm .brain-question-trigger.active {
+  border-color: var(--idea-color-primary) !important;
+  background: var(--idea-color-primary-soft) !important;
+}
+
+/* Question drawer + AI/editor modal all share the same outer geometry/header cap. */
+.brain-editor-modal,
+.brain-ai-panel,
+.brain-question-panel,
+.brain-assignee-menu {
+  border-color: #DADDEA !important;
+  border-radius: 10px !important;
+  background: var(--idea-surface-default) !important;
+  box-shadow: 0 22px 58px rgba(43,47,73,.18) !important;
+}
+.brain-editor-modal > header,
+.brain-ai-panel > header,
+#brainstorm-root.idea-dev--brainstorm .brain-question-panel > header,
+.brain-assignee-menu > header {
+  border-bottom-color: #E2E4EF !important;
+  background: var(--idea-gradient-brand) !important;
+}
+.brain-editor-modal > header,
+.brain-ai-panel > header,
+#brainstorm-root.idea-dev--brainstorm .brain-question-panel > header {
+  min-height: 84px !important;
+  padding: 18px 20px 16px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-panel {
+  width: min(470px, calc(100vw - 28px)) !important;
+  border-radius: 10px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-search {
+  margin: 14px 16px 10px !important;
+  padding: 10px 12px !important;
+  border-color: var(--idea-border-default) !important;
+  border-radius: 8px !important;
+  background: #FAFAFD !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-search:focus-within {
+  border-color: var(--idea-color-primary) !important;
+  background: #FFFFFF !important;
+  box-shadow: var(--idea-focus-ring) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-body {
+  padding: 4px 16px 18px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section {
+  margin-top: 10px !important;
+  border-color: var(--idea-border-default) !important;
+  border-radius: 8px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head {
+  min-height: 54px;
+  padding: 9px 10px !important;
+  background: linear-gradient(90deg, #F8F8FC 0%, #F3F3FF 100%) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head:hover {
+  background: linear-gradient(90deg, #F5F5FF 0%, #ECECFF 100%) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-index {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 6px !important;
+  color: var(--idea-color-primary) !important;
+  background: #ECECFF !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head small {
+  color: var(--idea-text-secondary) !important;
+  background: #E9EBF2 !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-add {
+  border-style: solid !important;
+  border-color: var(--idea-color-primary-subtle) !important;
+  border-radius: 6px !important;
+  color: var(--idea-color-primary) !important;
+  background: #FFFFFF !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-item:hover {
+  background: #FBFBFF !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-copy > span {
+  color: #916116 !important;
+  background: #FFF4DD !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-item.done .brain-question-copy > span {
+  color: #267A52 !important;
+  background: #EAF5EF !important;
+}
+
+/* AI/classification panels use the same card language as PRD review. */
+.brain-ai-panel .brain-ai-body {
+  background: #FFFFFF !important;
+}
+.brain-ai-panel .brain-result-counts span {
+  border-color: var(--idea-border-default) !important;
+  background: #F8F8FC !important;
+}
+.brain-ai-panel .brain-ai-section {
+  border-radius: 8px !important;
+  background: #F8F8FC !important;
+}
+.brain-ai-panel .brain-ai-section.open {
+  border-color: var(--idea-color-primary-subtle) !important;
+}
+.brain-ai-panel .brain-ai-section.open .brain-ai-section-head {
+  background: var(--idea-color-primary-soft) !important;
+}
+.brain-editor-modal > footer {
+  background: #FAFAFD !important;
+}
+
+/* Canvas/lane chrome keeps color instead of becoming all-white/gray. */
+#brainstorm-root.idea-dev--brainstorm .brain-board-column > header {
+  background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(248,248,255,.95));
+}
+#brainstorm-root.idea-dev--brainstorm .brain-version-row.active {
+  border-color: var(--idea-color-primary-subtle) !important;
+  color: var(--idea-text-primary) !important;
+  background: var(--idea-color-primary-soft) !important;
+  box-shadow: inset 3px 0 0 var(--idea-color-primary) !important;
+}
+
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-topbar,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-toolbar,
+[data-bs-theme="dark"] :is(.brain-editor-modal > header,.brain-ai-panel > header,.brain-question-panel > header,.brain-assignee-menu > header) {
+  background: var(--idea-gradient-brand) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-search,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-section-head,
+[data-bs-theme="dark"] .brain-ai-panel .brain-result-counts span,
+[data-bs-theme="dark"] .brain-ai-panel .brain-ai-section {
+  background: var(--idea-surface-subtle) !important;
+}
+[data-bs-theme="dark"] .brain-ai-panel .brain-ai-body,
+[data-bs-theme="dark"] .brain-editor-modal > footer {
+  background: var(--idea-surface-default) !important;
+}
+
+@media (max-width: 620px) {
+  #brainstorm-root.idea-dev--brainstorm .brain-question-panel {
+    width: calc(100vw - 16px) !important;
+    right: 8px !important;
+  }
+}
+
+
+/* ============================================================
+   FINAL v10 / v13 QA — modal cap, unclipped tray, dark parity
+   2026-10-01
+   ============================================================ */
+
+/* 4 + 5. Gradient only on the outer panel/modal cap. Inner section headers are solid. */
+.brain-editor-modal > header,
+.brain-ai-panel > header,
+#brainstorm-root.idea-dev--brainstorm .brain-question-panel > header,
+.brain-assignee-menu > header {
+  background: var(--idea-gradient-modal-cap, var(--idea-gradient-brand)) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head,
+.brain-ai-panel .brain-ai-section-head,
+.brain-ai-panel .brain-ai-section.open .brain-ai-section-head,
+#brainstorm-root.idea-dev--brainstorm .brain-board-column > header {
+  background-image: none !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head {
+  background: var(--idea-surface-subtle) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head:hover {
+  background: var(--idea-color-primary-soft) !important;
+}
+.brain-ai-panel .brain-ai-section,
+.brain-ai-panel .brain-ai-section.open,
+.brain-ai-panel .brain-ai-section-head {
+  background: var(--idea-surface-subtle) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-board-column > header {
+  background: color-mix(in srgb, var(--lane-bg, var(--idea-surface-subtle)) 82%, var(--idea-surface-default)) !important;
+}
+
+/* Keep the two-row product chrome branded, but do not tint content cards. */
+#brainstorm-root.idea-dev--brainstorm .brain-topbar {
+  min-height: 68px !important;
+  align-items: center !important;
+  background: var(--idea-gradient-brand) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-toolbar {
+  min-height: 48px !important;
+  align-items: center !important;
+  background: color-mix(in srgb, var(--idea-color-primary-soft) 28%, var(--idea-surface-default)) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-top-actions {
+  align-self: center;
+}
+
+/* 7. Selected unclassified note outline/action toolbar gets breathing room on top/left. */
+#brainstorm-root.idea-dev--brainstorm .brain-unclassified-strip {
+  padding-left: 22px !important;
+  padding-right: 22px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-unclassified-list.collapsed,
+#brainstorm-root.idea-dev--brainstorm .brain-unclassified-list.expanded,
+#brainstorm-root.idea-dev--brainstorm .brain-unclassified-strip > div {
+  padding-top: 5px !important;
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+  scroll-padding-inline: 5px;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-board-card.selected {
+  outline-offset: 2px !important;
+}
+
+/* 10. Sync is a semantic status, not neutral metadata. */
+#brainstorm-root.idea-dev--brainstorm .brain-sync {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px !important;
+  border: 1px solid var(--idea-border-default) !important;
+  color: var(--idea-text-secondary) !important;
+  background: var(--idea-surface-default) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-sync-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: var(--idea-text-disabled);
+}
+#brainstorm-root.idea-dev--brainstorm .brain-sync.connected {
+  border-color: var(--idea-color-success-border) !important;
+  color: var(--idea-color-success) !important;
+  background: var(--idea-color-success-soft) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-sync.connected .brain-sync-dot { background: var(--idea-color-success); }
+#brainstorm-root.idea-dev--brainstorm .brain-sync.loading {
+  border-color: var(--idea-color-warning-border) !important;
+  color: var(--idea-color-warning) !important;
+  background: var(--idea-color-warning-soft) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-sync.loading .brain-sync-dot { background: var(--idea-color-warning); }
+#brainstorm-root.idea-dev--brainstorm .brain-sync.disconnected {
+  border-color: var(--idea-color-danger-border) !important;
+  color: var(--idea-color-danger) !important;
+  background: var(--idea-color-danger-soft) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-sync.disconnected .brain-sync-dot { background: var(--idea-color-danger); }
+
+/* 8 + 9. Dark mode: remove every late light-only paint introduced by v9. */
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm {
+  background: var(--idea-gradient-canvas) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-topbar {
+  border-bottom-color: var(--idea-border-default) !important;
+  background: var(--idea-gradient-brand) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-toolbar {
+  border-bottom-color: var(--idea-border-default) !important;
+  background: color-mix(in srgb, var(--idea-color-primary-soft) 38%, var(--idea-surface-default)) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs,.brain-tools,.brain-filter) {
+  border-color: var(--idea-border-default) !important;
+  background: var(--idea-surface-subtle) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs button,.brain-tool,.brain-filter button) {
+  color: var(--idea-text-secondary) !important;
+  background: transparent !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs button,.brain-tool,.brain-filter button):hover {
+  color: var(--idea-text-primary) !important;
+  background: var(--idea-surface-muted) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs button,.brain-tool,.brain-filter button).active {
+  border-color: var(--idea-color-primary-subtle) !important;
+  color: #C9C7FF !important;
+  background: var(--idea-color-primary-soft) !important;
+  box-shadow: inset 0 0 0 1px var(--idea-color-primary-subtle) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-counts > span:first-child {
+  color: var(--idea-text-secondary) !important;
+  background: var(--idea-surface-muted) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-trigger {
+  border-color: var(--idea-color-primary-subtle) !important;
+  color: #B9B7FF !important;
+  background: var(--idea-surface-default) !important;
+}
+[data-bs-theme="dark"] .brain-editor-modal,
+[data-bs-theme="dark"] .brain-ai-panel,
+[data-bs-theme="dark"] .brain-question-panel,
+[data-bs-theme="dark"] .brain-assignee-menu {
+  border-color: var(--idea-border-default) !important;
+  background: var(--idea-surface-default) !important;
+}
+[data-bs-theme="dark"] .brain-editor-modal > header,
+[data-bs-theme="dark"] .brain-ai-panel > header,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-panel > header,
+[data-bs-theme="dark"] .brain-assignee-menu > header {
+  border-bottom-color: var(--idea-border-default) !important;
+  background: var(--idea-gradient-modal-cap) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-search {
+  border-color: var(--idea-border-default) !important;
+  color: var(--idea-text-primary) !important;
+  background: var(--idea-surface-subtle) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-search:focus-within {
+  border-color: var(--idea-border-focus) !important;
+  background: var(--idea-surface-default) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-section,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-section-head,
+[data-bs-theme="dark"] .brain-ai-panel .brain-ai-section,
+[data-bs-theme="dark"] .brain-ai-panel .brain-ai-section-head,
+[data-bs-theme="dark"] .brain-ai-panel .brain-result-counts span {
+  border-color: var(--idea-border-default) !important;
+  background: var(--idea-surface-subtle) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-section-head:hover,
+[data-bs-theme="dark"] .brain-ai-panel .brain-ai-section.open .brain-ai-section-head {
+  background: var(--idea-color-primary-soft) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-section-index {
+  color: #C6C4FF !important;
+  background: var(--idea-color-primary-soft) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-section-head small {
+  color: var(--idea-text-secondary) !important;
+  background: var(--idea-surface-muted) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-section-add {
+  border-color: var(--idea-color-primary-subtle) !important;
+  color: #B9B7FF !important;
+  background: var(--idea-surface-default) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-item:hover {
+  background: var(--idea-surface-muted) !important;
+}
+[data-bs-theme="dark"] .brain-ai-panel .brain-ai-body,
+[data-bs-theme="dark"] .brain-editor-modal > footer {
+  background: var(--idea-surface-default) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-board-column > header {
+  background: color-mix(in srgb, var(--lane-bg, var(--idea-surface-subtle)) 84%, var(--idea-surface-default)) !important;
+}
+/* The dark unclassified area should read as a neutral tray with a warning accent,
+   not as a large brown panel. */
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-unclassified-strip {
+  border-bottom-color: color-mix(in srgb, var(--idea-color-warning) 42%, var(--idea-border-default)) !important;
+  background: color-mix(in srgb, var(--idea-color-warning-soft) 38%, var(--idea-bg-page)) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-strip-empty {
+  border-color: color-mix(in srgb, var(--idea-color-warning) 35%, var(--idea-border-default)) !important;
+  background: rgba(255,255,255,.018) !important;
+}
+
+/* ============================================================
+   FINAL v14 — Brainstorm shell geometry + dark semantic parity
+   2026-10-01
+   React/data behavior unchanged.
+   ============================================================ */
+
+/* 8. Restore the original Brainstorm chrome geometry.
+   Gradient is reserved for real overlay/modal caps, not the product shell. */
+#brainstorm-root.idea-dev--brainstorm {
+  background: var(--idea-bg-page) !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-topbar {
+  min-height: 64px !important;
+  padding: 8px 16px !important;
+  gap: var(--idea-gap-lg) !important;
+  align-items: center !important;
+  border-bottom-color: var(--idea-border-default) !important;
+  background: var(--idea-surface-default) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-project {
+  min-width: 270px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-view-tabs {
+  margin: auto !important;
+  padding: 4px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-top-actions {
+  min-width: 210px !important;
+  align-self: center !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-toolbar {
+  min-height: 57px !important;
+  padding: 8px 12px !important;
+  border-bottom-color: var(--idea-border-default) !important;
+  background: var(--idea-surface-default) !important;
+  background-image: none !important;
+  box-shadow: 0 2px 10px rgba(23,32,51,.035) !important;
+}
+
+/* Modal/panel top caps keep the branded gradient. Inner sections never do. */
+.brain-editor-modal > header,
+.brain-ai-panel > header,
+#brainstorm-root.idea-dev--brainstorm .brain-question-panel > header,
+.brain-assignee-menu > header {
+  background: var(--idea-gradient-modal-cap, var(--idea-gradient-brand)) !important;
+}
+#brainstorm-root.idea-dev--brainstorm :is(.brain-board-column>header,.brain-question-section-head),
+.brain-ai-panel :is(.brain-ai-section,.brain-ai-section-head) {
+  background-image: none !important;
+}
+
+/* 7. Dark semantic chips/statuses: accepted=green, pending=amber,
+   held=neutral. Never fall back to light chip paint. */
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-note-status.accepted,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-counts .good,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-item.done .brain-question-copy > span {
+  border: 1px solid rgba(134,211,167,.24) !important;
+  color: #86D3A7 !important;
+  background: rgba(38,122,82,.24) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-note-status:not(.accepted),
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-counts .warn,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-copy > span {
+  border: 1px solid rgba(231,198,120,.22) !important;
+  color: #E7C678 !important;
+  background: rgba(145,97,22,.24) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-item.held .brain-question-copy > span {
+  border-color: rgba(255,255,255,.10) !important;
+  color: #B0B8C6 !important;
+  background: rgba(255,255,255,.07) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-note-status,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-counts span,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-copy > span {
+  box-shadow: none !important;
+}
+
+/* Dark product chrome is a solid surface. Only overlay caps keep depth/gradient. */
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm {
+  background: var(--idea-bg-page) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-topbar,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-toolbar {
+  border-color: var(--idea-border-default) !important;
+  background: var(--idea-surface-default) !important;
+  background-image: none !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs,.brain-tools,.brain-filter) {
+  border-color: var(--idea-border-default) !important;
+  background: var(--idea-surface-subtle) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm :is(.brain-view-tabs button,.brain-tool,.brain-filter button).active {
+  border-color: var(--idea-color-primary-subtle) !important;
+  color: #C9C7FF !important;
+  background: var(--idea-color-primary-soft) !important;
+}
+
+/* Lane headers are solid color-mixed surfaces — no gradients inside board cards. */
+#brainstorm-root.idea-dev--brainstorm .brain-board-column > header {
+  background: color-mix(in srgb, var(--lane-bg, var(--idea-surface-subtle)) 82%, var(--idea-surface-default)) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-board-column > header {
+  background: color-mix(in srgb, var(--lane-bg, var(--idea-surface-subtle)) 84%, var(--idea-surface-default)) !important;
+}
+
+@media (max-width: 900px) {
+  #brainstorm-root.idea-dev--brainstorm .brain-project { min-width: 0 !important; }
+  #brainstorm-root.idea-dev--brainstorm .brain-top-actions { min-width: 0 !important; }
+}
+/* Dark hold/list status closes the remaining late-light chip gaps. */
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-note-status.held,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-held-card .brain-note-status {
+  border: 1px solid rgba(255,255,255,.10) !important;
+  color: #B0B8C6 !important;
+  background: rgba(255,255,255,.07) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-sync.connected {
+  border-color: rgba(134,211,167,.24) !important;
+  color: #86D3A7 !important;
+  background: rgba(38,122,82,.24) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-sync.loading {
+  border-color: rgba(231,198,120,.22) !important;
+  color: #E7C678 !important;
+  background: rgba(145,97,22,.24) !important;
+}
+
+
+/* ============================================================
+   FINAL CONSOLIDATED OVERRIDES — 2026-10-06
+   Former version-layer files are merged below in cascade order.
+   ============================================================ */
+
+
+/* ---- consolidated layer: v17-brainstorm.css ---- */
+/* ============================================================
+   Idea Developer v17 — Brainstorm list / question drawer QA
+   2026-10-01
+   ============================================================ */
+
+/* List view gets a consistent page gutter; assignee metadata hugs the right edge
+   with deliberate padding rather than floating in the middle. */
+#brainstorm-root.idea-dev--brainstorm .brain-list-view {
+  padding: 24px 28px 40px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-list-wrap {
+  width: min(100%, 1180px) !important;
+  max-width: 1180px !important;
+  margin-inline: auto !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-list-group > header {
+  padding: 14px 20px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-list-group > div > article {
+  grid-template-columns: 64px minmax(0,1fr) 180px 48px !important;
+  gap: 14px !important;
+  min-height: 64px !important;
+  padding: 12px 20px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-list-group > div > article > small {
+  justify-self: end !important;
+  max-width: 180px !important;
+  padding-right: 4px !important;
+  text-align: right !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-list-group > div > article > button {
+  justify-self: end !important;
+}
+
+/* Question drawer: match the rest of the overlay system; no clipped first row. */
+#brainstorm-root.idea-dev--brainstorm .brain-question-panel {
+  width: min(430px, calc(100vw - 32px)) !important;
+  max-width: 430px !important;
+  overflow: hidden !important;
+  border-radius: 10px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-panel > header {
+  min-height: 116px !important;
+  padding: 22px 24px 20px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-panel > header h2 {
+  margin-top: 5px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-body,
+#brainstorm-root.idea-dev--brainstorm .brain-question-panel > div:not(header) {
+  min-height: 0 !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-search {
+  min-height: 44px !important;
+  margin: 16px 16px 14px !important;
+  padding: 0 14px !important;
+  border-radius: 7px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-sections {
+  padding: 0 16px 18px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section {
+  margin-bottom: 10px !important;
+  overflow: hidden !important;
+  border-radius: 8px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head {
+  min-height: 54px !important;
+  padding: 9px 12px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-index {
+  flex: 0 0 38px !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 6px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head small {
+  min-width: 46px !important;
+  padding: 4px 9px !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-item {
+  padding: 12px 14px 12px 16px !important;
+}
+
+/* Dark overlays keep solid inner surfaces; only the actual top cap has gradient. */
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-section,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-section-head {
+  background: var(--idea-surface-default) !important;
+  background-image: none !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-section-head:hover {
+  background: var(--idea-surface-subtle) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-question-panel > header {
+  background: var(--idea-gradient-modal-cap) !important;
+}
+
+@media (max-width: 720px) {
+  #brainstorm-root.idea-dev--brainstorm .brain-list-view { padding: 16px !important; }
+  #brainstorm-root.idea-dev--brainstorm .brain-list-group > div > article {
+    grid-template-columns: 58px minmax(0,1fr) auto !important;
+  }
+  #brainstorm-root.idea-dev--brainstorm .brain-list-group > div > article > button { display: none !important; }
+}
+
+/* v17 QA: no gradient inside drawers/cards. Gradient belongs to the real overlay cap only. */
+#brainstorm-root.idea-dev--brainstorm .brain-question-section,
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head {
+  background: var(--idea-surface-default) !important;
+  background-image: none !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-section-head:hover {
+  background: var(--idea-surface-subtle) !important;
+  background-image: none !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-question-body {
+  padding: 2px 16px 18px !important;
+}
+.brain-ai-panel .brain-ai-section,
+.brain-ai-panel .brain-ai-section-head,
+.brain-editor-modal :is(.card,.list-group-item) {
+  background-image: none !important;
+}
+
+
+/* ---- consolidated layer: v20-brainstorm.css ---- */
+/* v20 — PRD direct-apply preview + final dark-mode polish */
+#brainstorm-root .brain-direct-summary {
+  margin:0 0 14px;
+  padding:12px 14px;
+  border:1px solid var(--idea-border-default);
+  border-radius:6px;
+  background:var(--idea-surface-subtle);
+}
+#brainstorm-root .brain-direct-summary strong { display:block; font-size:13px; }
+#brainstorm-root .brain-direct-summary p { margin:5px 0 0; color:var(--idea-text-secondary); font-size:12px; line-height:1.55; }
+#brainstorm-root .brain-direct-group {
+  overflow:hidden;
+  margin-top:10px;
+  border:1px solid var(--idea-border-default);
+  border-radius:6px;
+  background:var(--idea-surface-default);
+}
+#brainstorm-root .brain-direct-group > header {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  min-height:44px; padding:0 12px; border-bottom:1px solid var(--idea-border-subtle);
+}
+#brainstorm-root .brain-direct-group > header strong { font-size:13px; }
+#brainstorm-root .brain-direct-group > header span { color:var(--idea-text-muted); font-size:11px; }
+#brainstorm-root .brain-direct-row {
+  display:grid; grid-template-columns:20px minmax(0,1fr) auto; gap:10px; align-items:start;
+  padding:12px; border-top:1px solid var(--idea-border-subtle);
+}
+#brainstorm-root .brain-direct-row:first-of-type { border-top:0; }
+#brainstorm-root .brain-direct-row input { margin-top:3px; }
+#brainstorm-root .brain-direct-row-copy strong { display:block; color:var(--idea-text-primary); font-size:12px; line-height:1.45; }
+#brainstorm-root .brain-direct-row-copy small { display:block; margin-top:3px; color:var(--idea-text-muted); font-size:11px; }
+#brainstorm-root .brain-direct-draft { margin:8px 0 0; color:var(--idea-text-secondary); font-size:12px; line-height:1.55; white-space:pre-wrap; }
+#brainstorm-root .brain-direct-state {
+  display:inline-flex; min-height:24px; align-items:center; padding:2px 7px;
+  border:1px solid var(--idea-border-default); border-radius:999px;
+  color:var(--idea-text-secondary); background:var(--idea-surface-subtle); font-size:11px; font-weight:700;
+}
+#brainstorm-root .brain-direct-state.safe { color:var(--idea-color-success); border-color:var(--idea-color-success-border); background:var(--idea-color-success-soft); }
+#brainstorm-root .brain-direct-state.review { color:var(--idea-color-warning); border-color:var(--idea-color-warning-border); background:var(--idea-color-warning-soft); }
+#brainstorm-root .brain-direct-actions { display:flex; gap:8px; margin-top:14px; }
+#brainstorm-root .brain-direct-actions .btn { min-height:38px; border-radius:5px; font-size:12px; font-weight:700; }
+#brainstorm-root .brain-direct-actions .btn-primary { flex:1; }
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header {
+  background:var(--idea-surface-elevated);
+}
+
+/* ============================================================
+   v21 — 2026-10-06 apply/read-only pass
+   ============================================================ */
+
+/* Completed PRDs are truly read-only, not merely save-blocked. */
+#brainstorm-root .brain-react-shell.is-completed .brain-board-card,
+#brainstorm-root .brain-react-shell.is-completed .brain-note {
+  cursor: default !important;
+}
+#brainstorm-root .brain-react-shell.is-completed .brain-board-card:hover,
+#brainstorm-root .brain-react-shell.is-completed .brain-note:hover {
+  transform: none !important;
+  box-shadow: var(--idea-shadow-card) !important;
+}
+#brainstorm-root .brain-tool:disabled {
+  cursor: not-allowed;
+  opacity: .48;
+  color: var(--idea-text-disabled);
+  background: transparent;
+  box-shadow: none;
+}
+#brainstorm-root .brain-tool:disabled:hover {
+  background: transparent;
+}
+#brainstorm-root .brain-completed-banner {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--idea-border-default);
+  color: var(--idea-text-secondary);
+  background: var(--idea-surface-subtle);
+}
+#brainstorm-root .brain-completed-banner > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+#brainstorm-root .brain-completed-banner strong {
+  color: var(--idea-text-primary);
+  font-size: 12px;
+}
+#brainstorm-root .brain-completed-banner small {
+  color: var(--idea-text-muted);
+  font-size: 11px;
+}
+
+/* Direct PRD apply: make the destination visible before anything is saved. */
+#brainstorm-root .brain-direct-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0,1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 12px 0;
+}
+#brainstorm-root .brain-direct-row > input {
+  margin-top: 4px;
+}
+#brainstorm-root .brain-direct-note {
+  margin: 0 0 9px !important;
+  color: var(--idea-text-primary) !important;
+  font-size: 12.5px !important;
+  font-weight: 650;
+  line-height: 1.55 !important;
+  white-space: pre-wrap;
+}
+#brainstorm-root .brain-direct-targets {
+  display: grid;
+  grid-template-columns: minmax(0,1.45fr) minmax(150px,.75fr);
+  gap: 8px;
+}
+#brainstorm-root .brain-direct-targets label {
+  display: grid;
+  gap: 4px;
+}
+#brainstorm-root .brain-direct-targets label > span {
+  color: var(--idea-text-muted);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+#brainstorm-root .brain-direct-targets select {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 30px 0 9px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: 5px;
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+  font-size: 11.5px;
+}
+#brainstorm-root .brain-direct-current {
+  display: block;
+  margin-top: 7px;
+  color: var(--idea-color-warning) !important;
+}
+#brainstorm-root .brain-direct-state {
+  margin-top: 1px;
+  white-space: nowrap;
+}
+#brainstorm-root .brain-direct-state.needs-target {
+  color: var(--idea-text-muted);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-subtle);
+}
+#brainstorm-root .brain-direct-actions {
+  justify-content: flex-end;
+}
+#brainstorm-root .brain-direct-actions .btn-primary {
+  flex: 0 0 auto;
+  min-width: 170px;
+}
+
+@media (max-width: 760px) {
+  #brainstorm-root .brain-direct-row { grid-template-columns: 18px minmax(0,1fr); }
+  #brainstorm-root .brain-direct-state { grid-column: 2; justify-self: start; }
+  #brainstorm-root .brain-direct-targets { grid-template-columns: 1fr; }
+}
+
+#brainstorm-root .brain-direct-apply-trigger {
+  min-height: 32px;
+  font-size: 12px;
+  font-weight: 700;
+}
+#brainstorm-root .brain-section-ai {
+  min-height: 28px;
+  padding: 3px 8px;
+  border: 1px solid var(--idea-color-primary-subtle);
+  border-radius: 5px;
+  color: var(--idea-color-primary);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 650;
+}
+#brainstorm-root .brain-section-ai:hover {
+  border-color: var(--idea-color-primary);
+  background: var(--idea-color-primary-soft);
+}
+
+/* ============================================================
+   v22 — completed-board hard read-only pass
+   Cards remain readable but expose no hover/tooltip/edit affordance.
+   ============================================================ */
+#brainstorm-root .brain-react-shell.is-completed :is(.brain-note,.brain-board-card) {
+  pointer-events:none !important;
+  cursor:default !important;
+  transform:none !important;
+  box-shadow:var(--idea-shadow-card) !important;
+  outline:0 !important;
+}
+#brainstorm-root .brain-react-shell.is-completed :is(.brain-note,.brain-board-card):is(:hover,:focus,:focus-visible,:active),
+#brainstorm-root .brain-react-shell.is-completed :is(.brain-note,.brain-board-card):is(:hover,:focus,:focus-visible,:active) * {
+  cursor:default !important;
+  transform:none !important;
+  box-shadow:none !important;
+  outline:0 !important;
+}
+#brainstorm-root .brain-react-shell.is-completed :is(.brain-note,.brain-board-card).selected,
+#brainstorm-root .brain-react-shell.is-completed :is(.brain-note,.brain-board-card).multi-selected,
+#brainstorm-root .brain-react-shell.is-completed :is(.brain-note,.brain-board-card).connect-source,
+#brainstorm-root .brain-react-shell.is-completed :is(.brain-note,.brain-board-card).connect-target {
+  outline:0 !important;
+  box-shadow:var(--idea-shadow-card) !important;
+}
+#brainstorm-root .brain-react-shell.is-completed :is(.brain-note-handle,.brain-board-card-toolbar,.brain-floating-toolbar,.brain-action-toolbar) {
+  display:none !important;
+}
+
+/* ============================================================
+   v25 — PRD apply review modal / recommendation pass
+   ============================================================ */
+
+/* PRD apply is a review workspace, not a narrow side drawer. */
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] {
+  position: fixed !important;
+  z-index: 120 !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: min(1120px, calc(100vw - 56px)) !important;
+  height: min(84vh, 860px) !important;
+  max-height: calc(100vh - 56px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  transform: translate(-50%, -50%) !important;
+  border: 1px solid var(--idea-border-default) !important;
+  border-radius: 8px !important;
+  background: var(--idea-surface-default) !important;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .24), 0 0 0 9999px rgba(15, 23, 42, .38) !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header {
+  flex: 0 0 auto;
+  min-height: 72px;
+  padding: 15px 20px !important;
+  border-bottom: 1px solid var(--idea-border-subtle) !important;
+  background: var(--idea-surface-elevated) !important;
+  color: var(--idea-text-primary) !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header span {
+  color: var(--idea-color-primary) !important;
+  font-size: 10px !important;
+  letter-spacing: .12em;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header h2 {
+  margin-top: 3px !important;
+  color: var(--idea-text-primary) !important;
+  font-size: 20px !important;
+  line-height: 1.25;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header > button {
+  width: 34px;
+  height: 34px;
+  color: var(--idea-text-muted) !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] .brain-ai-body {
+  flex: 1 1 auto;
+  height: auto !important;
+  min-height: 0;
+  padding: 0 !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+#brainstorm-root .brain-direct-review {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+#brainstorm-root .brain-direct-summary {
+  margin: 18px 20px 12px !important;
+  padding: 14px 16px !important;
+  border: 1px solid var(--idea-border-default) !important;
+  border-radius: 6px !important;
+  background: var(--idea-surface-subtle) !important;
+}
+#brainstorm-root .brain-direct-summary strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--idea-text-primary);
+  font-size: 13px;
+}
+#brainstorm-root .brain-direct-summary p {
+  margin: 0 !important;
+  color: var(--idea-text-secondary) !important;
+  font-size: 12px !important;
+  line-height: 1.6;
+}
+#brainstorm-root .brain-direct-groups {
+  padding: 0 20px 18px;
+}
+#brainstorm-root .brain-direct-group {
+  margin-top: 12px !important;
+  overflow: visible !important;
+  border: 1px solid var(--idea-border-default) !important;
+  border-radius: 7px !important;
+  background: var(--idea-surface-default) !important;
+}
+#brainstorm-root .brain-direct-group > header {
+  min-height: 50px !important;
+  padding: 0 16px !important;
+  border-bottom: 1px solid var(--idea-border-subtle) !important;
+}
+#brainstorm-root .brain-direct-group > header strong { font-size: 14px !important; }
+#brainstorm-root .brain-direct-group > header span { font-size: 12px !important; }
+
+#brainstorm-root .brain-ai-body article.brain-direct-row,
+#brainstorm-root .brain-direct-row {
+  display: grid !important;
+  grid-template-columns: 24px minmax(0,1fr) !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  border: 0 !important;
+  border-top: 1px solid var(--idea-border-subtle) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#brainstorm-root .brain-direct-group > .brain-direct-row:first-of-type {
+  border-top: 0 !important;
+}
+#brainstorm-root .brain-direct-select {
+  padding-top: 3px;
+}
+#brainstorm-root .brain-direct-select input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--idea-color-primary);
+}
+#brainstorm-root .brain-direct-select input:disabled { opacity: .45; cursor: not-allowed; }
+#brainstorm-root .brain-direct-row-copy { min-width: 0; }
+#brainstorm-root .brain-direct-note-line {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+#brainstorm-root .brain-direct-note {
+  margin: 0 !important;
+  color: var(--idea-text-primary) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.55 !important;
+}
+#brainstorm-root .brain-direct-state {
+  margin: 0 !important;
+  min-height: 26px !important;
+  padding: 3px 9px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+}
+#brainstorm-root .brain-direct-state.suggested {
+  color: var(--idea-color-primary);
+  border-color: var(--idea-color-primary-subtle);
+  background: var(--idea-color-primary-soft);
+}
+#brainstorm-root .brain-direct-state.needs-target {
+  color: var(--idea-text-secondary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-subtle);
+}
+
+#brainstorm-root .brain-direct-recommend {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--idea-color-primary-subtle);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--idea-color-primary-soft) 55%, var(--idea-surface-default));
+}
+#brainstorm-root .brain-direct-recommend-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--idea-color-primary-subtle);
+}
+#brainstorm-root .brain-direct-recommend-head span {
+  color: var(--idea-color-primary);
+  font-size: 11px;
+  font-weight: 800;
+}
+#brainstorm-root .brain-direct-recommend-head small {
+  color: var(--idea-text-muted);
+  font-size: 10.5px;
+}
+#brainstorm-root .brain-direct-recommend-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 11px;
+  border-top: 1px solid var(--idea-border-subtle);
+}
+#brainstorm-root .brain-direct-recommend-row:first-of-type { border-top: 0; }
+#brainstorm-root .brain-direct-recommend-row b {
+  display: block;
+  color: var(--idea-text-primary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+#brainstorm-root .brain-direct-recommend-row small {
+  display: block;
+  margin-top: 3px;
+  color: var(--idea-text-muted);
+  font-size: 10.5px;
+}
+#brainstorm-root .brain-direct-recommend-row .btn {
+  min-height: 30px;
+  padding: 4px 9px;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+#brainstorm-root .brain-direct-targets {
+  display: grid !important;
+  grid-template-columns: minmax(0,1.45fr) minmax(230px,.75fr) !important;
+  gap: 10px !important;
+  margin-top: 13px;
+}
+#brainstorm-root .brain-direct-field {
+  min-width: 0;
+}
+#brainstorm-root .brain-direct-field-label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--idea-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+#brainstorm-root .brain-direct-picker {
+  position: relative;
+}
+#brainstorm-root .brain-direct-picker > summary {
+  position: relative;
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 11px;
+  list-style: none;
+  cursor: pointer;
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-default);
+  font-size: 12px;
+  line-height: 1.35;
+}
+#brainstorm-root .brain-direct-picker > summary::-webkit-details-marker { display: none; }
+#brainstorm-root .brain-direct-picker > summary > span {
+  min-width: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+#brainstorm-root .brain-direct-picker > summary i {
+  flex: 0 0 auto;
+  color: var(--idea-text-muted);
+  transition: transform .15s ease;
+}
+#brainstorm-root .brain-direct-picker[open] > summary {
+  border-color: var(--idea-color-primary);
+  box-shadow: 0 0 0 2px var(--idea-color-primary-soft);
+}
+#brainstorm-root .brain-direct-picker[open] > summary i { transform: rotate(180deg); }
+#brainstorm-root .brain-direct-picker-menu {
+  position: absolute;
+  z-index: 8;
+  top: calc(100% + 6px);
+  left: 0;
+  width: max(100%, 420px);
+  max-width: min(620px, calc(100vw - 96px));
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid var(--idea-border-default);
+  border-radius: 7px;
+  background: var(--idea-surface-elevated);
+  box-shadow: var(--idea-shadow-floating);
+}
+#brainstorm-root .brain-direct-slot-picker .brain-direct-picker-menu {
+  width: 100%;
+  min-width: 250px;
+}
+#brainstorm-root .brain-direct-picker-menu button {
+  position: relative;
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--idea-text-primary);
+  background: transparent;
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.45;
+}
+#brainstorm-root .brain-direct-picker-menu button small {
+  align-self: start;
+  color: var(--idea-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+#brainstorm-root .brain-direct-picker-menu button i {
+  color: var(--idea-color-primary);
+}
+#brainstorm-root .brain-direct-picker-menu button:hover,
+#brainstorm-root .brain-direct-picker-menu button.active {
+  background: var(--idea-surface-subtle);
+}
+#brainstorm-root .brain-direct-location,
+#brainstorm-root .brain-direct-current {
+  display: block;
+  margin-top: 7px;
+  font-size: 10.5px;
+}
+#brainstorm-root .brain-direct-location { color: var(--idea-text-muted); }
+
+#brainstorm-root .brain-direct-actions {
+  position: sticky;
+  z-index: 12;
+  bottom: 0;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between !important;
+  gap: 16px;
+  margin: auto 0 0 !important;
+  padding: 13px 20px !important;
+  border-top: 1px solid var(--idea-border-default);
+  background: color-mix(in srgb, var(--idea-surface-default) 94%, transparent);
+  backdrop-filter: blur(10px);
+}
+#brainstorm-root .brain-direct-selected-count {
+  color: var(--idea-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+#brainstorm-root .brain-direct-action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+#brainstorm-root .brain-direct-actions .btn {
+  min-height: 38px !important;
+  border-radius: 5px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+#brainstorm-root .brain-direct-actions .btn-primary {
+  min-width: 180px;
+}
+
+[data-bs-theme="dark"] #brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] {
+  background: var(--idea-surface-default) !important;
+  border-color: var(--idea-border-default) !important;
+  box-shadow: 0 24px 70px rgba(0,0,0,.45), 0 0 0 9999px rgba(0,0,0,.56) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root .brain-direct-summary,
+[data-bs-theme="dark"] #brainstorm-root .brain-direct-group,
+[data-bs-theme="dark"] #brainstorm-root .brain-direct-picker > summary,
+[data-bs-theme="dark"] #brainstorm-root .brain-direct-picker-menu {
+  background: var(--idea-surface-default) !important;
+  border-color: var(--idea-border-default) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root .brain-direct-recommend {
+  background: color-mix(in srgb, var(--idea-color-primary-soft) 35%, var(--idea-surface-default));
+}
+[data-bs-theme="dark"] #brainstorm-root .brain-direct-picker-menu button:hover,
+[data-bs-theme="dark"] #brainstorm-root .brain-direct-picker-menu button.active {
+  background: var(--idea-surface-muted) !important;
+}
+
+@media (max-width: 900px) {
+  #brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] {
+    width: calc(100vw - 24px) !important;
+    height: calc(100vh - 24px) !important;
+    max-height: none !important;
+  }
+  #brainstorm-root .brain-direct-targets { grid-template-columns: 1fr !important; }
+  #brainstorm-root .brain-direct-picker-menu { width: 100%; max-width: 100%; }
+}
+@media (max-width: 620px) {
+  #brainstorm-root .brain-direct-note-line,
+  #brainstorm-root .brain-direct-recommend-row {
+    grid-template-columns: 1fr;
+  }
+  #brainstorm-root .brain-direct-state { justify-self: start; }
+  #brainstorm-root .brain-direct-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  #brainstorm-root .brain-direct-action-buttons { width: 100%; }
+  #brainstorm-root .brain-direct-action-buttons .btn { flex: 1 1 0; min-width: 0; }
+}
+
+/* ============================================================
+   v26 — PRD apply picker alignment
+   Dropdown surfaces exactly match the field that opened them.
+   ============================================================ */
+#brainstorm-root .brain-direct-picker,
+#brainstorm-root .brain-direct-picker > summary,
+#brainstorm-root .brain-direct-picker-menu {
+  box-sizing:border-box !important;
+  width:100% !important;
+  max-width:100% !important;
+}
+#brainstorm-root .brain-direct-picker-menu,
+#brainstorm-root .brain-direct-slot-picker .brain-direct-picker-menu {
+  min-width:0 !important;
+}
+#brainstorm-root .brain-direct-picker-menu button {
+  min-width:0 !important;
+}
+
+
+/* ============================================================
+   v27 — direct PRD apply modal frame
+   Header and footer stay fixed; only the review body scrolls.
+   ============================================================ */
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] {
+  display:grid !important;
+  grid-template-rows:auto minmax(0,1fr) auto !important;
+  overflow:hidden !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header {
+  min-height:76px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:18px !important;
+  padding:14px 20px !important;
+  border-bottom:1px solid var(--idea-border-default) !important;
+  color:var(--idea-text-primary) !important;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--idea-color-primary-soft) 42%, var(--idea-surface-elevated)), var(--idea-surface-elevated)) !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header > div {
+  min-width:0 !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header span {
+  display:block !important;
+  margin:0 0 4px !important;
+  color:var(--idea-color-primary) !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  line-height:1.2 !important;
+  letter-spacing:.12em !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header h2 {
+  margin:0 !important;
+  color:var(--idea-text-primary) !important;
+  font-size:20px !important;
+  font-weight:760 !important;
+  line-height:1.25 !important;
+  letter-spacing:-.02em !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header > button {
+  flex:0 0 34px !important;
+  width:34px !important;
+  height:34px !important;
+  display:grid !important;
+  place-items:center !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:1px solid transparent !important;
+  border-radius:5px !important;
+  color:var(--idea-text-muted) !important;
+  background:transparent !important;
+  font-size:22px !important;
+  line-height:1 !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header > button:hover {
+  border-color:var(--idea-border-default) !important;
+  color:var(--idea-text-primary) !important;
+  background:var(--idea-surface-subtle) !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] .brain-ai-body {
+  grid-row:2 !important;
+  width:100% !important;
+  height:auto !important;
+  min-height:0 !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  scrollbar-gutter:auto !important;
+  padding:0 !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] .brain-direct-review {
+  min-height:auto !important;
+  display:block !important;
+  overflow:visible !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] .brain-direct-groups {
+  width:100% !important;
+  box-sizing:border-box !important;
+  padding:0 20px 20px !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > .brain-direct-actions {
+  position:relative !important;
+  z-index:2 !important;
+  grid-row:3 !important;
+  bottom:auto !important;
+  min-height:64px !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  margin:0 !important;
+  padding:12px 20px !important;
+  border-top:1px solid var(--idea-border-default) !important;
+  background:var(--idea-surface-elevated) !important;
+  backdrop-filter:none !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > .brain-direct-actions .brain-direct-action-buttons {
+  align-items:center !important;
+}
+[data-bs-theme="dark"] #brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header {
+  background:linear-gradient(180deg, color-mix(in srgb, var(--idea-color-primary-soft) 24%, var(--idea-surface-elevated)), var(--idea-surface-elevated)) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > .brain-direct-actions {
+  background:var(--idea-surface-elevated) !important;
+}
+
+
+/* v33 — direct PRD apply close affordance: exactly one visible X. */
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header > button::before,
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header > button::after {
+  display:none !important;
+  content:none !important;
+}
+#brainstorm-root .brain-ai-panel[data-panel-type="direct_prd"] > header > button {
+  color:var(--idea-text-muted) !important;
+  font-size:22px !important;
+  line-height:1 !important;
+}
+
+
+/* ---- consolidated layer: v30-brainstorm.css ---- */
+/* ============================================================
+   v30 — section-board visual consistency
+   - Section AI action inherits the lane's semantic color.
+   - Sticky-note content stays primary/high-contrast; metadata remains muted.
+   ============================================================ */
+
+#brainstorm-root.idea-dev--brainstorm .brain-board-column .brain-section-ai {
+  min-height:30px !important;
+  padding:4px 9px !important;
+  border:1px solid var(--lane-border) !important;
+  border-radius:5px !important;
+  color:var(--lane-accent) !important;
+  background:color-mix(in srgb, var(--lane-bg) 74%, #fff 26%) !important;
+  box-shadow:none !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  line-height:1.2 !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-board-column .brain-section-ai:hover,
+#brainstorm-root.idea-dev--brainstorm .brain-board-column .brain-section-ai:focus-visible {
+  border-color:var(--lane-accent) !important;
+  color:var(--lane-accent) !important;
+  background:color-mix(in srgb, var(--lane-bg) 58%, #fff 42%) !important;
+  box-shadow:0 0 0 2px color-mix(in srgb, var(--lane-accent) 14%, transparent) !important;
+}
+
+#brainstorm-root.idea-dev--brainstorm .brain-board-card > p,
+#brainstorm-root.idea-dev--brainstorm .brain-board-drag-preview > p {
+  color:var(--idea-text-primary) !important;
+  opacity:1 !important;
+}
+#brainstorm-root.idea-dev--brainstorm .brain-board-card .brain-card-people,
+#brainstorm-root.idea-dev--brainstorm .brain-board-card .brain-person,
+#brainstorm-root.idea-dev--brainstorm .brain-board-card .brain-person small {
+  color:var(--idea-text-secondary) !important;
+}
+
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-board-column .brain-section-ai {
+  border-color:color-mix(in srgb, var(--lane-accent) 46%, var(--idea-border-default)) !important;
+  color:color-mix(in srgb, var(--lane-accent) 72%, #fff 28%) !important;
+  background:color-mix(in srgb, var(--lane-accent) 10%, transparent) !important;
+}
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-board-column .brain-section-ai:hover,
+[data-bs-theme="dark"] #brainstorm-root.idea-dev--brainstorm .brain-board-column .brain-section-ai:focus-visible {
+  border-color:color-mix(in srgb, var(--lane-accent) 72%, #fff 28%) !important;
+  color:color-mix(in srgb, var(--lane-accent) 62%, #fff 38%) !important;
+  background:color-mix(in srgb, var(--lane-accent) 16%, transparent) !important;
+}
+
+/* v33 — primary brainstorm actions use the same readable action scale as the rest of Idea Developer. */
+#brainstorm-root.idea-dev--brainstorm .brain-top-actions .btn,
+#brainstorm-root.idea-dev--brainstorm .brain-ai-actions button {
+  min-height:36px !important;
+  padding:0 12px !important;
+  font-size:12.5px !important;
+  font-weight:700 !important;
+  line-height:1 !important;
+}

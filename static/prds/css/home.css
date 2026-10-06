@@ -1748,61 +1748,12 @@
    Refine Round 3 — Home card hierarchy
    ============================================================ */
 
-/* 역할 태그와 섞이지 않도록 아이디어 맵은 명확한 보조 액션으로 취급한다. */
-.idea-dev--home .prd-card-title-row {
-  position: relative;
-}
-
+/* Card actions remain available without hover. */
 .idea-dev--home .prd-card-brainstorm {
-  min-height: 30px;
-  padding: 0 8px;
-  border: 1px solid var(--idea-indigo-200, var(--idea-color-primary-subtle));
-  border-radius: var(--idea-radius-md);
-  color: var(--idea-indigo-700, var(--idea-color-primary-hover));
-  background: var(--idea-surface-default);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
-  font-size: var(--idea-font-size-caption);
-  font-weight: var(--idea-font-weight-semibold);
-  opacity: 0;
-  transform: translateY(2px);
-  pointer-events: none;
-  transition:
-    opacity .16s ease,
-    transform .16s ease,
-    border-color .16s ease,
-    background .16s ease;
-}
-
-.idea-dev--home .prd-card-brainstorm i {
-  color: var(--idea-indigo-500, var(--idea-color-primary));
-  font-size: var(--idea-font-size-label);
-}
-
-.idea-dev--home .idea-card-hover:hover .prd-card-brainstorm,
-.idea-dev--home .idea-card-hover:focus-within .prd-card-brainstorm {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
   pointer-events: auto;
 }
-
-.idea-dev--home .prd-card-brainstorm:hover,
-.idea-dev--home .prd-card-brainstorm:focus-visible {
-  border-color: var(--idea-indigo-400, var(--idea-indigo-400));
-  color: var(--idea-indigo-800, var(--idea-color-primary-pressed));
-  background: var(--idea-indigo-50, var(--idea-color-primary-soft));
-  box-shadow: 0 4px 12px rgba(79, 70, 229, .10);
-  outline: none;
-}
-
-/* Hover가 없는 환경에서는 액션을 숨기지 않는다. */
-@media (hover: none) {
-  .idea-dev--home .prd-card-brainstorm {
-    opacity: 1;
-    transform: none;
-    pointer-events: auto;
-  }
-}
-
 
 /* ============================================================
    ID v3 — compact card context menu
@@ -2161,6 +2112,38 @@
   box-shadow: 0 8px 22px rgba(0,0,0,.24);
 }
 
+/* Run A: existing list-card metadata only; preserve the surrounding layout. */
+.idea-dev--home #home-list .prd-card-top > div {
+  row-gap: 6px !important;
+}
+
+.idea-dev--home #home-list .prd-card-top .badge {
+  font-size: max(12px, var(--idea-font-size-caption));
+  line-height: 1.4;
+}
+
+.idea-dev--home #home-list .prd-card-deadline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: max(12px, var(--idea-font-size-caption));
+  line-height: 1.6;
+}
+
+.idea-dev--home #home-list .prd-card-deadline-date {
+  color: var(--idea-text-secondary);
+}
+
+.idea-dev--home #home-list .participant-avatar {
+  margin-left: -4px;
+  font-size: max(12px, var(--idea-font-size-caption));
+}
+
+.idea-dev--home #home-list .participant-avatar:first-child {
+  margin-left: 0;
+}
+
 /* KPI icon containers remain semantic but no longer look like glowing pills. */
 [data-bs-theme="dark"] .idea-dev--home .kpi-icon {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.055);
@@ -2173,3 +2156,1037 @@
 [data-bs-theme="dark"] .idea-dev--home .kpi-status-held { color: #E7C16C; background: #3A2D18; }
 [data-bs-theme="dark"] .idea-dev--home .kpi-cyan { color: #8FD7EA; background: #17323D; }
 [data-bs-theme="dark"] .idea-dev--home .kpi-rose { color: #F3A6B0; background: #40262D; }
+
+/* A.3 — list-card hierarchy only. */
+.idea-dev--home #home-list .idea-card-hover .card-body { min-height: 0; padding: 16px; }
+.idea-dev--home #home-list .idea-card-hover { box-shadow: var(--idea-shadow-1); }
+.idea-dev--home #home-list .idea-card-hover:hover,
+.idea-dev--home #home-list .idea-card-hover:focus { transform: translateY(-1px); box-shadow: var(--idea-shadow-1); }
+.idea-dev--home #home-list .prd-card-title-row h3 { font-size: 16px; font-weight: 700; }
+.idea-dev--home #home-list .prd-card-description {
+  min-height: 36px; max-height: 36px; margin-bottom: 0;
+  font-size: 13px; line-height: 18px; -webkit-line-clamp: 2; line-clamp: 2;
+  color: var(--idea-text-secondary) !important;
+}
+.idea-dev--home #home-list .prd-card-description.is-empty { color: var(--idea-text-muted) !important; }
+.idea-dev--home #home-list .home-new-badge {
+  color: var(--idea-text-muted) !important; background: var(--idea-surface-subtle) !important;
+  border-color: var(--idea-border-default); font-weight: 500;
+}
+.idea-dev--home #home-list .prd-card-writing-status { margin-top: 10px; font-size: 13px; color: var(--idea-text-muted); }
+.idea-dev--home #home-list .prd-writing-active .prd-card-writing-status { color: var(--idea-color-primary); }
+.idea-dev--home #home-list .prd-writing-complete .prd-card-writing-status { color: var(--idea-color-success); }
+.idea-dev--home #home-list .idea-card-hover .progress {
+  height: 7px !important; min-height: 7px; border: 1px solid var(--idea-border-default);
+  background: var(--idea-surface-muted); box-shadow: none;
+}
+.idea-dev--home #home-list .idea-card-hover .progress-bar { background: var(--idea-text-muted); }
+.idea-dev--home #home-list .prd-writing-active .progress-bar { background: var(--idea-color-primary); }
+.idea-dev--home #home-list .prd-writing-complete .progress-bar { background: var(--idea-color-success); }
+.idea-dev--home #home-list .prd-card-footer { gap: 8px; padding-top: 12px; }
+.idea-dev--home #home-list .prd-card-deadline { justify-content: flex-end; font-size: 12px; }
+.idea-dev--home #home-list .prd-card-actions {
+  display: grid; grid-template-columns: auto minmax(110px, 1fr); gap: 8px; margin-top: 12px;
+}
+.idea-dev--home #home-list .prd-card-actions > a {
+  display: inline-flex; justify-content: center; align-items: center; min-height: 36px;
+  padding: 6px 10px; border-radius: var(--idea-radius-md); font-size: 13px; font-weight: 600;
+}
+.idea-dev--home #home-list .prd-card-brainstorm {
+  border-color: var(--idea-border-default); background: var(--idea-surface-subtle);
+  color: var(--idea-text-secondary); box-shadow: none;
+}
+.idea-dev--home #home-list .prd-card-brainstorm:hover { background: var(--idea-surface-muted); }
+.idea-dev--home #home-list .prd-card-actions > a:focus-visible {
+  outline: 2px solid var(--idea-color-primary); outline-offset: 2px;
+}
+[data-bs-theme="dark"] .idea-dev--home #home-list .idea-card-hover .progress {
+  background: var(--idea-surface-muted); border-color: var(--idea-border-default);
+}
+
+.idea-dev--home #home-list,
+.idea-dev--home #home-empty,
+.idea-dev-modal#recent-activity-modal #recent-activity-modal-list {
+  transition: opacity 140ms ease;
+}
+.idea-dev--home #home-list.is-updating,
+.idea-dev--home #home-empty.is-updating,
+.idea-dev-modal#recent-activity-modal #recent-activity-modal-list.is-updating {
+  opacity: .66;
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   Idea Developer v6.0 — Home visual consolidation
+   ============================================================ */
+.idea-dev--home { color: var(--idea-text-primary); }
+.idea-dev--home .home-kpi,
+.idea-dev--home .idea-card-hover,
+.idea-dev--home .home-activity-card {
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  background: var(--idea-surface-default);
+  box-shadow: none;
+}
+.idea-dev--home button.home-kpi:hover,
+.idea-dev--home .idea-card-hover:hover,
+.idea-dev--home .idea-card-hover:focus {
+  border-color: var(--idea-border-strong);
+  background: var(--idea-surface-subtle);
+  box-shadow: none;
+  transform: none;
+}
+.idea-dev--home .home-scope-tab,
+.idea-dev--home .home-tabs .btn,
+.idea-dev--home .home-trash-action,
+.idea-dev--home .prd-card-menu-button,
+.idea-dev--home .pagination .page-link {
+  border-radius: 4px;
+}
+.idea-dev--home .prd-card-menu .dropdown-menu {
+  border-color: var(--idea-border-default);
+  border-radius: 6px;
+  background: var(--idea-surface-elevated, var(--idea-surface-default));
+  box-shadow: var(--idea-shadow-floating);
+}
+.idea-dev--home .home-recent-item { border-radius: 4px; }
+.idea-dev--home .home-recent-item:hover,
+.idea-dev--home .home-recent-item:focus { background: var(--idea-surface-subtle); }
+[data-bs-theme="dark"] .idea-dev--home :is(.home-kpi,.idea-card-hover,.home-activity-card,.prd-card-menu .dropdown-menu) {
+  color: var(--idea-text-primary);
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-default);
+}
+
+/* Light: cards sit on the continuous PRD canvas. */
+body:not([data-bs-theme="dark"]):not([data-bs-theme="dark"] *):has(:is(#prd-home-app,#prd-write-app)):not(:has(:is(#prd-home-app,#prd-write-app)[data-bs-theme="dark"])) #prd-home-app :is(.home-hero,.home-library,.home-content-layout,.home-library-main) { background: transparent; }
+body:not([data-bs-theme="dark"]):not([data-bs-theme="dark"] *):has(:is(#prd-home-app,#prd-write-app)):not(:has(:is(#prd-home-app,#prd-write-app)[data-bs-theme="dark"])) #prd-home-app :is(.home-kpi,.idea-card-hover,.home-summary-card,.home-activity-card) {
+  background: var(--idea-surface-default) !important;
+  border-color: var(--idea-border-default) !important;
+  box-shadow: none !important;
+}
+
+
+/* ============================================================
+   FINAL — Home semantic metadata and border-first list cards
+   ============================================================ */
+.idea-dev--home #home-list .idea-card-hover {
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  background: var(--idea-surface-default);
+  box-shadow: none !important;
+  transform: none !important;
+}
+.idea-dev--home #home-list .idea-card-hover:hover,
+.idea-dev--home #home-list .idea-card-hover:focus-visible {
+  border-color: var(--idea-border-strong);
+  box-shadow: none !important;
+  transform: none !important;
+}
+.idea-dev--home #home-list .home-new-badge {
+  border: 1px solid var(--idea-color-new-border) !important;
+  color: var(--idea-color-new) !important;
+  background: var(--idea-color-new-soft) !important;
+  font-weight: 650 !important;
+}
+.idea-dev--home #home-list .prd-card-deadline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-height: 24px;
+  padding: 3px 7px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--idea-text-secondary) !important;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.idea-dev--home #home-list .prd-card-deadline .idea-icon { width: 13px; height: 13px; opacity: .88; }
+.idea-dev--home #home-list .prd-card-deadline.is-unset {
+  border-color: var(--idea-deadline-unset-border);
+  color: var(--idea-deadline-unset) !important;
+  background: var(--idea-deadline-unset-soft);
+}
+.idea-dev--home #home-list .prd-card-deadline:is(.is-today,.is-overdue) {
+  border-color: var(--idea-deadline-danger-border);
+  color: var(--idea-deadline-danger) !important;
+  background: var(--idea-deadline-danger-soft);
+  font-weight: 650;
+}
+.idea-dev--home #home-list .prd-card-deadline.is-future {
+  padding-inline: 0;
+  color: var(--idea-text-secondary) !important;
+  background: transparent;
+}
+.idea-dev--home #home-list .prd-card-footer { min-height: 40px; }
+.idea-dev--home #home-list .prd-card-brainstorm {
+  border-color: var(--idea-border-default);
+  color: var(--idea-text-secondary);
+  background: var(--idea-surface-subtle);
+}
+.idea-dev--home #home-list .prd-card-brainstorm:hover {
+  border-color: var(--idea-border-strong);
+  color: var(--idea-text-primary);
+  background: var(--idea-surface-muted);
+}
+.idea-dev--home .home-tabs .btn { border-radius: 4px !important; }
+.idea-dev--home .home-filters .form-select { border-radius: 4px; }
+[data-bs-theme="dark"] .idea-dev--home #home-list .idea-card-hover {
+  border-color: var(--idea-border-default);
+  background: var(--idea-surface-default);
+}
+
+/* ============================================================
+   FINAL 2026-09-30 — Home tabs / list interaction grammar
+   ============================================================ */
+
+/* Scope is navigation, so use text + underline instead of rounded end-caps. */
+.idea-dev--home .home-scope-navigation {
+  border-bottom: 1px solid var(--idea-border-default);
+}
+.idea-dev--home .home-scope-tabs {
+  display: flex;
+  gap: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.idea-dev--home .home-scope-tab {
+  position: relative;
+  min-height: 42px;
+  padding: 0 2px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: var(--idea-text-muted);
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 15px;
+  font-weight: 600;
+}
+.idea-dev--home .home-scope-tab + .home-scope-tab { border-left: 0 !important; }
+.idea-dev--home .home-scope-tab:hover { color: var(--idea-text-primary); }
+.idea-dev--home .home-scope-tab.active {
+  color: var(--idea-text-primary);
+  background: transparent !important;
+}
+.idea-dev--home .home-scope-tab.active::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--idea-color-primary);
+  content: "";
+}
+.idea-dev--home .home-scope-tab .idea-icon {
+  color: currentColor;
+  opacity: .7;
+}
+
+/* Range filters remain a segmented control, but compact and geometric. */
+.idea-dev--home .home-tabs {
+  overflow: hidden;
+  border: 1px solid var(--idea-border-default);
+  border-radius: 6px;
+  background: var(--idea-surface-default);
+}
+.idea-dev--home .home-tabs .btn {
+  min-height: 36px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent;
+  box-shadow: none;
+}
+.idea-dev--home .home-tabs .btn + .btn { border-left: 1px solid var(--idea-border-default) !important; }
+.idea-dev--home .home-tabs .btn:not(.btn-primary) { color: var(--idea-text-secondary); }
+.idea-dev--home .home-tabs .btn.btn-primary {
+  color: var(--idea-color-primary);
+  background: var(--idea-color-primary-soft);
+}
+
+/* Card menus are valid overflow menus because they contain multiple actions. */
+.idea-dev--home .prd-card-menu-button {
+  border-radius: 4px !important;
+}
+
+
+/* ============================================================
+   FINAL v7 — Home navigation/filter spacing
+   ============================================================ */
+.idea-dev--home .home-scope-navigation { margin:0 0 20px; padding:0; border-bottom:0 !important; }
+.idea-dev--home .home-scope-tabs { gap:28px; border-bottom:1px solid var(--idea-border-default); }
+.idea-dev--home .home-scope-tab { min-height:46px; padding:0 0 11px; }
+.idea-dev--home .home-scope-tab.active::after { bottom:-1px; }
+.idea-dev--home .home-control-row { gap:16px; margin-bottom:16px; }
+.idea-dev--home .home-tabs { display:inline-flex; align-items:center; padding:3px; gap:2px; border-radius:6px; }
+.idea-dev--home .home-tabs .btn { min-height:34px; padding:0 14px !important; border-left:0 !important; border-radius:4px !important; }
+.idea-dev--home .home-tabs .btn + .btn { border-left:0 !important; }
+.idea-dev--home .home-tabs .btn.btn-primary { color:#fff; background:var(--idea-color-primary); }
+.idea-dev--home .home-tabs .btn:not(.btn-primary):hover { color:var(--idea-text-primary); background:var(--idea-surface-subtle); }
+.idea-dev--home .home-library-main { min-width:0; }
+
+/* Home modals use the same Idea Developer overlay grammar. */
+.idea-dev-modal .modal-content { border:1px solid var(--idea-border-default) !important; border-radius:6px !important; background:var(--idea-surface-elevated,var(--idea-surface-default)) !important; box-shadow:var(--idea-shadow-overlay) !important; }
+.idea-dev-modal .modal-header { padding:16px 20px !important; border-bottom:1px solid var(--idea-border-default) !important; background:transparent !important; }
+.idea-dev-modal .modal-body { padding:20px !important; background:transparent !important; }
+.idea-dev-modal .modal-footer { padding:10px 20px !important; border-top:1px solid var(--idea-border-default) !important; background:transparent !important; }
+
+/* ============================================================
+   FINAL v13 — Home tab + modal cap QA
+   ============================================================ */
+/* 6. Scope navigation has no inactive baseline. Only the active underline remains. */
+.idea-dev--home .home-scope-tabs {
+  border-bottom: 0 !important;
+}
+.idea-dev--home .home-scope-tab {
+  border-bottom: 0 !important;
+}
+.idea-dev--home .home-scope-tab.active::after {
+  bottom: 0 !important;
+}
+
+/* 4. Gradient belongs to the modal cap itself, never to inner cards. */
+.idea-dev-modal .recent-activity-modal-content .modal-header,
+.idea-dev-modal .trash-modal-content .modal-header,
+.idea-dev-modal .delete-confirm-content .modal-header {
+  background: var(--idea-gradient-modal-cap, var(--idea-gradient-brand)) !important;
+}
+.idea-dev-modal .trash-modal-content .modal-body,
+.idea-dev-modal .recent-activity-modal-content .modal-body {
+  background: var(--idea-surface-default) !important;
+}
+.idea-dev-modal .trash-modal-content :is(.card,.trash-item),
+.idea-dev-modal .recent-activity-modal-content :is(.card,.home-recent-item) {
+  background: var(--idea-surface-default) !important;
+}
+[data-bs-theme="dark"] .idea-dev-modal .recent-activity-modal-content .modal-header,
+[data-bs-theme="dark"] .idea-dev-modal .trash-modal-content .modal-header,
+[data-bs-theme="dark"] .idea-dev-modal .delete-confirm-content .modal-header {
+  background: var(--idea-gradient-modal-cap) !important;
+}
+
+/* ============================================================
+   FINAL v14 — Home scope-tab readability
+   2026-10-01
+   ============================================================ */
+/* 11. Scope tabs are primary navigation; raise label size without changing geometry. */
+.idea-dev--home .home-scope-tab {
+  font-size: 16px !important;
+  font-weight: 650 !important;
+  letter-spacing: -.01em;
+}
+.idea-dev--home .home-scope-tab .idea-icon {
+  font-size: 16px !important;
+}
+
+/* ============================================================
+   FINAL v15 — Home dark canvas parity
+   2026-10-01
+   ============================================================ */
+[data-bs-theme="dark"] .idea-dev--home {
+  min-height: 100%;
+  color: var(--idea-text-primary) !important;
+  background: var(--idea-bg-page) !important;
+}
+[data-bs-theme="dark"] .idea-dev--home :is(.home-hero,.home-library,.home-content-layout,.home-library-main) {
+  background: transparent !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-title {
+  color: var(--idea-text-primary) !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-subtitle,
+[data-bs-theme="dark"] .idea-dev--home .home-scope-description {
+  color: var(--idea-text-secondary) !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-scope-tab:not(.active) {
+  color: var(--idea-text-muted) !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-scope-tab.active {
+  color: var(--idea-text-primary) !important;
+}
+
+
+/* ============================================================
+   v23 — scope navigation polish
+   Compact view switcher + quiet utility trash action.
+   ============================================================ */
+.idea-dev--home .home-scope-navigation {
+  align-items:flex-end !important;
+  gap:20px !important;
+  margin-bottom:5px !important;
+}
+.idea-dev--home .home-scope-tabs {
+  display:inline-flex !important;
+  width:max-content !important;
+  align-items:flex-end !important;
+  gap:14px !important;
+  margin:0 !important;
+}
+.idea-dev--home .home-scope-tab,
+.idea-dev--home .home-scope-tab + .home-scope-tab {
+  gap:7px !important;
+  margin:0 !important;
+  padding:7px 3px 8px !important;
+  border-radius:0 !important;
+  font-size:16px !important;
+  font-weight:680 !important;
+  line-height:1.25 !important;
+  letter-spacing:-.02em !important;
+}
+.idea-dev--home .home-scope-tab i {
+  font-size:16px !important;
+}
+.idea-dev--home .home-scope-tab:not(.active) {
+  color:var(--idea-text-muted) !important;
+}
+.idea-dev--home .home-scope-tab.active {
+  color:var(--idea-text-primary) !important;
+  font-weight:720 !important;
+}
+.idea-dev--home .home-scope-description {
+  margin:6px 0 10px !important;
+  color:var(--idea-text-muted) !important;
+  font-size:12px !important;
+  line-height:1.45 !important;
+}
+.idea-dev--home .home-trash-action,
+.idea-dev--home .home-trash-icon {
+  min-height:32px !important;
+  gap:6px !important;
+  padding:0 8px !important;
+  border:1px solid transparent !important;
+  border-radius:4px !important;
+  color:var(--idea-text-muted) !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:12px !important;
+}
+.idea-dev--home .home-trash-action:hover,
+.idea-dev--home .home-trash-icon:hover {
+  border-color:var(--idea-border-default) !important;
+  color:var(--idea-text-secondary) !important;
+  background:var(--idea-surface-subtle) !important;
+  box-shadow:none !important;
+}
+.idea-dev--home .home-trash-action:active,
+.idea-dev--home .home-trash-icon:active {
+  color:var(--idea-text-primary) !important;
+  background:var(--idea-surface-muted) !important;
+}
+.idea-dev--home .home-trash-action .idea-icon,
+.idea-dev--home .home-trash-icon .idea-icon {
+  opacity:.72 !important;
+  font-size:14px !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-trash-action,
+[data-bs-theme="dark"] .idea-dev--home .home-trash-icon {
+  border-color:transparent !important;
+  background:transparent !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-trash-action:hover,
+[data-bs-theme="dark"] .idea-dev--home .home-trash-icon:hover {
+  border-color:var(--idea-border-default) !important;
+  background:var(--idea-surface-subtle) !important;
+}
+@media (max-width:760px) {
+  .idea-dev--home .home-scope-navigation {
+    align-items:flex-start !important;
+  }
+  .idea-dev--home .home-scope-tabs {
+    gap:10px !important;
+  }
+  .idea-dev--home .home-scope-tab,
+  .idea-dev--home .home-scope-tab + .home-scope-tab {
+    font-size:14px !important;
+  }
+}
+
+
+/* ============================================================
+   v24 — home scope header compactness / trash utility alignment
+   ============================================================ */
+.idea-dev--home .home-scope-navigation {
+  display:flex !important;
+  width:100% !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:14px !important;
+  margin:0 0 2px !important;
+  padding:0 !important;
+}
+.idea-dev--home .home-scope-tabs {
+  display:inline-flex !important;
+  width:max-content !important;
+  align-items:center !important;
+  gap:8px !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+.idea-dev--home .home-scope-tab,
+.idea-dev--home .home-scope-tab + .home-scope-tab {
+  min-height:38px !important;
+  gap:6px !important;
+  margin:0 !important;
+  padding:5px 2px 7px !important;
+  font-size:15px !important;
+  line-height:1.2 !important;
+}
+.idea-dev--home .home-scope-tab i { font-size:15px !important; }
+.idea-dev--home .home-scope-tab.active::after { bottom:0 !important; }
+.idea-dev--home .home-scope-description {
+  margin:2px 0 8px !important;
+  font-size:11.5px !important;
+  line-height:1.4 !important;
+}
+.idea-dev--home .home-trash-action,
+.idea-dev--home .home-trash-icon {
+  min-height:30px !important;
+  height:30px !important;
+  align-self:center !important;
+  gap:5px !important;
+  margin:0 !important;
+  padding:0 6px !important;
+  border:1px solid transparent !important;
+  border-radius:4px !important;
+  color:var(--idea-text-muted) !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:11.5px !important;
+  font-weight:650 !important;
+  line-height:1 !important;
+}
+.idea-dev--home .home-trash-action .idea-icon,
+.idea-dev--home .home-trash-icon .idea-icon {
+  font-size:13px !important;
+  opacity:.7 !important;
+}
+.idea-dev--home .home-trash-action:hover,
+.idea-dev--home .home-trash-icon:hover {
+  border-color:var(--idea-border-subtle) !important;
+  color:var(--idea-text-secondary) !important;
+  background:var(--idea-surface-subtle) !important;
+}
+@media (max-width:760px) {
+  .idea-dev--home .home-scope-navigation {
+    align-items:flex-start !important;
+    gap:8px !important;
+  }
+  .idea-dev--home .home-scope-tabs { gap:6px !important; }
+}
+
+/* ============================================================
+   v26 — compact scope title + quiet trash utility
+   ============================================================ */
+.idea-dev--home .home-library-main > .d-flex:first-child {
+  gap:8px !important;
+  margin-bottom:8px !important;
+}
+.idea-dev--home .home-scope-navigation {
+  align-items:center !important;
+  gap:10px !important;
+  margin:0 !important;
+}
+.idea-dev--home .home-scope-tabs {
+  gap:3px !important;
+}
+.idea-dev--home .home-scope-tab,
+.idea-dev--home .home-scope-tab + .home-scope-tab {
+  min-height:36px !important;
+  gap:5px !important;
+  margin:0 !important;
+  padding:4px 1px 7px !important;
+  font-size:15px !important;
+}
+.idea-dev--home .home-scope-tab + .home-scope-tab {
+  margin-left:7px !important;
+}
+.idea-dev--home .home-scope-description {
+  margin:0 0 7px !important;
+}
+.idea-dev--home .home-trash-action,
+.idea-dev--home .home-trash-icon {
+  position:relative !important;
+  width:32px !important;
+  min-width:32px !important;
+  height:32px !important;
+  min-height:32px !important;
+  display:inline-grid !important;
+  place-items:center !important;
+  gap:0 !important;
+  padding:0 !important;
+  border:1px solid transparent !important;
+  border-radius:6px !important;
+  color:var(--idea-text-muted) !important;
+  background:transparent !important;
+}
+.idea-dev--home .home-trash-action span,
+.idea-dev--home .home-trash-icon span {
+  position:absolute !important;
+  width:1px !important;
+  height:1px !important;
+  padding:0 !important;
+  margin:-1px !important;
+  overflow:hidden !important;
+  clip:rect(0,0,0,0) !important;
+  white-space:nowrap !important;
+  border:0 !important;
+}
+.idea-dev--home .home-trash-action .idea-icon,
+.idea-dev--home .home-trash-icon .idea-icon {
+  margin:0 !important;
+  font-size:15px !important;
+  opacity:.78 !important;
+}
+.idea-dev--home .home-trash-action:hover,
+.idea-dev--home .home-trash-icon:hover {
+  border-color:var(--idea-border-subtle) !important;
+  color:var(--idea-text-primary) !important;
+  background:var(--idea-surface-subtle) !important;
+}
+@media (max-width:760px) {
+  .idea-dev--home .home-scope-tab + .home-scope-tab { margin-left:4px !important; }
+}
+
+
+/* ============================================================
+   FINAL CONSOLIDATED OVERRIDES — 2026-10-06
+   Former version-layer files are merged below in cascade order.
+   ============================================================ */
+
+
+/* ---- consolidated layer: v17-home.css ---- */
+/* ============================================================
+   Idea Developer v17 — Home scope/navigation QA
+   2026-10-01
+   Page-scoped overrides only.
+   ============================================================ */
+.idea-dev--home .home-scope-navigation {
+  margin-bottom: 18px !important;
+}
+.idea-dev--home .home-scope-tabs {
+  align-items: flex-end !important;
+  gap: 30px !important;
+}
+.idea-dev--home .home-scope-tab {
+  min-height: 38px !important;
+  padding: 0 1px 5px !important;
+  color: var(--idea-text-muted) !important;
+  font-size: 16px !important;
+  font-weight: 620 !important;
+  line-height: 1.25 !important;
+}
+.idea-dev--home .home-scope-tab .idea-icon {
+  opacity: .72 !important;
+}
+.idea-dev--home .home-scope-tab.active {
+  color: var(--idea-text-primary) !important;
+  font-weight: 760 !important;
+}
+.idea-dev--home .home-scope-tab.active .idea-icon {
+  color: var(--idea-color-primary) !important;
+  opacity: 1 !important;
+}
+.idea-dev--home .home-scope-tab.active::after {
+  bottom: 0 !important;
+  height: 2px !important;
+  border-radius: 999px !important;
+}
+.idea-dev--home .home-scope-tab:hover:not(.active) {
+  color: var(--idea-text-secondary) !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-scope-tab:not(.active) {
+  color: #8f9bad !important;
+}
+[data-bs-theme="dark"] .idea-dev--home .home-scope-tab.active {
+  color: #f7f9fc !important;
+}
+
+
+/* ---- consolidated layer: v27-home.css ---- */
+/* ============================================================
+   v27 — home scope/header rebalance
+   Loaded after v17-home.css so the final title spacing is stable.
+   ============================================================ */
+.idea-dev--home .home-library-main > .d-flex:first-child {
+  gap:12px !important;
+  margin-bottom:12px !important;
+}
+.idea-dev--home .home-scope-navigation {
+  display:flex !important;
+  width:100% !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:20px !important;
+  margin:0 0 5px !important;
+  padding:0 !important;
+}
+.idea-dev--home .home-scope-tabs {
+  display:inline-flex !important;
+  width:max-content !important;
+  align-items:flex-end !important;
+  gap:26px !important;
+  margin:0 !important;
+  padding:0 !important;
+  border-bottom:0 !important;
+}
+.idea-dev--home .home-scope-tab,
+.idea-dev--home .home-scope-tab + .home-scope-tab {
+  min-height:40px !important;
+  gap:7px !important;
+  margin:0 !important;
+  padding:5px 2px 8px !important;
+  font-size:16px !important;
+  line-height:1.2 !important;
+}
+.idea-dev--home .home-scope-tab i {
+  font-size:16px !important;
+}
+.idea-dev--home .home-scope-tab.active::after {
+  bottom:0 !important;
+  height:2px !important;
+}
+.idea-dev--home .home-scope-description {
+  margin:5px 0 11px !important;
+  font-size:12px !important;
+  line-height:1.45 !important;
+}
+.idea-dev--home .home-trash-action,
+.idea-dev--home .home-trash-icon {
+  position:static !important;
+  width:auto !important;
+  min-width:auto !important;
+  height:34px !important;
+  min-height:34px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:6px !important;
+  margin:0 !important;
+  padding:0 10px !important;
+  border:1px solid transparent !important;
+  border-radius:5px !important;
+  color:var(--idea-text-muted) !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:12px !important;
+  font-weight:650 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+}
+.idea-dev--home .home-trash-action span,
+.idea-dev--home .home-trash-icon span {
+  position:static !important;
+  width:auto !important;
+  height:auto !important;
+  padding:0 !important;
+  margin:0 !important;
+  overflow:visible !important;
+  clip:auto !important;
+  white-space:nowrap !important;
+  border:0 !important;
+}
+.idea-dev--home .home-trash-action .idea-icon,
+.idea-dev--home .home-trash-icon .idea-icon {
+  margin:0 !important;
+  font-size:14px !important;
+  opacity:.76 !important;
+}
+.idea-dev--home .home-trash-action:hover,
+.idea-dev--home .home-trash-icon:hover {
+  border-color:var(--idea-border-default) !important;
+  color:var(--idea-text-secondary) !important;
+  background:var(--idea-surface-subtle) !important;
+}
+@media (max-width:760px) {
+  .idea-dev--home .home-scope-navigation { align-items:flex-start !important; gap:10px !important; }
+  .idea-dev--home .home-scope-tabs { gap:14px !important; }
+  .idea-dev--home .home-scope-tab,
+  .idea-dev--home .home-scope-tab + .home-scope-tab { font-size:14px !important; }
+}
+
+
+/* ---- consolidated layer: v28-home.css ---- */
+/* ============================================================
+   v28 — restore the home scope title rhythm from the stable layout.
+   Keep the two views grouped, but do not miniaturize the title row.
+   ============================================================ */
+.idea-dev--home .home-library-main > .d-flex:first-child {
+  gap:12px !important;
+  margin-bottom:14px !important;
+}
+.idea-dev--home .home-scope-navigation {
+  display:flex !important;
+  width:100% !important;
+  align-items:flex-end !important;
+  justify-content:space-between !important;
+  gap:24px !important;
+  margin:0 0 6px !important;
+  padding:0 !important;
+  border-bottom:0 !important;
+}
+.idea-dev--home .home-scope-tabs {
+  display:inline-flex !important;
+  width:max-content !important;
+  align-items:flex-end !important;
+  gap:20px !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+}
+.idea-dev--home .home-scope-tab,
+.idea-dev--home .home-scope-tab + .home-scope-tab {
+  position:relative !important;
+  min-height:44px !important;
+  gap:8px !important;
+  margin:0 !important;
+  padding:7px 3px 10px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:17px !important;
+  font-weight:680 !important;
+  line-height:1.25 !important;
+  letter-spacing:-.025em !important;
+}
+.idea-dev--home .home-scope-tab .idea-icon {
+  margin:0 !important;
+  font-size:17px !important;
+  opacity:.76 !important;
+}
+.idea-dev--home .home-scope-tab:not(.active) {
+  color:var(--idea-text-muted) !important;
+}
+.idea-dev--home .home-scope-tab.active {
+  color:var(--idea-text-primary) !important;
+  font-weight:720 !important;
+}
+.idea-dev--home .home-scope-tab.active::after {
+  right:0 !important;
+  bottom:0 !important;
+  left:0 !important;
+  height:2px !important;
+}
+.idea-dev--home .home-scope-description {
+  margin:7px 0 12px !important;
+  color:var(--idea-text-muted) !important;
+  font-size:12px !important;
+  line-height:1.45 !important;
+}
+.idea-dev--home .home-trash-action,
+.idea-dev--home .home-trash-icon {
+  position:static !important;
+  width:auto !important;
+  min-width:auto !important;
+  height:34px !important;
+  min-height:34px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:6px !important;
+  margin:0 0 5px !important;
+  padding:0 10px !important;
+  border:1px solid transparent !important;
+  border-radius:5px !important;
+  color:var(--idea-text-muted) !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:12px !important;
+  font-weight:650 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+}
+.idea-dev--home .home-trash-action span,
+.idea-dev--home .home-trash-icon span {
+  position:static !important;
+  width:auto !important;
+  height:auto !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow:visible !important;
+  clip:auto !important;
+  white-space:nowrap !important;
+}
+.idea-dev--home .home-trash-action .idea-icon,
+.idea-dev--home .home-trash-icon .idea-icon {
+  margin:0 !important;
+  font-size:14px !important;
+  opacity:.74 !important;
+}
+.idea-dev--home .home-trash-action:hover,
+.idea-dev--home .home-trash-icon:hover {
+  border-color:var(--idea-border-default) !important;
+  color:var(--idea-text-secondary) !important;
+  background:var(--idea-surface-subtle) !important;
+}
+@media (max-width:760px) {
+  .idea-dev--home .home-scope-navigation { align-items:flex-start !important; gap:10px !important; }
+  .idea-dev--home .home-scope-tabs { gap:14px !important; }
+  .idea-dev--home .home-scope-tab,
+  .idea-dev--home .home-scope-tab + .home-scope-tab { font-size:15px !important; }
+}
+
+
+/* ---- consolidated layer: v30-home.css ---- */
+/* ============================================================
+   v30 — home scope header final geometry
+   Keep the role switcher prominent, compact, and aligned with the utility action.
+   ============================================================ */
+.idea-dev--home .home-library-main > .d-flex:first-child {
+  gap:10px !important;
+  margin-bottom:10px !important;
+}
+.idea-dev--home .home-scope-navigation {
+  display:flex !important;
+  width:100% !important;
+  align-items:flex-end !important;
+  justify-content:space-between !important;
+  gap:18px !important;
+  margin:0 0 4px !important;
+  padding:0 !important;
+}
+.idea-dev--home .home-scope-tabs {
+  display:inline-flex !important;
+  width:max-content !important;
+  align-items:flex-end !important;
+  gap:14px !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+}
+.idea-dev--home .home-scope-tab,
+.idea-dev--home .home-scope-tab + .home-scope-tab {
+  position:relative !important;
+  min-height:44px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:7px !important;
+  margin:0 !important;
+  padding:6px 2px 10px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:18px !important;
+  font-weight:660 !important;
+  line-height:1.18 !important;
+  letter-spacing:-.025em !important;
+  white-space:nowrap !important;
+}
+.idea-dev--home .home-scope-tab .idea-icon {
+  margin:0 !important;
+  font-size:17px !important;
+  opacity:.78 !important;
+}
+.idea-dev--home .home-scope-tab:not(.active) {
+  color:var(--idea-text-muted) !important;
+}
+.idea-dev--home .home-scope-tab.active {
+  color:var(--idea-text-primary) !important;
+  font-weight:750 !important;
+}
+.idea-dev--home .home-scope-tab.active::after {
+  right:0 !important;
+  bottom:0 !important;
+  left:0 !important;
+  height:2px !important;
+}
+.idea-dev--home .home-scope-description {
+  margin:4px 0 10px !important;
+  color:var(--idea-text-muted) !important;
+  font-size:12.5px !important;
+  line-height:1.45 !important;
+}
+.idea-dev--home .home-trash-action,
+.idea-dev--home .home-trash-icon {
+  position:static !important;
+  width:auto !important;
+  min-width:auto !important;
+  height:34px !important;
+  min-height:34px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:6px !important;
+  margin:0 0 5px !important;
+  padding:0 9px !important;
+  border:1px solid transparent !important;
+  border-radius:5px !important;
+  color:var(--idea-text-muted) !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:12px !important;
+  font-weight:650 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+}
+.idea-dev--home .home-trash-action span,
+.idea-dev--home .home-trash-icon span {
+  position:static !important;
+  width:auto !important;
+  height:auto !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow:visible !important;
+  clip:auto !important;
+  white-space:nowrap !important;
+}
+.idea-dev--home .home-trash-action .idea-icon,
+.idea-dev--home .home-trash-icon .idea-icon {
+  margin:0 !important;
+  font-size:14px !important;
+  opacity:.74 !important;
+}
+.idea-dev--home .home-trash-action:hover,
+.idea-dev--home .home-trash-icon:hover {
+  border-color:var(--idea-border-default) !important;
+  color:var(--idea-text-secondary) !important;
+  background:var(--idea-surface-subtle) !important;
+}
+@media (max-width:760px) {
+  .idea-dev--home .home-scope-navigation { align-items:flex-start !important; gap:10px !important; }
+  .idea-dev--home .home-scope-tabs { gap:10px !important; }
+  .idea-dev--home .home-scope-tab,
+  .idea-dev--home .home-scope-tab + .home-scope-tab { font-size:15px !important; }
+}
+
+
+/* ---- consolidated layer: v31-home.css ---- */
+.idea-dev--home .home-scope-description { margin:10px 0 14px !important; }
+
+
+/* v33 — a started PRD should read as progress, not as a stray dot. */
+.idea-dev--home .idea-card-hover .progress-bar.has-progress {
+  min-width:14px;
+}
+.idea-dev--home .idea-card-hover .progress {
+  height:6px !important;
+}
+
+
+/* ============================================================
+   FINAL 33 QA — low progress remains visibly a bar
+   ============================================================ */
+.idea-dev--home #home-list .idea-card-hover .progress {
+  height:6px !important;
+  min-height:6px !important;
+  overflow:hidden !important;
+  border-radius:999px !important;
+}
+.idea-dev--home #home-list .idea-card-hover .progress-bar {
+  border-radius:999px !important;
+  transition:width .18s ease !important;
+}
+.idea-dev--home #home-list .idea-card-hover .progress-bar.has-progress {
+  min-width:14px !important;
+}

@@ -3,7 +3,7 @@
 {% block title %}PRD 홈 | 아이디어 디벨로퍼{% endblock %}
 {% block extra_head %}
   {{ block.super }}
-  <link href="{% static 'prds/css/home.css' %}?v=20260922-v3-9"
+  <link href="{% static 'prds/css/home.css' %}?v=20261006-final33"
         rel="stylesheet">
 {% endblock %}
 {% block content %}
@@ -20,7 +20,7 @@
       <div>
         <span class="home-eyebrow idea-brand-lockup">
           <img class="idea-brand-mark"
-               src="{% static 'idea/assets/brand/id-mark-primary.svg' %}"
+               src="{% static 'idea/assets/brand/id-mark-product.svg' %}"
                alt=""
                aria-hidden="true">
           <strong>Idea Developer</strong><i class="idea-brand-separator" aria-hidden="true"></i><span>PRODUCT WORKSPACE</span>
@@ -96,7 +96,8 @@
                         type="button"
                         data-bs-toggle="modal"
                         data-bs-target="#prd-trash-modal"
-                        aria-label="휴지통 열기">
+                        aria-label="휴지통 열기"
+                        title="휴지통">
                   <i class="idea-icon idea-icon-trash3"></i>
                   <span>휴지통</span>
                 </button>
@@ -207,7 +208,7 @@
           <div id="home-empty" class="card border-0 shadow-sm d-none">
             <div class="card-body idea-empty-state idea-empty-state--home">
               <img class="idea-empty-illustration"
-                   src="{% static 'idea/assets/illustrations/first-page.svg' %}"
+                   src="{% static 'idea/assets/illustrations/first-page-product.svg' %}"
                    alt="">
               <span class="idea-empty-kicker">START WITH ONE BRIEF</span>
               <h3 id="home-empty-title" class="idea-empty-title">조건에 맞는 PRD가 없습니다.</h3>
@@ -351,5 +352,5 @@
   </div>
 {% endblock %}
 {% block extra_js %}
-  {{ block.super }}<script src="{% static 'prds/js/home.js' %}?v=20260922-v3-9"></script>
+  {{ block.super }}<script src="{% static 'prds/js/home.js' %}?v=20261006-final33"></script>
 {% endblock %}

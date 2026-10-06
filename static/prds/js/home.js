@@ -374,10 +374,15 @@
     }
   }
 
+  let homeRequestSequence = 0;
   async function fetchData() {
-    loading.classList.remove("d-none");
-    list.replaceChildren();
-    empty.classList.add("d-none");
+    const sequence = ++homeRequestSequence;
+    const hasContent = list.hasChildNodes() || !empty.classList.contains("d-none");
+    loading.classList.toggle("d-none", hasContent);
+    list.classList.toggle("is-updating", hasContent);
+    empty.classList.toggle("is-updating", !empty.classList.contains("d-none"));
+    if (!empty.classList.contains("d-none")) empty.setAttribute("aria-busy", "true");
+    list.setAttribute("aria-busy", "true");
     alertBox.className = "alert d-none";
 
     const query = new URLSearchParams({
@@ -407,11 +412,22 @@
         null,
         "홈 정보를 불러오지 못했습니다."
       );
+      if (sequence !== homeRequestSequence) return;
+      empty.classList.add("d-none");
       render(data);
     } catch (error) {
+      if (sequence !== homeRequestSequence) return;
       showError(error.message);
+      alertBox.classList.add("small", "py-2");
+      list.before(alertBox);
     } finally {
-      loading.classList.add("d-none");
+      if (sequence === homeRequestSequence) {
+        loading.classList.add("d-none");
+        list.removeAttribute("aria-busy");
+        empty.removeAttribute("aria-busy");
+        list.classList.remove("is-updating");
+        empty.classList.remove("is-updating");
+      }
     }
   }
 
@@ -551,14 +567,10 @@
       typeIcon.setAttribute("aria-hidden", "true");
       typeBadge.append(typeIcon, document.createTextNode(labels[item.prd_type] || item.prd_type));
 
-      badges.append(
-        typeBadge,
-        el(
-          "span",
-          "badge " + (statusClasses[item.status] || "status-dropped"),
-          labels[item.status] || item.status
-        )
-      );
+      badges.append(typeBadge);
+      if (["held", "dropped"].includes(item.status)) {
+        badges.append(el("span", "badge " + statusClasses[item.status], labels[item.status] || item.status));
+      }
 
       if (tutorMode) {
         const scopeText =
@@ -592,10 +604,9 @@
 
       const visibleRole = item.is_creator ? "owner" : item.my_role;
 
-      // 홈 카드에서는 "소유자/뷰어"가 이미 탭 맥락으로 충분히 설명된다.
-      // 의미가 있는 편집자/튜터 역할만 보조 태그로 남긴다.
+      // Preserve role context only in tutor management.
       if (
-        visibleRole &&
+        tutorManagementMode && visibleRole &&
         ["editor", "tutor"].includes(visibleRole) &&
         roleLabels[visibleRole]
       ) {
@@ -614,14 +625,22 @@
         );
       }
 
-      const dueState = deadlineState(item);
+      const rawCompletion = Number(item.completion_rate);
+      const completion = Number.isFinite(rawCompletion) ? Math.min(100, Math.max(0, rawCompletion)) : 0;
+      const writingState = completion === 0 ? "empty" : completion === 100 ? "complete" : "active";
+      card.classList.add("prd-writing-" + writingState);
+      const readOnly = tutorManagementMode || (!item.is_creator && !["owner", "editor"].includes(item.my_role));
+      const dueDate = (item.deadline || "").slice(0, 10);
+      const now = new Date();
+      const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
+      const dueState = !dueDate ? "" : dueDate === today ? "today" : dueDate < today ? "overdue" : "future";
 
       const titleRow = el("div", "prd-card-title-row");
       const title = el("h3", "h6 fw-bold", item.title);
       const brain = el(
         "a",
         "prd-card-brainstorm",
-        "아이디어 맵"
+        readOnly ? "생각 보기" : "생각 정리"
       );
 
       brain.href = brainstormUrl(item.id);
@@ -633,34 +652,42 @@
       });
 
       cardTop.append(badges);
-      titleRow.append(title, brain);
+      titleRow.append(title);
 
       const description = el(
         "p",
         "small text-secondary prd-card-description",
-        item.description || "한 줄 소개가 없습니다."
+        item.description || "아직 소개가 없어요."
       );
+
+      description.classList.toggle("is-empty", !item.description);
 
       const progressText = el(
         "div",
-        "d-flex justify-content-between small mb-1 mt-auto"
+        "prd-card-writing-status d-flex justify-content-between mb-1"
       );
 
       progressText.append(
-        el("span", "text-secondary", "완성도"),
-        el("strong", "", item.completion_rate + "%")
+        el("span", "", completion === 0 ? "작성 전" : completion === 100 ? "작성 완료" : "작성 중"),
+        el("strong", "", completion + "%")
       );
 
       const progress = el("div", "progress mb-3");
       progress.style.height = "6px";
 
       const bar = el("div", "progress-bar");
-      bar.style.width = item.completion_rate + "%";
+      bar.style.width = completion + "%";
+      if (completion > 0 && completion < 100) bar.classList.add("has-progress");
+      progress.setAttribute("role", "progressbar");
+      progress.setAttribute("aria-label", "작성 상태");
+      progress.setAttribute("aria-valuemin", "0");
+      progress.setAttribute("aria-valuemax", "100");
+      progress.setAttribute("aria-valuenow", String(completion));
       progress.append(bar);
 
       const footer = el(
         "div",
-        "d-flex justify-content-between align-items-center pt-2 border-top"
+        "prd-card-footer d-flex justify-content-between align-items-center border-top"
       );
 
       const avatars = el(
@@ -690,48 +717,30 @@
 
       const meta = el(
         "div",
-        "small text-secondary text-end prd-card-deadline" +
-          (dueState ? " is-" + dueState : "")
+        "prd-card-deadline" + (dueState ? " is-" + dueState : " is-unset")
       );
+      const metaIcon = el("i", "idea-icon idea-icon-calendar3");
+      metaIcon.setAttribute("aria-hidden", "true");
+      const metaLabel = el("span", "prd-card-deadline-label");
+      const dateLabel = dueDate.slice(0, 4) === String(now.getFullYear())
+        ? dueDate.slice(5).replace("-", ".")
+        : dueDate.slice(2).replaceAll("-", ".");
+      metaLabel.textContent = !dueDate ? "마감 미설정"
+        : dueState === "today" ? "오늘 마감"
+        : dueState === "overdue" ? "마감 지남 · " + dateLabel
+        : dateLabel + "까지";
+      meta.append(metaIcon, metaLabel);
 
-      if (!item.deadline) {
-        const noDeadline = el(
-          "span",
-          "prd-card-no-deadline"
-        );
-
-        noDeadline.append(
-          document.createTextNode("마감일 없음")
-        );
-
-        meta.append(noDeadline);
-      } else if (dueState === "today") {
-        const todayAlert = el(
-          "span",
-          "prd-card-deadline-alert"
-        );
-
-        todayAlert.append(
-          el("span", "prd-card-deadline-bang", "!"),
-          document.createTextNode(" 오늘 마감 · D-Day")
-        );
-
-        meta.append(todayAlert);
-      } else {
-        const deadlineDate = el(
-          "span",
-          "prd-card-deadline-date",
-          "마감 " + shortDate(item.deadline)
-        );
-
-        meta.append(deadlineDate);
-
-        if (item.d_day) {
-          meta.append(
-            document.createTextNode(" · " + item.d_day)
-          );
-        }
-      }
+      const actions = el("div", "prd-card-actions");
+      const primary = el("a", "btn btn-primary prd-card-primary",
+        tutorManagementMode ? "검토하기"
+          : readOnly || item.status === "dropped" || completion === 100 ? "내용 보기"
+          : completion === 0 ? "작성 시작" : "이어서 작성");
+      primary.href = pageUrl(item.id);
+      primary.addEventListener("click", function (event) {
+        event.stopPropagation();
+      });
+      actions.append(brain, primary);
 
       footer.append(avatars, meta);
 
@@ -741,7 +750,8 @@
         description,
         progressText,
         progress,
-        footer
+        footer,
+        actions
       );
 
       card.append(body);
@@ -751,7 +761,7 @@
       });
 
       card.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
+        if (event.target === card && event.key === "Enter") {
           window.location.href = pageUrl(item.id);
         }
       });
@@ -837,26 +847,24 @@
     const selectedValue = state.roundScope;
 
     state.roundTitles = new Map();
-    select.replaceChildren(
-      new Option("모든 회차", "all")
-    );
+    const optionList = [new Option("모든 회차", "all")];
 
     (options.rounds || []).forEach(function (round) {
       const value = String(round.id);
       state.roundTitles.set(value, round.title);
-      select.append(
+      optionList.push(
         new Option(round.title, value)
       );
     });
 
     if (options.has_roundless) {
-      select.append(
+      optionList.push(
         new Option("회차 없음", "none")
       );
     }
 
     const valueExists = Array
-      .from(select.options)
+      .from(optionList)
       .some(function (option) {
         return option.value === selectedValue;
       });
@@ -865,6 +873,11 @@
       ? selectedValue
       : "all";
 
+    optionList.forEach(function (option) {
+      option.selected = option.value === state.roundScope;
+      option.defaultSelected = option.selected;
+    });
+    select.replaceChildren(...optionList);
     select.value = state.roundScope;
     window.StudioControls?.syncSelect(select);
   }
@@ -1203,6 +1216,7 @@
     }
   }
 
+  let recentRequestSequence = 0;
   async function fetchRecentActivity(page) {
     const modalList = document.getElementById(
       "recent-activity-modal-list"
@@ -1221,9 +1235,13 @@
       return;
     }
 
-    modalLoading.classList.remove("d-none");
+    const sequence = ++recentRequestSequence;
+    const hasContent = modalList.hasChildNodes();
+    modalLoading.classList.toggle("d-none", hasContent);
+    modalList.classList.toggle("is-updating", hasContent);
+    modalList.setAttribute("aria-busy", "true");
     modalAlert.classList.add("d-none");
-    modalList.replaceChildren();
+
 
     try {
       const query = new URLSearchParams({
@@ -1240,6 +1258,7 @@
         "최근 활동을 불러오지 못했습니다."
       );
 
+      if (sequence !== recentRequestSequence) return;
       renderRecentList(
         modalList,
         data.items
@@ -1248,10 +1267,16 @@
         data.pagination
       );
     } catch (error) {
+      if (sequence !== recentRequestSequence) return;
+      modalAlert.classList.add("small", "py-2");
       modalAlert.textContent = error.message;
       modalAlert.classList.remove("d-none");
     } finally {
-      modalLoading.classList.add("d-none");
+      if (sequence === recentRequestSequence) {
+        modalLoading.classList.add("d-none");
+        modalList.removeAttribute("aria-busy");
+        modalList.classList.remove("is-updating");
+      }
     }
   }
 

@@ -16,6 +16,8 @@
   const focusedReviewIllustration = root.dataset.illustrationFocusedReview || "";
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
   const sectionsRoot = document.getElementById("prd-sections");
+  const sectionBackToTop = document.getElementById("section-back-to-top");
+  const writeBodyViewport = root.querySelector(".write-body-viewport");
   const scope = document.getElementById("coach-scope");
   const messagesRoot = document.getElementById("coach-messages");
   const form = document.getElementById("coach-form");
@@ -26,6 +28,8 @@
   const commentForm = document.getElementById("comment-form");
   const commentTarget = document.getElementById("comment-target");
   const saveAllButton = document.getElementById("save-all-answers");
+  const expandAllSectionsButton = document.getElementById("expand-all-sections");
+  const collapseAllSectionsButton = document.getElementById("collapse-all-sections");
   const statusPicker = document.getElementById("prd-status-picker");
   const statusControl = document.getElementById("prd-status-control");
   const statusControlLabel = document.getElementById("prd-status-control-label");
@@ -90,7 +94,68 @@
   let activeJobId = null;
   // undefined means the initial render; null means the user collapsed every section.
   let activeSectionId = undefined;
-  let questionListMode = false;
+  const expandedSectionIds = new Set();
+  let authorMode = "guided";
+  let writeView = "write";
+  let activeQuestionId = null;
+  if (sectionBackToTop && writeBodyViewport) {
+    sectionBackToTop.addEventListener("click", function () { writeBodyViewport.scrollTo({top: 0, behavior: "smooth"}); });
+    writeBodyViewport.addEventListener("scroll", syncSectionBackToTop, {passive: true});
+  }
+  const guidedSchema = window.IdeaGuidedSchema || window.IdeaGuidedSchemaV34 || Object.freeze({
+    getConfig: function () { return null; },
+    getDependencies: function () { return []; },
+    getSectionShort: function (_prdType, _position) { return ""; },
+    emptyState: function () { return {}; },
+    compose: function () { return ""; },
+    hydrate: function (answer) { return {mode: "raw", raw: answer || ""}; },
+    parse: function (answer) { return {mode: "raw", raw: answer || ""}; }
+  });
+  const uiDemo = window.IdeaPrdUiDemoV18 || window.IdeaPrdUiDemoV17 || window.IdeaPrdUiDemoV16 || window.IdeaPrdUiDemoV15 || window.IdeaPrdUiDemoV14 || window.IdeaPrdUiDemoV13 || window.IdeaPrdUiDemoV12 || window.IdeaPrdUiDemoV11 || {enabled:false};
+  const uiDemoMode = Boolean(uiDemo.enabled);
+  const demoAnswerStorageKey = "idea-prd-demo-answers:" + root.dataset.prdId;
+  function readDemoAnswerOverrides() {
+    if (!uiDemoMode) return {};
+    try { return JSON.parse(window.localStorage.getItem(demoAnswerStorageKey) || "{}"); }
+    catch (error) { return {}; }
+  }
+  function writeDemoAnswerOverride(questionId, content) {
+    if (!uiDemoMode) return;
+    const current = readDemoAnswerOverrides();
+    current[String(questionId)] = String(content || "");
+    try { window.localStorage.setItem(demoAnswerStorageKey, JSON.stringify(current)); } catch (error) {}
+  }
+  const structuredTransferPrefix = "idea-prd-structured-state:" + root.dataset.prdId + ":";
+  function readStructuredTransfer(questionId, backend) {
+    try {
+      const key = structuredTransferPrefix + String(questionId);
+      const payload = JSON.parse(window.localStorage.getItem(key) || "null");
+      if (!payload || payload.composedAnswer !== String(backend || "") || !payload.state) {
+        if (payload) window.localStorage.removeItem(key);
+        return null;
+      }
+      return {composedAnswer: payload.composedAnswer, state: payload.state};
+    } catch (error) { return null; }
+  }
+  function writeStructuredTransfer(questionId, composedAnswer, state) {
+    if (!state || !composedAnswer) return;
+    try {
+      window.localStorage.setItem(structuredTransferPrefix + String(questionId), JSON.stringify({
+        composedAnswer:String(composedAnswer), state:state, savedAt:Date.now()
+      }));
+    } catch (error) {}
+  }
+  function clearStructuredTransfer(questionId) {
+    try { window.localStorage.removeItem(structuredTransferPrefix + String(questionId)); } catch (error) {}
+  }
+  const guidedCache = new Map();
+  const liveGuidedStates = new Map();
+  const answerRequests = new Map();
+  let autosaveTimer;
+  let flushPromise;
+  let navigationBusy = false;
+  let sectionScrollTicking = false;
+  let sectionSnapshotCollapsed = true;
   let canManageParticipants = false;
   let canCreateComments = false;
   let canEditSummaryMetadata = false;
@@ -103,6 +168,8 @@
   let synthesisResult = null;
   let synthesisRequestInFlight = false;
   let evaluationJobIds = [];
+  let evaluationCancelRequested = false;
+  let evaluationRunController = null;
   let exportedMarkdown = "";
   let alertTimer = null;
   let canRequestAi = false;
@@ -125,13 +192,15 @@
     const isOpen = !["completed", "dropped"].includes(prd.status);
     const overdue = isOpen && Boolean(prd.deadline && prd.deadline < today);
     const dueToday = isOpen && prd.deadline === today;
+    const unset = isOpen && !prd.deadline;
     control.classList.toggle("is-overdue", overdue);
     control.classList.toggle("is-today", dueToday);
+    control.classList.toggle("is-unset", unset);
     deadlineWarning.classList.toggle("d-none", !overdue && !dueToday);
     deadlineWarning.textContent = overdue ? "마감 지남" : dueToday ? "오늘 마감" : "";
     control.setAttribute(
       "aria-label",
-      overdue ? "마감 기한이 지났습니다." : dueToday ? "오늘이 마감일입니다." : "목표 마감일"
+      overdue ? "마감 기한이 지났습니다." : dueToday ? "오늘이 마감일입니다." : unset ? "마감일이 설정되지 않았습니다." : "목표 마감일"
     );
   }
 
@@ -174,6 +243,11 @@
         }
       });
     } catch (networkError) {
+      if (networkError && networkError.name === "AbortError") {
+        const aborted = new Error("요청이 취소되었습니다.");
+        aborted.name = "AbortError";
+        throw aborted;
+      }
       throw new Error("서버에 연결하지 못했습니다. 네트워크 상태를 확인해 주세요.");
     }
     const contentType = response.headers.get("content-type") || "";
@@ -241,17 +315,469 @@
     });
   }
 
+
+  function queueAutosave() {
+    if (uiDemoMode) return;
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(flushAnswers, 1350);
+  }
+  async function flushAnswers() {
+    clearTimeout(autosaveTimer);
+    if (uiDemoMode) return true;
+    if (flushPromise) return flushPromise;
+    flushPromise = (async function () {
+      try {
+        for (const key of Array.from(pendingAnswers.keys())) {
+          if (!findQuestion(key)?.is_held) await persistPendingAnswer(key);
+        }
+        if (detail) refreshAnswerProgress();
+        updateSaveAllButton();
+        return pendingAnswers.size === 0;
+      } catch (error) {
+        await handleAnswerSaveError(error);
+        return false;
+      }
+    }());
+    try { return await flushPromise; } finally { flushPromise = null; }
+  }
+  async function navigateWriting(change) {
+    if (navigationBusy || !detail) return;
+    navigationBusy = true;
+    try {
+      if (!await flushAnswers()) return;
+      change();
+      document.querySelector(".v34-mode")?.removeAttribute("open");
+      renderDetail(detail);
+    } finally { navigationBusy = false; }
+  }
+  function action(label, fn, className) {
+    const button = element("button", className || "btn btn-sm btn-outline-secondary", label);
+    button.type = "button";
+    button.addEventListener("click", fn);
+    return button;
+  }
+
+  function updateSectionSnapshot(sectionId) {
+    if (!detail || authorMode !== "direct") return;
+    const snapshot = root.querySelector("[data-section-snapshot]");
+    if (!snapshot) return;
+    const section = detail.sections.find(function (item) { return String(item.id) === String(sectionId); });
+    if (!section) return;
+    const activeQuestions = section.questions.filter(function (question) { return !question.is_held; });
+    const answered = activeQuestions.filter(function (question) { return question.is_completed; }).length;
+    const held = section.questions.filter(function (question) { return question.is_held; }).length;
+    const title = snapshot.querySelector("[data-snapshot-title]");
+    const guide = snapshot.querySelector("[data-snapshot-guide]");
+    if (title) title.textContent = section.title;
+    if (guide) guide.textContent = section.guide || "이 섹션의 질문을 함께 보며 답변을 정리해요.";
+    const values = {
+      answered: answered,
+      unanswered: Math.max(activeQuestions.length - answered, 0),
+      held: held
+    };
+    Object.keys(values).forEach(function (key) {
+      const target = snapshot.querySelector('[data-snapshot-stat="' + key + '"] b');
+      if (target) target.textContent = String(values[key]);
+    });
+  }
+
+  function syncActiveSectionVisual(sectionId) {
+    const key = String(sectionId);
+    root.querySelectorAll(".write-step[data-section-id]").forEach(function (button) {
+      button.classList.toggle("active", button.dataset.sectionId === key);
+    });
+    root.querySelectorAll(".write-section[data-section-id]").forEach(function (card) {
+      card.classList.toggle("active", card.dataset.sectionId === key);
+    });
+    updateSectionSnapshot(sectionId);
+  }
+
+  function scrollToSection(sectionId, behavior) {
+    const target = root.querySelector('.write-section[data-section-id="' + CSS.escape(String(sectionId)) + '"]');
+    if (!target) return;
+    target.scrollIntoView({behavior: behavior || "smooth", block: "start", inline: "nearest"});
+  }
+
+  function syncSectionBackToTop() {
+    if (!writeBodyViewport || !sectionBackToTop) return;
+    const visible = writeView === "write" && authorMode === "direct" && writeBodyViewport.scrollTop > 360;
+    sectionBackToTop.classList.toggle("is-visible", visible);
+    sectionBackToTop.setAttribute("aria-hidden", String(!visible));
+    sectionBackToTop.tabIndex = visible ? 0 : -1;
+  }
+
+  function syncActiveSectionFromScroll() {
+    if (sectionScrollTicking || writeView !== "write" || authorMode !== "direct") return;
+    const viewport = root.querySelector(".write-body-viewport");
+    if (!viewport) return;
+    sectionScrollTicking = true;
+    requestAnimationFrame(function () {
+      sectionScrollTicking = false;
+      const cards = Array.from(root.querySelectorAll(".write-section[data-section-id]"));
+      if (!cards.length) return;
+      const viewportRect = viewport.getBoundingClientRect();
+      const guideLine = viewportRect.top + Math.min(170, viewport.clientHeight * 0.28);
+      let best = null;
+      let bestDistance = Infinity;
+      cards.forEach(function (card) {
+        const rect = card.getBoundingClientRect();
+        if (rect.bottom < viewportRect.top + 24 || rect.top > viewportRect.bottom - 24) return;
+        const distance = Math.abs(rect.top - guideLine);
+        if (distance < bestDistance) { best = card; bestDistance = distance; }
+      });
+      if (!best) return;
+      const nextSectionId = best.dataset.sectionId;
+      if (String(activeSectionId) === String(nextSectionId)) return;
+      activeSectionId = nextSectionId;
+      activeQuestionId = null;
+      syncActiveSectionVisual(nextSectionId);
+      renderContext();
+    });
+  }
+  function structuredEditor(block, question, section) {
+    const editor = block.querySelector(".question-editor");
+    if (!editor) return;
+    const config = guidedSchema.getConfig(detail.prd.prd_type, section.position, question.position);
+    if (!config) return;
+    const key = String(question.id), backend = question.answer?.content || "";
+    if (uiDemoMode && question.__ui_demo_guided_state) {
+      guidedCache.set(key, {state: structuredClone(question.__ui_demo_guided_state), composedAnswer: backend});
+    }
+    const cache = guidedCache.get(key) || readStructuredTransfer(key, backend);
+    const validCache = cache?.composedAnswer === backend ? cache : null;
+    let state = guidedSchema.hydrate(backend, config, validCache);
+    const live = liveGuidedStates.get(key);
+    if (pendingAnswers.has(key) && live?.composedAnswer === pendingAnswers.get(key)) state = structuredClone(live.state);
+    if (state.mode === "raw" || (pendingAnswers.has(key) && !live)) {
+      editor.before(element("p", "text-secondary", config.purpose || ""), element("p", "small text-secondary", "기존 작성 내용을 그대로 편집할 수 있어요."));
+      return;
+    }
+    editor.classList.add("d-none");
+    const region = element("div", "v34-fields v34-pattern-" + config.pattern);
+    const purpose = element("p", "text-secondary", config.purpose || "");
+    const preview = element("pre", "v34-preview");
+    const previewWrap = element("div", "v34-preview-wrap");
+    previewWrap.append(element("strong", "small", "이 답변은 이렇게 정리돼요"), preview);
+    function changed() {
+      const composed = guidedSchema.compose(state, config);
+      preview.textContent = composed;
+      previewWrap.hidden = !composed.trim();
+      liveGuidedStates.set(key, {state: structuredClone(state), composedAnswer: composed});
+      if (!composed && backend) {
+        preview.textContent = "기존 작성 내용은 보관돼요. 전체 삭제는 직접 편집에서 할 수 있어요.";
+        pendingAnswers.delete(key);
+        editor.value = backend;
+        updateSaveAllButton();
+        return;
+      }
+      editor.value = composed;
+      editor.dispatchEvent(new Event("input", {bubbles: true}));
+    }
+    function field(label, placeholder, value, onChange, wide) {
+      const wrap = element("label", "v34-field" + (wide ? " v34-field-wide" : ""));
+      wrap.append(element("span", "small fw-semibold", label));
+      // Guided fields are deliberately single-line: the structured UI should scan like a form,
+      // while the hidden raw answer remains the single backend Answer value.
+      const control = element("input", "form-control");
+      control.type = "text";
+      control.value = value || "";
+      control.placeholder = placeholder || "";
+      control.maxLength = 12000;
+      control.addEventListener("input", function () { onChange(control.value); changed(); });
+      wrap.append(control);
+      return wrap;
+    }
+    function draw() {
+      region.replaceChildren();
+      if (config.kind === "metric") {
+        const table = element("div", "v34-metric");
+        state.rows.forEach(function (row, index) {
+          const line = element("div", "v34-metric-row");
+          ["metric", "current", "target", "period"].forEach(function (key, column) {
+            line.append(field(config.tableHeaders[column], config.fields[column]?.placeholder || config.fields[0]?.placeholder, row[key], value => { row[key] = value; }, false));
+          });
+          const controls = element("div", "v34-metric-actions");
+          const addMetric = action("", function () {
+            state.rows.splice(index + 1, 0, {metric:"",current:"",target:"",period:""});
+            changed(); draw();
+          }, "v34-metric-square v34-metric-plus");
+          addMetric.setAttribute("aria-label", "지표 추가");
+          addMetric.title = "지표 추가";
+          addMetric.append(element("i", "idea-icon idea-icon-plus-lg"));
+          const removeMetric = action("", function () {
+            if (state.rows.length <= 1) return;
+            state.rows.splice(index, 1); changed(); draw();
+          }, "v34-metric-square v34-metric-minus");
+          removeMetric.setAttribute("aria-label", "지표 삭제");
+          removeMetric.title = state.rows.length <= 1 ? "지표는 한 줄 이상 필요해요" : "지표 삭제";
+          removeMetric.disabled = state.rows.length <= 1;
+          removeMetric.append(element("span", "v34-minus-glyph", "−"));
+          controls.append(addMetric, removeMetric);
+          line.append(controls);
+          table.append(line);
+        });
+        region.append(table);
+      } else if (config.kind === "steps") {
+        const ordered = element("ol", "v34-flow");
+        state.steps.forEach(function (step, index) {
+          const row = element("li");
+          row.append(field(config.fields[index]?.label || String(index + 1), config.fields[index]?.placeholder || "", step, value => { state.steps[index] = value; }, true));
+          ordered.append(row);
+        });
+        region.append(ordered);
+      } else {
+        config.fields.forEach(function (spec, index) {
+          const wide = !["user", "target", "period", "metric", "value"].includes(spec.key) && config.fields.length === 1;
+          region.append(field(spec.label, spec.placeholder, state.fields[index], value => { state.fields[index] = value; }, wide));
+        });
+      }
+    }
+    draw();
+    editor.before(purpose, region);
+    if (config.preview !== false) { preview.textContent = guidedSchema.compose(state, config); previewWrap.hidden = !preview.textContent.trim(); block.querySelector(".write-answer-footer").after(previewWrap); }
+    const help = element("aside", "v34-help");
+    help.append(element("strong", "v34-help-title", "생각해볼 점"));
+    const helpList = element("ul", "v34-help-list");
+    (config.prompts || []).slice(0, 3).forEach(text => helpList.append(element("li", "", text)));
+    (config.checks || []).slice(0, 2).forEach(text => helpList.append(element("li", "", text)));
+    if (!helpList.children.length) helpList.append(element("li", "", "질문의 핵심만 먼저 한 문장으로 정리해 보세요."));
+    help.append(helpList);
+    block.classList.add("has-guided-help");
+    block.append(help);
+  }
+  function renderContext() {
+    const rail = document.getElementById("v34-context-body");
+    rail.replaceChildren();
+    const section = detail.sections.find(s => String(s.id) === String(activeSectionId));
+    const question = section?.questions.find(q => String(q.id) === String(activeQuestionId)) || section?.questions[0];
+    if (!section || !question) return;
+
+    const contextHeading = document.getElementById("v34-context-heading");
+    if (contextHeading) contextHeading.textContent = "참고 정보";
+
+    const related = guidedSchema.getDependencies(detail.prd.prd_type, section.position).map(function (pair) {
+      return detail.sections.find(s => Number(s.position) === Number(pair[0]))?.questions.find(q => Number(q.position) === Number(pair[1]));
+    }).filter(q => q && !q.is_held && q.answer?.content).slice(0, 2);
+    document.getElementById("v34-context-toggle").textContent = "앞에서 쓴 내용 " + related.length + "개";
+
+    const previous = element("details", "v34-context-disclosure");
+    previous.append(element("summary", "", "앞에서 쓴 내용 · " + related.length));
+    const previousBody = element("div", "v34-context-disclosure-body");
+    related.forEach(function (q) {
+      const item = element("section", "v34-context-answer");
+      item.append(element("strong", "small", q.prompt), element("p", "v34-answer", q.answer.content));
+      previousBody.append(item);
+    });
+    if (!related.length) previousBody.append(element("p", "small text-secondary", "현재 질문과 연결된 이전 답변이 아직 없어요."));
+    previous.append(previousBody); rail.append(previous);
+
+    const demoMemos = uiDemoMode && typeof uiDemo.memosFor === "function" ? uiDemo.memosFor(question, section) : [];
+    const notes = element("details", "v34-context-disclosure v34-context-notes");
+    if (uiDemoMode) notes.open = true;
+    notes.append(element("summary", "", "관련 메모" + (demoMemos.length ? " · " + demoMemos.length : "")));
+    const notesBody = element("div", "v34-context-disclosure-body");
+    if (demoMemos.length) {
+      demoMemos.forEach(function (memo) {
+        const item = element("section", "v34-context-answer v34-demo-memo");
+        item.append(element("strong", "small", memo.title), element("p", "v34-answer", memo.body));
+        notesBody.append(item);
+      });
+    } else {
+      notesBody.append(element("p", "v34-context-note-copy", "현재 질문과 연결된 메모는 브레인스토밍에서 확인할 수 있어요."));
+    }
+    const notesLink = element("a", "idea-inline-link v34-context-link", "메모 전체 보기");
+    notesLink.href = root.querySelector(".brainstorm-launch").href;
+    notesLink.append(element("i", "idea-icon idea-icon-chevron-right"));
+    notesBody.append(notesLink); notes.append(notesBody); rail.append(notes);
+
+    const contextComments = authorMode === "direct"
+      ? section.questions.flatMap(function (sectionQuestion) {
+          return (commentController.getItemsForQuestion ? commentController.getItemsForQuestion(sectionQuestion.id) : []).map(function (comment) {
+            return Object.assign({}, comment, {__questionPrompt: sectionQuestion.prompt});
+          });
+        })
+      : (commentController.getItemsForQuestion ? commentController.getItemsForQuestion(question.id) : []);
+    const commentDisclosure = element("details", "v34-context-disclosure");
+    commentDisclosure.open = contextComments.length > 0;
+    commentDisclosure.append(element("summary", "", (authorMode === "direct" ? "이 섹션의 댓글 · " : "댓글 · ") + contextComments.length));
+    const commentBody = element("div", "v34-context-disclosure-body");
+    if (contextComments.length) {
+      const contextTypeLabels = {general:"일반", guidance:"지도", review:"리뷰", post_completion_review:"완료 후 리뷰"};
+      const contextRoleLabels = {owner:"소유자", editor:"편집자", tutor:"튜터", viewer:"뷰어"};
+      contextComments.slice(0, 4).forEach(function (comment) {
+        const item = element("article", "v20-context-comment");
+        const heading = element("div", "v20-context-comment-head");
+        const tags = element("div", "v26-context-comment-tags");
+        const typeKey = comment.comment_type || "general";
+        tags.append(element("span", "comment-kind comment-kind--" + typeKey, contextTypeLabels[typeKey] || typeKey));
+        const roleKey = comment.author?.role_at_created || comment.author?.role || "";
+        if (roleKey) tags.append(element("span", "comment-role comment-role--" + roleKey, contextRoleLabels[roleKey] || roleKey));
+        heading.append(element("strong", "", comment.author?.display_name || "팀원"), tags);
+        item.append(heading, element("p", "", comment.content || ""));
+        commentBody.append(item);
+      });
+    } else {
+      commentBody.append(element("p", "small text-secondary", authorMode === "direct" ? "현재 섹션에 등록된 댓글이 없어요." : "현재 질문에 등록된 댓글이 없어요."));
+    }
+    const comments = action("전체 댓글 보기", function () {
+      if (authorMode === "guided") commentTarget.value = String(question.id);
+      else commentTarget.value = "";
+      commentTarget.dispatchEvent(new Event("change", {bubbles:true}));
+      document.getElementById("comment-toggle").click();
+    }, "v20-comment-all");
+    comments.append(element("i", "idea-icon idea-icon-chevron-right"));
+    commentBody.append(comments);
+    commentDisclosure.append(commentBody);
+
+    const coach = action("질문하기", async function () {
+      scope.value = String(section.id);
+      window.StudioControls?.syncSelect(scope);
+      await loadConversation();
+      bootstrap.Offcanvas.getOrCreateInstance(document.getElementById("write-support-panel")).show();
+    });
+    coach.disabled = !canRequestAi;
+    coach.className = "btn btn-sm btn-outline-primary";
+    const coachSection = element("section", "v34-context-coach");
+    coachSection.append(element("h3", "h6", "AI 코치"), element("p", "small text-secondary", "현재 질문이 막힐 때만 사용"), coach);
+    rail.append(commentDisclosure, coachSection);
+  }
+  function renderFullAnswerContent(content, emptyText) {
+    const text = String(content || "").trim();
+    const host = element("div", "v34-answer" + (text ? "" : " text-secondary"));
+    if (!text) { host.textContent = emptyText || "아직 작성하지 않았어요."; return host; }
+    const rows = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    const isTable = rows.length >= 3 && /^\|.*\|$/.test(rows[0]) && /^\|.*\|$/.test(rows[1]);
+    if (isTable) {
+      const splitRow = line => line.slice(1, -1).split("|").map(cell => cell.trim());
+      const headers = splitRow(rows[0]);
+      const divider = splitRow(rows[1]);
+      const validDivider = divider.length === headers.length && divider.every(cell => /^:?-{3,}:?$/.test(cell));
+      const bodyRows = rows.slice(2).map(splitRow);
+      if (validDivider && bodyRows.every(row => row.length === headers.length)) {
+        const wrap = element("div", "v20-answer-table-wrap");
+        const table = element("table", "v20-answer-table");
+        const thead = document.createElement("thead"), headRow = document.createElement("tr");
+        headers.forEach(label => { const th = document.createElement("th"); th.textContent = label; headRow.append(th); });
+        thead.append(headRow); table.append(thead);
+        const tbody = document.createElement("tbody");
+        bodyRows.forEach(row => {
+          const tr = document.createElement("tr");
+          row.forEach(value => { const td = document.createElement("td"); td.textContent = value; tr.append(td); });
+          tbody.append(tr);
+        });
+        table.append(tbody); wrap.append(table); host.append(wrap); return host;
+      }
+    }
+    host.textContent = text;
+    return host;
+  }
+
+  function renderFullView() {
+    const full = document.getElementById("v34-full"); full.replaceChildren();
+    const heading = element("header", "v34-review-heading v9-page-heading");
+    const copy = element("div");
+    copy.append(
+      element("small", "v9-page-eyebrow", "FULL PRD"),
+      element("h2", "v9-page-title", "전체 내용 보기"),
+      element("p", "v9-page-subtitle", "PRD를 문서처럼 읽어보고 필요한 곳만 다시 수정해요.")
+    );
+    const actions = element("div", "v34-review-actions");
+    actions.append(action("작성으로 돌아가기", () => navigateWriting(() => { writeView = "write"; })), action("점검·공유", () => navigateWriting(() => { writeView = "report"; })));
+    heading.append(copy, actions); full.append(heading);
+    const layout = element("div", "v34-document-layout"), main = element("div", "v34-document-main"), summary = element("aside", "v34-document-summary");
+    detail.sections.forEach(function (section,index) {
+      const group = element("section", "v34-document-section"), head = element("header", "v34-document-head"), title = element("div");
+      title.append(element("small", "text-secondary", "SECTION " + (index + 1)), element("h3", "h5", section.title));
+      head.append(title, action(detail.permissions.can_edit && detail.prd.status !== "completed" ? "섹션 수정" : "작성 화면 보기", function () {
+        navigateWriting(function () { writeView = "write"; authorMode = "direct"; activeSectionId = section.id; activeQuestionId = null; expandedSectionIds.add(String(section.id)); });
+      })); group.append(head);
+      section.questions.forEach(function (q,index) {
+        const part = element("section", "v34-document-question");
+        const questionHead = element("header", "v34-document-question-head");
+        const questionState = element("span", "v34-question-state", q.is_held ? "제외" : q.is_completed ? "작성됨" : "미작성");
+        questionState.dataset.state = q.is_held ? "held" : q.is_completed ? "completed" : "empty";
+        questionHead.append(element("h4", "h6", "Q" + (index + 1) + ". " + q.prompt), questionState);
+        const content = q.answer?.content || "";
+        part.append(questionHead, renderFullAnswerContent(
+          content,
+          q.is_held ? "이번 PRD에서 제외한 질문이에요." : "아직 작성하지 않았어요."
+        ));
+        group.append(part);
+      }); main.append(group);
+    });
+    const questions = detail.sections.flatMap(section => section.questions), active = questions.filter(q => !q.is_held), completed = active.filter(q => q.is_completed).length;
+    summary.append(element("h3", "h6", "현재 버전"), element("p", "small text-secondary", detail.prd.version != null ? String(detail.prd.version) : "현재 작성본"));
+    const stats = element("dl", "v34-document-stats");
+    [["작성",completed + " / " + active.length],["미작성",active.length-completed],["제외",questions.length-active.length]].forEach(([label,value]) => stats.append(element("dt","",label),element("dd","",String(value))));
+    summary.append(stats);
+    const reviewStatus = element("section", "v34-document-review-status");
+    reviewStatus.append(element("strong", "", "점검 상태"));
+    if (synthesisResult?.job?.status === "succeeded") {
+      const statusLine = element("div", "v34-document-review-line");
+      const reviewChip = element("b", "v34-document-review-chip", synthesisResult.isCurrent ? "최신 결과" : "업데이트 필요");
+      reviewChip.dataset.state = synthesisResult.isCurrent ? "current" : "stale";
+      statusLine.append(element("span", "", "최근 점검"), reviewChip);
+      reviewStatus.append(statusLine, element("p", "small text-secondary", "전체 품질 · " + (qualityScore(synthesisResult.job.output?.overall_score) ?? "—") + "점"));
+    } else {
+      const statusLine = element("div", "v34-document-review-line");
+      const reviewChip = element("b", "v34-document-review-chip", "진단 전");
+      reviewChip.dataset.state = "empty";
+      statusLine.append(element("span", "", "최근 점검"), reviewChip);
+      reviewStatus.append(statusLine, element("p", "small text-secondary", "작성 내용을 채운 뒤 세 관점에서 보완할 곳을 확인할 수 있어요."));
+    }
+    summary.append(reviewStatus, action("점검·공유로 이동", () => navigateWriting(() => { writeView = "report"; }), "btn btn-primary btn-sm"));
+    layout.append(main,summary); full.append(layout);
+  }
+  function applyWriteView() {
+    document.body.classList.toggle("idea-prd-focus", writeView === "full" || writeView === "report");
+    root.dataset.writeView = writeView;
+    root.dataset.authorMode = authorMode;
+    const modeLabel = document.getElementById("v34-mode-label");
+    if (modeLabel) modeLabel.textContent = authorMode === "guided" ? "단계별 작성" : "섹션별 작성";
+    const guidedTab = document.getElementById("structure-view");
+    const sectionTab = document.getElementById("question-view");
+    if (guidedTab) { guidedTab.classList.toggle("active", authorMode === "guided"); guidedTab.setAttribute("aria-pressed", String(authorMode === "guided")); }
+    if (sectionTab) { sectionTab.classList.toggle("active", authorMode === "direct"); sectionTab.setAttribute("aria-pressed", String(authorMode === "direct")); }
+    if (expandAllSectionsButton) expandAllSectionsButton.disabled = authorMode !== "direct" || !detail?.sections?.length || detail.sections.every(function (section) { return expandedSectionIds.has(String(section.id)); });
+    if (collapseAllSectionsButton) {
+      const activeKey = activeSectionId === undefined || activeSectionId === null ? null : String(activeSectionId);
+      collapseAllSectionsButton.disabled = authorMode !== "direct" || !activeKey || (expandedSectionIds.size === 1 && expandedSectionIds.has(activeKey));
+    }
+    root.querySelectorAll("[data-write-view]").forEach(button => {
+      if (button === root) return;
+      button.setAttribute("aria-pressed", String(button.dataset.writeView === writeView));
+    });
+    if (writeView === "full") renderFullView();
+    renderContext();
+  }
+
   function renderSteps(data) {
     const steps = document.getElementById("write-steps");
     steps.replaceChildren();
     data.sections.forEach(function (section, index) {
       const rate = sectionRate(section);
+      const answered = section.questions.filter(function (question) {
+        return !question.is_held && question.is_completed;
+      }).length;
+      const total = section.questions.length;
       const button = element("button", "write-step" + (rate === 100 ? " done" : "") + (String(section.id) === String(activeSectionId) ? " active" : ""));
       button.type = "button";
-      // 글자 수로 자르지 않는다. 넘칠 때만 CSS가 말줄임표를 붙이고, 전체 제목은 툴팁으로 보여준다.
-      const label = element("span", "", section.title);
-      button.append(element("b", "", rate === 100 ? "✓" : String(index + 1)), label);
-      button.addEventListener("click", function () { activeSectionId = section.id; renderDetail(detail); document.querySelector('[data-section-id="' + section.id + '"]')?.scrollIntoView({behavior: "smooth", block: "start"}); });
+      button.dataset.sectionId = String(section.id);
+      button.title = section.title + " · " + answered + "/" + total + " 작성";
+      // 완료 상태에서도 번호를 유지한다. 완료 여부는 우측 작성 수와 색상으로만 표현한다.
+      const label = element("span", "write-step-label", guidedSchema.getSectionShort(data.prd.prd_type, section.position) || section.title);
+      const count = element("small", "write-step-count", answered + "/" + total);
+      button.append(element("b", "", String(index + 1)), label, count);
+      button.addEventListener("click", function () {
+        const shouldScroll = authorMode === "direct";
+        navigateWriting(function () {
+          activeSectionId = section.id;
+          activeQuestionId = null;
+          if (authorMode === "direct") expandedSectionIds.add(String(section.id));
+        }).then(function () {
+          if (shouldScroll && authorMode === "direct") requestAnimationFrame(function () { scrollToSection(section.id); });
+        });
+      });
       steps.append(button);
     });
   }
@@ -295,7 +821,7 @@
     createdDateOutput.textContent = data.prd.created_at
       ? localDateKey(new Date(data.prd.created_at))
       : "확인할 수 없음";
-    document.getElementById("write-deadline-label").textContent = data.prd.deadline || "마감일 없음";
+    document.getElementById("write-deadline-label").textContent = data.prd.deadline || (!["completed", "dropped"].includes(data.prd.status) ? "마감 미설정" : "마감 없음");
     renderDeadlineState(data.prd);
     document.getElementById("active-section-count").textContent = data.sections.length + "개 활성 섹션";
     document.getElementById("reopen-prd").classList.toggle("d-none", !data.permissions.can_reopen || data.prd.status !== "completed");
@@ -316,8 +842,8 @@
     scope.replaceChildren(new Option("전체 PRD", ""));
     const previousCommentTarget = commentTarget.value;
     commentTarget.replaceChildren(new Option("PRD 전체", ""));
-    canRequestAi = data.permissions.can_request_ai && data.prd.status !== "completed";
-    const canEditAnswers = data.permissions.can_edit && data.prd.status !== "completed";
+    canRequestAi = !uiDemoMode && data.permissions.can_request_ai && data.prd.status !== "completed";
+    const canEditAnswers = uiDemoMode || (data.permissions.can_edit && data.prd.status !== "completed");
     saveAllButton.classList.toggle("d-none", !canEditAnswers);
     input.disabled = !canRequestAi;
     submit.disabled = !canRequestAi;
@@ -325,25 +851,25 @@
     perspectiveDraftButton.disabled = !canRequestAi;
     if (!canRequestAi) input.placeholder = "현재 권한 또는 PRD 상태에서는 AI를 요청할 수 없습니다.";
 
-    function buildQuestionBlock(question, extraClass) {
+    function buildQuestionBlock(question, section, extraClass) {
       const block = element("div", "write-question" + (question.is_held ? " is-held" : "") + (extraClass ? " " + extraClass : ""));
       const top = element("div", "write-question-head");
-      top.append(element("h3", "", question.prompt));
+      const stateChip = element("span", "v34-question-state", question.is_held ? "보류" : question.is_completed ? "작성됨" : "미작성");
+      stateChip.dataset.state = question.is_held ? "held" : question.is_completed ? "completed" : "empty";
+      top.append(element("h3", "", question.prompt), stateChip);
       if (canEditAnswers) {
-        const hold = element("button", "question-hold-button" + (question.is_held ? " active" : ""), question.is_held ? "보류 해제" : "보류");
+        const hold = element("button", "question-hold-button" + (question.is_held ? " active" : ""), question.is_held ? "다시 포함" : "이번 PRD에서 제외");
         hold.type = "button";
         hold.setAttribute("aria-pressed", String(question.is_held));
         hold.addEventListener("click", function () { toggleQuestionHold(question, hold); });
         top.append(hold);
-      } else if (question.is_held) {
-        top.append(element("span", "question-held-badge", "보류"));
       }
       block.append(top);
       if (question.is_held) {
         const held = element("div", "question-held-panel");
         held.append(
-          element("strong", "", "진행도와 AI 진단에서 제외된 질문입니다."),
-          element("p", "", question.answer?.content ? "기존 답변은 그대로 보존되어 있습니다." : "보류를 해제하면 다시 답변을 작성할 수 있습니다.")
+          element("strong", "", "이번 PRD에서는 작성하지 않는 질문이에요."),
+          element("p", "", "다시 포함하면 작성할 수 있어요.")
         );
         block.append(held);
         return block;
@@ -366,14 +892,42 @@
           else pendingAnswers.set(String(question.id), editor.value);
           save.disabled = !pendingAnswers.has(String(question.id));
           updateSaveAllButton();
+          queueAutosave();
         });
         const footer = element("div", "write-answer-footer");
         const saved = element("small", "", question.answer ? "저장된 답변" : "아직 저장되지 않았습니다.");
         const actions = element("span", "write-answer-actions");
         actions.append(save);
         save.addEventListener("click", function () { saveOneAnswer(String(question.id), save); });
+        if (authorMode === "guided") {
+          const nextTarget = findNextQuestionTarget(String(question.id));
+          if (nextTarget) {
+            const next = element("button", "btn btn-primary btn-sm question-next-button", "다음 질문");
+            next.type = "button";
+            next.addEventListener("click", async function () {
+              if (navigationBusy) return;
+              next.disabled = true;
+              try {
+                if (pendingAnswers.has(String(question.id))) {
+                  const savedOk = await saveOneAnswer(String(question.id), save);
+                  if (!savedOk) return;
+                }
+                await navigateWriting(function () {
+                  authorMode = "guided";
+                  activeSectionId = nextTarget.sectionId;
+                  activeQuestionId = nextTarget.questionId;
+                });
+              } finally {
+                next.disabled = false;
+              }
+            });
+            actions.append(next);
+          }
+        }
         footer.append(saved, actions);
         block.append(editor, footer);
+        editor.addEventListener("focus", function () { activeSectionId = section.id; activeQuestionId = question.id; renderContext(); });
+        if (authorMode === "guided") structuredEditor(block, question, section);
       } else {
         const answer = element("div", "question-answer", question.answer?.content || "아직 답변이 없습니다.");
         answer.dataset.questionId = question.id;
@@ -382,58 +936,126 @@
       return block;
     }
 
-    if (questionListMode) {
-      const intro = element("div", "write-question-list-intro");
-      intro.append(
-        element("i", "idea-icon idea-icon-list-check"),
-        element("span", "", "모든 질문을 섹션별로 한 번에 펼쳐 보고 연속해서 작성할 수 있습니다.")
+    if (authorMode === "direct") {
+      const activeSection = data.sections.find(function (item) { return String(item.id) === String(activeSectionId); }) || data.sections[0];
+      const sectionIntro = element("section", "v9-section-mode-intro");
+      const introCopy = element("div", "v9-section-mode-copy");
+      introCopy.append(
+        element("span", "v9-section-mode-eyebrow", "SECTION WRITE"),
+        element("h2", "", "섹션별 작성"),
+        element("p", "", "이어지는 질문을 한 섹션 안에서 함께 보고 바로 수정해요.")
       );
-      sectionsRoot.append(intro);
+      sectionIntro.append(introCopy);
+      let sectionSnapshot = null;
+      if (activeSection) {
+        const activeQuestions = activeSection.questions.filter(function (q) { return !q.is_held; });
+        const answered = activeQuestions.filter(function (q) { return q.is_completed; }).length;
+        const held = activeSection.questions.filter(function (q) { return q.is_held; }).length;
+        const snapshot = element("section", "v9-section-snapshot" + (sectionSnapshotCollapsed ? " is-collapsed" : ""));
+        snapshot.dataset.sectionSnapshot = "true";
+        const snapshotMain = element("div", "v9-section-snapshot-main");
+        const snapshotCopy = element("div", "v9-section-snapshot-copy");
+        const snapshotTitle = element("strong", "", activeSection.title);
+        snapshotTitle.dataset.snapshotTitle = "true";
+        const snapshotGuide = element("small", "", activeSection.guide || "이 섹션의 질문을 함께 보며 답변을 정리해요.");
+        snapshotGuide.dataset.snapshotGuide = "true";
+        snapshotCopy.append(element("span", "", "현재 섹션"), snapshotTitle, snapshotGuide);
+        const snapshotStats = element("div", "v9-section-snapshot-stats");
+        [["answered", "작성", answered], ["unanswered", "미작성", Math.max(activeQuestions.length - answered, 0)], ["held", "보류", held]].forEach(function (item) {
+          const stat = element("span", "");
+          stat.dataset.snapshotStat = item[0];
+          stat.append(element("b", "", String(item[2])), document.createTextNode(item[1]));
+          snapshotStats.append(stat);
+        });
+        const snapshotToggle = element("button", "v9-section-snapshot-toggle");
+        snapshotToggle.type = "button";
+        snapshotToggle.setAttribute("aria-expanded", String(!sectionSnapshotCollapsed));
+        snapshotToggle.setAttribute("aria-label", sectionSnapshotCollapsed ? "현재 섹션 펼치기" : "현재 섹션 접기");
+        snapshotToggle.append(
+          element("span", "", sectionSnapshotCollapsed ? "펼치기" : "접기"),
+          element("i", "idea-icon " + (sectionSnapshotCollapsed ? "idea-icon-chevron-down" : "idea-icon-chevron-up"))
+        );
+        snapshotToggle.addEventListener("click", function () {
+          sectionSnapshotCollapsed = !sectionSnapshotCollapsed;
+          snapshot.classList.toggle("is-collapsed", sectionSnapshotCollapsed);
+          snapshotToggle.setAttribute("aria-expanded", String(!sectionSnapshotCollapsed));
+          snapshotToggle.setAttribute("aria-label", sectionSnapshotCollapsed ? "현재 섹션 펼치기" : "현재 섹션 접기");
+          snapshotToggle.querySelector("span").textContent = sectionSnapshotCollapsed ? "펼치기" : "접기";
+          const icon = snapshotToggle.querySelector("i");
+          if (icon) icon.className = "idea-icon " + (sectionSnapshotCollapsed ? "idea-icon-chevron-down" : "idea-icon-chevron-up");
+        });
+        snapshotMain.append(snapshotCopy, snapshotStats, snapshotToggle);
+        snapshot.append(snapshotMain);
+        sectionSnapshot = snapshot;
+      }
+      sectionsRoot.append(sectionIntro);
+      if (sectionSnapshot) sectionsRoot.append(sectionSnapshot);
     }
 
     data.sections.forEach(function (section, index) {
       scope.add(new Option(section.title, String(section.id)));
       section.questions.forEach(function (question) {
-        commentTarget.add(new Option(section.title + " · " + question.prompt + (question.is_held ? " (보류)" : ""), String(question.id)));
+        commentTarget.add(new Option(section.title + " · " + question.prompt + (question.is_held ? " (제외됨)" : ""), String(question.id)));
       });
       const rate = sectionRate(section);
-      if (questionListMode) {
-        const activeQuestions = section.questions.filter(function (question) { return !question.is_held; });
-        const answeredCount = activeQuestions.filter(function (question) { return question.is_completed; }).length;
-        const heldCount = section.questions.length - activeQuestions.length;
-        const group = element("section", "write-question-group" + (String(section.id) === String(activeSectionId) ? " active" : ""));
-        group.dataset.sectionId = section.id;
-        const groupHead = element("div", "write-question-group-head");
-        const titleWrap = element("div", "write-question-group-title");
-        titleWrap.append(
-          element("i", ""),
-          element("span", "write-question-group-index", String(index + 1)),
-          element("h3", "", section.title)
+      if (authorMode === "guided") {
+        if (String(section.id) !== String(activeSectionId)) return;
+        const current = section.questions.find(q => String(q.id) === String(activeQuestionId)) || section.questions[0];
+        if (!current) return;
+        activeQuestionId = current.id;
+        const group = element("section", "v34-guided-section"); group.dataset.sectionId = section.id;
+        group.append(element("p", "small text-secondary", String(index + 1) + " / " + data.sections.length + " · " + guidedSchema.getSectionShort(data.prd.prd_type, section.position)), element("h2", "h5", section.title));
+        const siblings = element("details", "v34-siblings v32-guided-question-disclosure");
+        siblings.setAttribute("aria-label", section.title + " 질문 바로가기");
+        const currentIndex = Math.max(0, section.questions.findIndex(function (q) { return String(q.id) === String(current.id); }));
+        const siblingSummary = element("summary", "v32-guided-question-summary");
+        siblingSummary.append(
+          element("span", "v32-guided-question-summary-title", "이 섹션의 질문"),
+          element("span", "v32-guided-question-current", "현재 " + String(currentIndex + 1) + " / " + section.questions.length),
+          element("i", "idea-icon idea-icon-chevron-down v32-guided-question-chevron")
         );
-        const summary = element("span", "write-question-group-summary", answeredCount + "/" + activeQuestions.length + " · " + rate + "%" + (heldCount ? " · 보류 " + heldCount : ""));
-        groupHead.append(titleWrap, summary);
-        group.append(groupHead);
-        if (section.guide) group.append(element("p", "write-question-group-guide", section.guide));
-        const questionBody = element("div", "write-question-group-body");
-        section.questions.forEach(function (question) { questionBody.append(buildQuestionBlock(question, "write-question-list-item")); });
-        group.append(questionBody);
-        sectionsRoot.append(group);
-        return;
+        siblings.append(siblingSummary);
+        const siblingList = element("div", "v32-guided-question-list");
+        section.questions.forEach(function (q, qIndex) {
+          const choice = action("", function () { navigateWriting(function () { activeQuestionId = q.id; }); }, "v34-sibling v32-guided-question-item btn text-start");
+          choice.setAttribute("aria-current", String(q.id === current.id));
+          choice.append(
+            element("b", "v32-guided-question-no", String(qIndex + 1)),
+            element("span", "v32-guided-question-copy", q.prompt),
+            element("small", "", q.is_held ? "제외" : q.is_completed ? "작성됨" : "미작성")
+          );
+          siblingList.append(choice);
+        });
+        siblings.append(siblingList);
+        group.append(siblings, buildQuestionBlock(current, section));
+        sectionsRoot.append(group); return;
       }
 
-      const card = element("article", "write-section" + (String(section.id) === String(activeSectionId) ? " active" : ""));
+      const sectionKey = String(section.id);
+      const isOpen = expandedSectionIds.has(sectionKey);
+      const card = element("article", "write-section" + (String(section.id) === String(activeSectionId) ? " active" : "") + (isOpen ? " open" : ""));
       card.dataset.sectionId = section.id;
       const toggle = element("button", "write-section-toggle"); toggle.type = "button";
+      toggle.setAttribute("aria-expanded", String(isOpen));
       const copy = element("span", "write-section-title"); copy.append(element("strong", "", section.title), element("small", "", section.guide || "작성 가이드를 확인해 주세요."));
       toggle.append(element("span", "write-section-index", String(index + 1)), copy, element("span", "write-section-badge" + (rate === 100 ? " done" : ""), rate === 100 ? "완료" : rate ? "작성 중" : "시작 전"), element("i", "idea-icon idea-icon-chevron-down write-section-chevron"));
-      toggle.addEventListener("click", function () { activeSectionId = String(activeSectionId) === String(section.id) ? null : section.id; renderDetail(detail); });
+      toggle.addEventListener("click", function () {
+        activeSectionId = section.id;
+        activeQuestionId = null;
+        if (expandedSectionIds.has(sectionKey)) expandedSectionIds.delete(sectionKey);
+        else expandedSectionIds.add(sectionKey);
+        renderDetail(detail);
+      });
       card.append(toggle);
       const body = element("div", "write-section-body");
-      section.questions.forEach(function (question) { body.append(buildQuestionBlock(question)); });
+      body.id = "write-section-body-" + section.id;
+      toggle.setAttribute("aria-controls", body.id);
+      section.questions.forEach(function (question) { body.append(buildQuestionBlock(question, section)); });
       card.append(body); sectionsRoot.append(card);
     });
     if (Array.from(commentTarget.options).some(function (option) { return option.value === previousCommentTarget; })) commentTarget.value = previousCommentTarget;
     updateSaveAllButton();
+    applyWriteView();
   }
 
   function setExportTab(name) {
@@ -503,6 +1125,18 @@
       .find(function (question) { return String(question.id) === String(questionId); });
   }
 
+  function findNextQuestionTarget(questionId) {
+    if (!detail) return null;
+    const ordered = [];
+    detail.sections.forEach(function (section) {
+      section.questions.forEach(function (question) {
+        if (!question.is_held) ordered.push({sectionId: section.id, questionId: question.id});
+      });
+    });
+    const index = ordered.findIndex(function (item) { return String(item.questionId) === String(questionId); });
+    return index >= 0 && index + 1 < ordered.length ? ordered[index + 1] : null;
+  }
+
   function refreshAnswerProgress() {
     const completed = detail.sections.flatMap(function (section) { return section.questions; })
       .filter(function (item) { return !item.is_held && item.is_completed; }).length;
@@ -512,20 +1146,25 @@
     detail.prd.completion_rate = total ? Math.round(completed * 100 / total) : 0;
     renderProgress(detail);
     renderSteps(detail);
+    sectionsRoot.querySelectorAll(".write-question").forEach(function (block) {
+      const editor = block.querySelector("[data-question-id]");
+      const question = editor && findQuestion(editor.dataset.questionId);
+      const label = block.querySelector(".v34-question-state");
+      if (question && label) label.textContent = question.is_held ? "보류" : question.is_completed ? "작성됨" : "미작성";
+    });
   }
 
   async function toggleQuestionHold(question, button) {
     const key = String(question.id);
     const nextHeld = !question.is_held;
-    if (nextHeld && pendingAnswers.has(key)) {
-      const confirmed = await window.IdeaUI.confirm({
-        title: "질문을 보류할까요?",
-        message: "저장하지 않은 답변이 있습니다. 답변을 버리고 질문을 보류합니다.",
-        confirmText: "보류",
-        cancelText: "취소",
-        tone: "danger"
-      });
-      if (!confirmed) return;
+    if (nextHeld && !await flushAnswers()) return;
+    if (uiDemoMode) {
+      question.is_held = nextHeld;
+      if (nextHeld) question.is_completed = false;
+      refreshAnswerProgress();
+      renderDetail(detail);
+      showAlert(nextHeld ? "데모에서 이번 PRD 제외 상태를 적용했어요." : "데모에서 질문을 다시 포함했어요.", "success");
+      return;
     }
     button.disabled = true;
     try {
@@ -541,7 +1180,7 @@
       if (nextHeld) pendingAnswers.delete(key);
       renderDetail(detail);
       markEvaluationStale();
-      showAlert(nextHeld ? "질문을 보류했습니다. 진행도와 AI 진단에서 제외됩니다." : "질문 보류를 해제했습니다.", "success");
+      showAlert(nextHeld ? "이번 PRD에서 제외했어요." : "질문을 다시 포함했어요.", "success");
     } catch (error) {
       if (error.code === "version_conflict") {
         pendingAnswers.delete(key);
@@ -554,27 +1193,63 @@
   }
 
   async function persistPendingAnswer(questionId) {
+    if (answerRequests.has(questionId)) await answerRequests.get(questionId);
+    if (!pendingAnswers.has(questionId) || findQuestion(questionId)?.is_held) return false;
+    const request = persistAnswerRequest(questionId);
+    answerRequests.set(questionId, request);
+    try { return await request; } finally { if (answerRequests.get(questionId) === request) answerRequests.delete(questionId); }
+  }
+  async function persistAnswerRequest(questionId) {
     const editor = sectionsRoot.querySelector('.question-editor[data-question-id="' + questionId + '"]');
     const question = findQuestion(questionId);
-    if (!editor || !question || !pendingAnswers.has(questionId)) return false;
+    if (!question || question.is_held || !pendingAnswers.has(questionId)) return false;
+    const submittedContent = pendingAnswers.get(questionId);
+    if (uiDemoMode) {
+      writeDemoAnswerOverride(question.id, submittedContent);
+      question.answer = Object.assign({}, question.answer || {}, {content: submittedContent});
+      question.is_completed = Boolean(submittedContent.trim());
+      if (editor) editor.dataset.savedContent = submittedContent;
+      if (pendingAnswers.get(questionId) === submittedContent) pendingAnswers.delete(questionId);
+      const savedState = editor?.closest(".write-question")?.querySelector(".write-answer-footer small");
+      if (savedState) { savedState.textContent = "데모에 반영됨"; savedState.className = "small text-success"; }
+      const live = liveGuidedStates.get(String(questionId)) || liveGuidedStates.get(questionId);
+      if (live?.composedAnswer === submittedContent) {
+        guidedCache.set(String(questionId), structuredClone(live));
+        writeStructuredTransfer(question.id, submittedContent, live.state);
+      } else {
+        clearStructuredTransfer(question.id);
+      }
+      const questionSave = editor?.closest(".write-question")?.querySelector(".question-save-button");
+      if (questionSave) questionSave.disabled = !pendingAnswers.has(questionId);
+      refreshAnswerProgress();
+      markEvaluationStale();
+      return true;
+    }
     const data = await api(detailApi + "questions/" + question.id + "/answer/", {
       method: "PATCH",
-      body: JSON.stringify({content: pendingAnswers.get(questionId), version: Number(editor.dataset.version)})
+      body: JSON.stringify({content: submittedContent, version: Number(editor?.dataset.version ?? question.version)})
     });
-    editor.dataset.version = data.version;
-    editor.dataset.savedContent = data.answer?.content || "";
+    if (editor) { editor.dataset.version = data.version; editor.dataset.savedContent = data.answer?.content || ""; }
     question.version = data.version;
     question.answer = data.answer;
+    const live = liveGuidedStates.get(questionId) || liveGuidedStates.get(String(questionId));
+    if (live?.composedAnswer === (data.answer?.content || "")) {
+      guidedCache.set(String(questionId), structuredClone(live));
+      writeStructuredTransfer(question.id, data.answer?.content || "", live.state);
+    } else {
+      clearStructuredTransfer(question.id);
+    }
     question.is_completed = data.is_completed;
-    pendingAnswers.delete(questionId);
+    if (pendingAnswers.get(questionId) === submittedContent) pendingAnswers.delete(questionId);
+    else queueAutosave();
     markEvaluationStale();
-    const savedState = editor.closest(".write-question")?.querySelector(".write-answer-footer small");
+    const savedState = editor?.closest(".write-question")?.querySelector(".write-answer-footer small");
     if (savedState) {
       savedState.textContent = "방금 저장됨";
       savedState.className = "small text-success";
     }
-    const questionSave = editor.closest(".write-question")?.querySelector(".question-save-button");
-    if (questionSave) questionSave.disabled = true;
+    const questionSave = editor?.closest(".write-question")?.querySelector(".question-save-button");
+    if (questionSave) questionSave.disabled = !pendingAnswers.has(questionId);
     return true;
   }
 
@@ -592,7 +1267,7 @@
           answerHeldConflictModal.show();
           updateSaveAllButton();
           showAlert(
-            "다른 사용자가 이 질문을 보류했습니다. 작성 중인 내용은 복사할 수 있습니다.",
+            "다른 사용자가 이 질문을 제외했어요. 작성 중인 내용은 복사할 수 있어요.",
             "warning"
           );
           return;
@@ -644,16 +1319,18 @@
   });
 
   async function saveOneAnswer(questionId, button) {
-    if (!pendingAnswers.has(questionId)) return;
+    if (!pendingAnswers.has(questionId)) return true;
     clearAlert();
     button.disabled = true;
     button.textContent = "저장 중…";
     try {
-      await persistPendingAnswer(questionId);
+      const saved = await persistPendingAnswer(questionId);
       refreshAnswerProgress();
-      showAlert("답변을 저장했습니다.", "success");
+      showAlert(uiDemoMode ? "데모 답변을 반영했습니다." : "답변을 저장했습니다.", "success");
+      return saved !== false;
     } catch (error) {
       await handleAnswerSaveError(error);
+      return false;
     } finally {
       button.textContent = "저장";
       button.disabled = !pendingAnswers.has(questionId);
@@ -662,6 +1339,7 @@
   }
 
   async function saveAllAnswers() {
+    if (uiDemoMode) { showAlert("UI 데모에서는 서버에 저장하지 않습니다.", "warning"); return; }
     if (savingAllAnswers || !pendingAnswers.size) return;
     clearAlert();
     savingAllAnswers = true;
@@ -867,10 +1545,9 @@
   }
 
   function evaluationStateLabel(score) {
-    if (score >= 80) return "충족도 높음";
-    if (score >= 60) return "핵심 보완 필요";
-    if (score >= 35) return "구체화 필요";
-    return "초기 정리 필요";
+    if (score >= 80) return "충분";
+    if (score >= 60) return "기본 충족";
+    return "보완 필요";
   }
 
   function evaluationStatusLabel(status) {
@@ -882,6 +1559,97 @@
     evaluationAlert.className = "evaluation-alert" + (kind ? " " + kind : "");
   }
 
+
+  function qualityScore(value) {
+    if (value === null || value === undefined || value === "" || !Number.isFinite(Number(value))) return null;
+    return Math.max(0, Math.min(100, Number(value)));
+  }
+  function qualityState(score) { return score === null ? "neutral" : score >= 80 ? "success" : score >= 60 ? "warning" : "danger"; }
+  function qualityLabel(score) { return score === null ? "진단 전" : evaluationStateLabel(score); }
+
+  function setScoreState(label, state) {
+    const node = document.getElementById("score-state");
+    if (!node) return;
+    node.textContent = label;
+    node.dataset.state = state || "empty";
+  }
+  const reportPersonaLabels = {pm: "PM", engineering: "Engineering", investor: "Business"};
+  let selectedDiagnosisId = null;
+  function personaSection(persona, sectionId) {
+    const result = evaluationResults[persona];
+    if (result?.job?.status !== "succeeded") return null;
+    return result.job.output?.sections?.find(row => String(row.section_id) === String(sectionId)) || null;
+  }
+  function renderPersonaSummary() {
+    const target = document.getElementById("v34-persona-summary");
+    target.replaceChildren();
+    const hasResults = synthesisResult?.job?.status === "succeeded" || evaluationPersonas.some(persona => evaluationResults[persona]?.job?.status === "succeeded");
+    root.dataset.evaluationEmpty = String(!hasResults);
+    let passed = 0;
+    evaluationPersonas.forEach(function (persona) {
+      const result = evaluationResults[persona];
+      const score = result?.job?.status === "succeeded" ? qualityScore(result.job.output?.overall_score) : null;
+      if (score !== null && score >= 80) passed++;
+      const line = element("p", "v34-quality", reportPersonaLabels[persona] + (score === null ? " · 진단 전" : " · " + score + " · " + qualityLabel(score)));
+      line.dataset.quality = qualityState(score);
+      const track = element("span", "v34-mini-track"); const fill = element("i");
+      fill.style.width = (score ?? 0) + "%"; track.append(fill); track.setAttribute("aria-hidden", "true");
+      if (score !== null) line.append(track); target.append(line);
+    });
+    if (hasResults) target.prepend(element("strong", "", passed + " / " + evaluationPersonas.length + " 기준 충족"));
+    const passLabel = document.getElementById("v34-perspective-pass");
+    if (passLabel) passLabel.textContent = passed + " / " + evaluationPersonas.length + " 충족";
+    evaluationPersonas.forEach(function (persona) {
+      const card = document.querySelector('[data-guide-persona="' + persona + '"]');
+      if (!card) return;
+      const result = evaluationResults[persona];
+      const output = result?.job?.status === "succeeded" ? (result.job.output || {}) : null;
+      const score = output ? qualityScore(output.overall_score) : null;
+      const scoreEl = card.querySelector("[data-persona-score]");
+      const gapEl = card.querySelector("[data-persona-gap]");
+      if (scoreEl) { scoreEl.textContent = score ?? "—"; scoreEl.dataset.quality = qualityState(score); }
+      if (!gapEl) return;
+      const weakest = (output?.sections || []).filter(function (row) { return qualityScore(row.score) !== null; }).slice().sort(function (a,b) { return qualityScore(a.score) - qualityScore(b.score); })[0];
+      const section = weakest ? detail?.sections?.find(function (s) { return String(s.id) === String(weakest.section_id); }) : null;
+      gapEl.textContent = section ? section.title : score === null ? "진단 전" : "세부 결과 확인";
+    });
+  }
+  function renderDiagnosisDetail(row, section, isCurrent) {
+    const target = document.getElementById("v34-diagnosis-detail");
+    target.replaceChildren(); target.hidden = false; selectedDiagnosisId = section.id;
+    const score = qualityScore(row?.score);
+
+    const head = element("header", "v13-diagnosis-detail-head");
+    const headCopy = element("div");
+    headCopy.append(element("small", "", "SECTION DIAGNOSIS"), element("h3", "", section.title));
+    const scoreChip = element("strong", "v13-diagnosis-score", (score ?? "—") + " · " + qualityLabel(score));
+    scoreChip.dataset.quality = qualityState(score);
+    head.append(headCopy, scoreChip);
+
+    const feedback = element("p", "v13-diagnosis-feedback", decodeSafeText(row?.feedback || "아직 이 영역의 진단 결과가 없어요."));
+    const perspectives = element("div", "v13-diagnosis-perspectives");
+    evaluationPersonas.forEach(function (persona) {
+      const entry = personaSection(persona, section.id), value = qualityScore(entry?.score);
+      if (value === null) return;
+      const item = element("div", "v13-diagnosis-perspective");
+      item.dataset.quality = qualityState(value);
+      item.append(element("span", "", reportPersonaLabels[persona]), element("b", "", value + " · " + qualityLabel(value)));
+      perspectives.append(item);
+    });
+
+    const actions = element("div", "v13-diagnosis-actions");
+    const coach = action("AI에게 보완 방법 묻기", function () {
+      if (synthesisResult?.isCurrent && canRequestAi && row) startSectionCoaching(section, row);
+    });
+    coach.classList.add("diagnosis-coach-button"); coach.disabled = !isCurrent || !synthesisResult?.isCurrent || !canRequestAi || !row;
+    const edit = action("직접 수정", function () {
+      navigateWriting(function () { writeView = "write"; activeSectionId = section.id; activeQuestionId = null; });
+    });
+    actions.append(coach, edit);
+    target.append(head, feedback);
+    if (perspectives.childElementCount) target.append(perspectives);
+    target.append(actions);
+  }
   function renderPersonaRing(persona, result) {
     const card = document.querySelector('.write-score-persona[data-persona="' + persona + '"]');
     if (!card) return;
@@ -894,24 +1662,63 @@
       ring.classList.add("is-pending");
       progress.style.strokeDashoffset = "100";
       value.textContent = "—";
-      feedback.textContent = job ? "진단이 진행 중입니다." : "아직 진단하지 않았습니다.";
+      feedback.textContent = job && ["failed", "cancelled"].includes(job.status) ? "진단을 완료하지 못했어요. 다시 진단해 주세요." : job ? "작성한 내용을 세 관점에서 확인하고 있어요." : "아직 품질 진단을 하지 않았어요.";
+      card.dataset.quality = "neutral";
+      card.querySelector(".v23-persona-priority")?.remove();
+      card.querySelector(".v34-persona-status")?.remove();
+      const coach = card.querySelector(".v34-persona-coach");
+      if (coach) coach.disabled = true;
+      renderPersonaSummary();
       return;
     }
     const output = job.output || {};
-    const score = Number(output.overall_score || 0);
-    ring.classList.remove("is-pending");
+    const score = qualityScore(output.overall_score);
+    ring.classList.toggle("is-pending", score === null);
     progress.style.strokeDashoffset = String(100 - Math.max(0, Math.min(100, score)));
-    value.textContent = score;
+    value.textContent = score ?? "—";
     feedback.textContent = decodeSafeText(output.summary || "진단 결과를 확인해 주세요.");
+    card.dataset.quality = qualityState(score);
+    card.querySelector(".v23-persona-priority")?.remove();
+    const lowest = (output.sections || []).filter(row => qualityScore(row.score) !== null && row.feedback).slice().sort((a,b) => qualityScore(a.score) - qualityScore(b.score))[0];
+    if (lowest) {
+      const priority = element("div", "v23-persona-priority");
+      priority.append(element("strong", "small", qualityScore(lowest.score) >= 80 ? "더 다듬어 볼 곳" : "가장 먼저 보완할 점"),element("p", "small", decodeSafeText(lowest.feedback)));
+      feedback.after(priority);
+    }
+    card.querySelector(".v34-persona-status")?.remove();
+    feedback.before(element("p", "v34-persona-status", qualityLabel(score) + (result.isCurrent ? "" : " · 업데이트 필요")));
+    if (!card.querySelector(".v34-persona-coach")) {
+      const coach = action("보완하기", async function () {
+        if (!canRequestAi || !evaluationResults[persona]?.isCurrent) return;
+        scope.value = ""; window.StudioControls?.syncSelect(scope); await loadConversation();
+        input.value = reportPersonaLabels[persona] + " 관점의 진단을 바탕으로 보완 방법을 알려 주세요.\n" + decodeSafeText(evaluationResults[persona]?.job?.output?.summary || "");
+        bootstrap.Offcanvas.getOrCreateInstance(document.getElementById("write-support-panel")).show();
+      });
+      coach.classList.add("v34-persona-coach", "diagnosis-coach-button"); card.append(coach);
+    }
+    card.querySelector(".v34-persona-coach").disabled = !canRequestAi || !result.isCurrent;
+    renderPersonaSummary();
   }
 
   function renderSynthesisEmpty(message) {
     document.getElementById("write-score-value").textContent = "—";
     document.getElementById("write-score-progress").style.strokeDashoffset = "100";
     document.getElementById("write-score-ring").classList.add("is-pending");
-    document.getElementById("score-state").textContent = "진단 전";
-    document.getElementById("write-score-label").textContent = "아직 진단하지 않았습니다";
-    document.getElementById("write-score-feedback").textContent = message || "AI 진단을 실행하면 PM·엔지니어링·투자자 세 관점을 종합한 의견을 확인할 수 있습니다.";
+    setScoreState("진단 전", "empty");
+    document.getElementById("write-score-label").textContent = "아직 품질 진단을 하지 않았어요.";
+    const executiveTitle = document.getElementById("v34-executive-title");
+    const executiveDescription = document.getElementById("v34-executive-description");
+    if (executiveTitle) executiveTitle.textContent = "아직 품질 진단 전입니다.";
+    if (executiveDescription) executiveDescription.textContent = "AI 진단 후 현재 상태, 가장 큰 리스크, 다음에 확인할 내용을 실제 결과 기준으로 보여줘요.";
+    if (document.getElementById("v34-signal-state")) document.getElementById("v34-signal-state").textContent = "진단 전";
+    if (document.getElementById("v34-signal-risk")) document.getElementById("v34-signal-risk").textContent = "—";
+    if (document.getElementById("v34-signal-next")) document.getElementById("v34-signal-next").textContent = "—";
+    document.getElementById("write-score-feedback").textContent = message || "작성한 내용을 기준으로 세 관점의 품질과 보완할 곳을 확인할 수 있어요.";
+    document.getElementById("write-score-ring").dataset.quality = "neutral";
+    document.getElementById("write-score-label").dataset.quality = "neutral";
+    document.getElementById("v34-priorities").replaceChildren();
+    document.getElementById("v34-diagnosis-detail").replaceChildren();
+    renderPersonaSummary();
     const diagnosticsEmpty = element("div", "evaluation-empty evaluation-empty--review");
     if (focusedReviewIllustration) {
       const image = document.createElement("img");
@@ -922,7 +1729,7 @@
     const emptyCopy = element("div");
     emptyCopy.append(
       element("strong", "", "아직 AI 진단 전입니다."),
-      element("span", "", "진단을 실행하면 섹션별 충족도와 보완점을 여기에서 확인할 수 있어요.")
+      element("span", "", "작성한 내용을 기준으로 세 관점의 품질과 보완할 곳을 확인할 수 있어요.")
     );
     diagnosticsEmpty.append(emptyCopy);
     document.getElementById("write-section-diagnostics").replaceChildren(diagnosticsEmpty);
@@ -935,53 +1742,63 @@
   }
 
   function renderSynthesisResult(job, isCurrent) {
-    const output = job.output || {};
-    const score = Number(output.overall_score || 0);
+    const output = job.output || {}, score = qualityScore(output.overall_score);
     const ring = document.getElementById("write-score-ring");
-    ring.classList.remove("is-pending");
-    document.getElementById("write-score-progress").style.strokeDashoffset = String(100 - Math.max(0, Math.min(100, score)));
-    document.getElementById("write-score-value").textContent = score;
-    document.getElementById("score-state").textContent = isCurrent ? "종합 진단" : "업데이트 필요";
-    document.getElementById("write-score-label").textContent = evaluationStateLabel(score);
+    ring.classList.toggle("is-pending", score === null); ring.dataset.quality = qualityState(score);
+    document.getElementById("write-score-progress").style.strokeDashoffset = String(100 - (score ?? 0));
+    document.getElementById("write-score-value").textContent = score ?? "—";
+    setScoreState(isCurrent ? "진단 완료" : "업데이트 필요", isCurrent ? "current" : "stale");
+    document.getElementById("write-score-label").textContent = qualityLabel(score);
+    document.getElementById("write-score-label").dataset.quality = qualityState(score);
     document.getElementById("write-score-feedback").textContent = decodeSafeText(output.summary || "진단 결과를 확인해 주세요.");
-    if (!isCurrent) setEvaluationNotice("진단 후 답변이 변경되었습니다. 최신 내용으로 다시 진단해 주세요.", "warning");
+    const executiveTitle = document.getElementById("v34-executive-title");
+    const executiveDescription = document.getElementById("v34-executive-description");
+    if (executiveTitle) executiveTitle.textContent = qualityLabel(score) + (score === null ? "" : " · " + score + "점");
+    if (executiveDescription) executiveDescription.textContent = decodeSafeText(output.summary || "진단 결과를 확인해 주세요.");
+    if (document.getElementById("v34-signal-state")) document.getElementById("v34-signal-state").textContent = qualityLabel(score) + (score === null ? "" : " · " + score + "점");
+    if (!isCurrent) setEvaluationNotice("작성 내용이 바뀌었어요. 최신 내용으로 다시 진단해 주세요.", "warning");
     else evaluationAlert.className = "evaluation-alert d-none";
-
-    const root = document.getElementById("write-section-diagnostics");
-    root.replaceChildren();
-    (output.sections || []).forEach(function (row) {
-      const section = detail?.sections.find(function (item) { return item.id === row.section_id; });
+    evaluationButton.textContent = "다시 진단하기";
+    renderPersonaSummary();
+    const rows = (output.sections || []).filter(row => detail.sections.some(s => String(s.id) === String(row.section_id)));
+    const scored = rows.filter(row => qualityScore(row.score) !== null).slice().sort((a,b) => qualityScore(a.score) - qualityScore(b.score));
+    document.getElementById("v34-priority-heading").textContent = !scored.length ? "보완 우선순위" : scored.some(row => qualityScore(row.score) < 80) ? "먼저 보완하면 좋은 곳" : "더 다듬어 볼 곳";
+    const weakestRow = scored[0];
+    const weakestSection = weakestRow ? detail.sections.find(function (s) { return String(s.id) === String(weakestRow.section_id); }) : null;
+    if (document.getElementById("v34-signal-risk")) document.getElementById("v34-signal-risk").textContent = weakestSection ? weakestSection.title + " · " + qualityScore(weakestRow.score) + "점" : "—";
+    if (document.getElementById("v34-signal-next")) document.getElementById("v34-signal-next").textContent = weakestRow?.feedback ? decodeSafeText(weakestRow.feedback) : "상세 진단 확인";
+    const priorities = document.getElementById("v34-priorities"); priorities.replaceChildren();
+    scored.slice(0,3).forEach(function (row, index) {
+      const section = detail.sections.find(s => String(s.id) === String(row.section_id));
       if (!section) return;
-      const button = element("button", "diagnosis-card");
-      button.type = "button";
-      button.dataset.state = row.status === "good" ? "good" : row.status === "missing" ? "empty" : "working";
-      const copy = element("span", "diagnosis-copy");
-      copy.append(element("strong", "", section.title), element("span", "", decodeSafeText(row.feedback)));
-      button.append(
-        element("span", "diagnosis-badge", evaluationStatusLabel(row.status)),
-        copy,
-        element("small", "", row.score + "점")
-      );
-      button.addEventListener("click", function () {
-        activeSectionId = section.id;
-        renderDetail(detail);
-        document.querySelector('[data-section-id="' + section.id + '"]')?.scrollIntoView({behavior: "smooth", block: "start"});
-      });
-
-      const coach = element("button", "diagnosis-coach-button", "보완 상담");
-      coach.type = "button";
-      if (!canRequestAi) {
-        coach.disabled = true;
-      } else if (!isCurrent) {
-        // 낡은 진단으로 상담을 시작하면 이미 채워 넣은 내용을 또 채우라고 하게 된다.
-        coach.disabled = true;
-      }
-      coach.addEventListener("click", function () { startSectionCoaching(section, row); });
-
-      const item = element("div", "diagnosis-row");
-      item.append(button, coach);
-      root.append(item);
+      const button = action("", function () { renderDiagnosisDetail(row, section, isCurrent); }, "v34-priority-item");
+      const copy = element("span", "v34-priority-copy");
+      copy.append(element("strong", "", section.title), element("small", "", decodeSafeText(row.feedback || "상세 진단을 확인해 주세요.")));
+      const scoreChip = element("b", "v34-priority-score", qualityScore(row.score) + "점");
+      scoreChip.dataset.quality = qualityState(qualityScore(row.score));
+      button.append(element("span", "v34-priority-index", String(index + 1)), copy, scoreChip);
+      priorities.append(button);
     });
+    const list = element("div", "v34-quality-list");
+    detail.sections.forEach(function (section, index) {
+      const row = rows.find(r => String(r.section_id) === String(section.id));
+      const value = qualityScore(row?.score);
+      const item = action("", function () { renderDiagnosisDetail(row, section, isCurrent); }, "v34-quality-row");
+      item.dataset.quality = qualityState(value);
+      item.append(
+        element("span", "v34-quality-index", String(index + 1)),
+        element("strong", "v34-quality-title", section.title),
+        element("span", "v34-quality-state", qualityLabel(value)),
+        element("b", "v34-quality-score", value ?? "—"),
+        element("span", "v34-quality-feedback", decodeSafeText(row?.feedback || "아직 이 영역의 진단 결과가 없어요.")),
+        element("span", "v34-quality-link", "상세 진단 ›")
+      );
+      list.append(item);
+    });
+    document.getElementById("write-section-diagnostics").replaceChildren(list);
+    const selected = detail.sections.find(s => String(s.id) === String(selectedDiagnosisId));
+    if (selected) renderDiagnosisDetail(rows.find(r => String(r.section_id) === String(selected.id)),selected,isCurrent);
+    else document.getElementById("v34-diagnosis-detail").hidden = true;
   }
 
   // 진단이 지적한 내용을 그대로 들고 코치 대화로 넘어간다.
@@ -1011,12 +1828,21 @@
   }
 
   function setEvaluationBusy(busy, jobIds, label) {
-    evaluationJobIds = busy ? (Array.isArray(jobIds) ? jobIds : (jobIds ? [jobIds] : [])) : [];
+    if (busy && jobIds !== undefined) {
+      evaluationJobIds = Array.isArray(jobIds) ? jobIds : (jobIds ? [jobIds] : []);
+    } else if (!busy) {
+      evaluationJobIds = [];
+      evaluationCancelRequested = false;
+      evaluationRunController = null;
+    }
     evaluationButton.disabled = busy || !detail?.permissions.can_request_ai || detail?.prd.status === "completed";
     evaluationButton.innerHTML = busy
-      ? '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ' + (label || "세 관점 진단 중…")
-      : '<i class="idea-icon idea-icon-stars"></i> AI 진단하기';
-    evaluationCancel.classList.toggle("d-none", !busy || !evaluationJobIds.length);
+      ? '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span>' + (label || "세 관점 진단 중…") + '</span>'
+      : '<i class="idea-icon idea-icon-stars"></i><span>' + (Object.keys(evaluationResults).length ? "다시 진단하기" : "AI 관점 진단") + '</span>';
+    evaluationCancel.classList.toggle("d-none", !busy);
+    evaluationCancel.disabled = !busy || evaluationCancelRequested;
+    if (busy) setScoreState(evaluationCancelRequested ? "취소 요청됨" : "진단 중", "running");
+    else if (!Object.keys(evaluationResults).length && !synthesisResult?.job) setScoreState("진단 전", "empty");
   }
 
   // AI 진단하기는 PM/엔지니어링/투자자 세 관점을 각각 진단한 뒤, 세 결과가 모두
@@ -1024,6 +1850,17 @@
   // 때도 세 관점은 있는데 종합만 없거나 낡은 경우 여기서 자동으로 채운다.
   async function loadEvaluation() {
     try {
+      if (uiDemoMode && typeof uiDemo.evaluationFor === "function") {
+        const demo = uiDemo.evaluationFor(detail);
+        evaluationResults = demo.personas || {};
+        evaluationPersonas.forEach(function (persona) { renderPersonaRing(persona, evaluationResults[persona]); });
+        synthesisResult = demo.synthesis || null;
+        if (synthesisResult?.job?.status === "succeeded") renderSynthesisResult(synthesisResult.job, true);
+        else renderEvaluationEmpty();
+        evaluationButton.disabled = true;
+        evaluationButton.title = "UI 데모에서는 실제 AI를 호출하지 않습니다.";
+        return;
+      }
       const data = await api(aiBase + "evaluation/");
       evaluationResults = {};
       evaluationPersonas.forEach(function (persona) {
@@ -1043,7 +1880,7 @@
       const activeJobs = Object.values(evaluationResults).map(function (item) { return item.job; })
         .filter(function (job) { return ["queued", "running", "retry_wait", "cancel_requested"].includes(job.status); });
       if (activeJobs.length) {
-        setEvaluationNotice("PM·엔지니어링·투자자 관점 진단을 진행하고 있습니다.", "working");
+        setEvaluationNotice("PM·Engineering·Business 관점 진단을 진행하고 있습니다.", "working");
         setEvaluationBusy(true, activeJobs.map(function (job) { return job.id; }), "세 관점 진단 중…");
         await Promise.allSettled(activeJobs.map(function (job) { return pollJob(job.id, function () {}); }));
         setEvaluationBusy(false);
@@ -1090,7 +1927,7 @@
       if (synthesisJob?.status === "succeeded") {
         renderSynthesisResult(synthesisJob, synthesisIsCurrent);
       } else if (!allSucceededAndCurrent) {
-        renderSynthesisEmpty("PM·엔지니어링·투자자 진단을 모두 완료하면 종합 의견을 확인할 수 있습니다.");
+        renderSynthesisEmpty("PM·Engineering·Business 진단을 모두 완료하면 종합 의견을 확인할 수 있습니다.");
       } else {
         renderSynthesisEmpty("종합 의견을 준비하지 못했습니다. 다시 시도해 주세요.");
       }
@@ -1102,14 +1939,17 @@
   function markEvaluationStale() {
     Object.values(evaluationResults).forEach(function (result) { result.isCurrent = false; });
     if (synthesisResult) synthesisResult.isCurrent = false;
+    root.querySelectorAll(".diagnosis-coach-button").forEach(button => { button.disabled = true; });
     if (document.getElementById("write-score-value").textContent !== "—") {
-      document.getElementById("score-state").textContent = "업데이트 필요";
-      setEvaluationNotice("답변이 변경되었습니다. 저장을 마친 뒤 다시 진단해 주세요.", "warning");
+      setScoreState("업데이트 필요", "stale");
+      setEvaluationNotice("작성 내용이 바뀌었어요. 최신 내용으로 다시 진단해 주세요.", "warning");
     }
   }
 
   evaluationButton.addEventListener("click", async function () {
     clearAlert();
+    evaluationCancelRequested = false;
+    evaluationRunController = new AbortController();
     setEvaluationBusy(true);
     setEvaluationNotice("세 관점의 AI 진단 요청을 등록하고 있습니다.", "working");
     try {
@@ -1118,226 +1958,64 @@
         return api(aiBase + "evaluation/run/", {
           method: "POST",
           headers: {"Idempotency-Key": batchKey + "-" + persona},
-          body: JSON.stringify({persona: persona})
+          body: JSON.stringify({persona: persona}),
+          signal: evaluationRunController?.signal
         });
       }));
       const jobs = requests.filter(function (result) { return result.status === "fulfilled"; })
         .map(function (result) { return result.value; });
-      if (!jobs.length) throw requests.find(function (result) { return result.status === "rejected"; }).reason;
+      if (evaluationCancelRequested) {
+        if (jobs.length) {
+          await Promise.allSettled(jobs.map(function (job) {
+            return api(aiBase + "jobs/" + job.id + "/cancel/", {method: "POST", body: "{}"});
+          }));
+        }
+        setEvaluationNotice("진단 요청을 취소했습니다.", "warning");
+        return;
+      }
+      if (!jobs.length) {
+        const rejected = requests.find(function (result) { return result.status === "rejected"; });
+        if (rejected?.reason?.name === "AbortError") {
+          setEvaluationNotice("진단 요청을 취소했습니다.", "warning");
+          return;
+        }
+        throw rejected?.reason || new Error("AI 진단 요청을 시작하지 못했습니다.");
+      }
       setEvaluationBusy(true, jobs.map(function (job) { return job.id; }));
       await Promise.allSettled(jobs.map(function (job) { return pollJob(job.id, function () {}); }));
-      await loadEvaluation();
-      if (requests.some(function (result) { return result.status === "rejected"; })) {
-        setEvaluationNotice("일부 관점의 진단을 시작하지 못했습니다. 다시 실행해 주세요.", "warning");
+      if (!evaluationCancelRequested) {
+        await loadEvaluation();
+        if (jobs.length < evaluationPersonas.length) {
+          setEvaluationNotice("일부 관점의 진단만 완료했습니다. 다시 진단하면 부족한 결과를 보완할 수 있어요.", "warning");
+        }
       }
     } catch (error) {
-      setEvaluationNotice(error.message, "danger");
+      if (error?.name === "AbortError" || evaluationCancelRequested) {
+        setEvaluationNotice("진단 요청을 취소했습니다.", "warning");
+      } else {
+        setEvaluationNotice(error.message, "danger");
+      }
     } finally {
       setEvaluationBusy(false);
     }
   });
 
   evaluationCancel.addEventListener("click", async function () {
-    if (!evaluationJobIds.length) return;
+    if (evaluationCancel.classList.contains("d-none") || evaluationCancel.disabled) return;
+    evaluationCancelRequested = true;
+    evaluationCancel.disabled = true;
+    setScoreState("취소 요청됨", "running");
+    setEvaluationNotice("진단 요청을 취소하고 있습니다.", "warning");
     try {
-      await Promise.allSettled(evaluationJobIds.map(function (jobId) {
-        return api(aiBase + "jobs/" + jobId + "/cancel/", {method: "POST", body: "{}"});
-      }));
-      setEvaluationNotice("진행 중인 진단 요청을 취소했습니다.", "warning");
-    } catch (error) {
-      setEvaluationNotice(error.message, "danger");
-    } finally {
-      setEvaluationBusy(false);
-    }
-  });
-
-  function setPerspectiveDraftNotice(message, kind) {
-    if (!message) { perspectiveDraftAlert.className = "evaluation-alert d-none"; return; }
-    perspectiveDraftAlert.textContent = message;
-    perspectiveDraftAlert.className = "evaluation-alert" + (kind ? " " + kind : "");
-  }
-
-  function setPerspectiveDraftBusy(busy) {
-    perspectiveDraftButton.disabled = busy || !detail?.permissions.can_request_ai || detail?.prd.status === "completed";
-    perspectiveDraftButton.innerHTML = busy
-      ? '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> 초안 작성 중…'
-      : '<i class="idea-icon idea-icon-magic"></i> AI 초안 작성';
-  }
-
-  function findQuestionPrompt(questionId) {
-    if (!detail) return "질문 " + questionId;
-    for (const section of detail.sections) {
-      const question = section.questions.find(function (item) { return item.id === questionId; });
-      if (question) return question.prompt;
-    }
-    return "질문 " + questionId;
-  }
-
-  function findQuestionSectionId(questionId) {
-    if (!detail) return "";
-    for (const section of detail.sections) {
-      if (section.questions.some(function (item) { return item.id === questionId; })) return String(section.id);
-    }
-    return "";
-  }
-
-  function goToCoachChat(row) {
-    scope.value = findQuestionSectionId(row.question_id);
-    window.StudioControls?.syncSelect(scope);
-    perspectiveDraftModal.hide();
-    bootstrap.Offcanvas.getOrCreateInstance(document.getElementById("write-support-panel")).show();
-    input.value =
-      "\"" + findQuestionPrompt(row.question_id) + "\" 질문에 대해 AI가 제안한 아래 초안을 참고해서 더 다듬고 싶어요:\n\n" +
-      decodeSafeText(row.draft);
-    window.setTimeout(function () {
-      input.focus();
-      input.setSelectionRange(input.value.length, input.value.length);
-    }, 350);
-  }
-
-  function updatePerspectiveDraftSelectedCount() {
-    const boxes = Array.from(perspectiveDraftList.querySelectorAll('input[type="checkbox"]'));
-    const checked = boxes.filter(function (box) { return box.checked; });
-    perspectiveDraftSelectedCount.textContent = checked.length + " / " + boxes.length + "개 선택됨";
-    perspectiveDraftApplyButton.disabled = !checked.length;
-  }
-
-  function renderPerspectiveDraftModal(job) {
-    perspectiveDraftJob = job;
-    const answers = job.output?.answers || [];
-    perspectiveDraftModalPersona.textContent = "PM·엔지니어링·투자자 통합 · 질문 " + answers.length + "개";
-    perspectiveDraftList.replaceChildren();
-    answers.forEach(function (row) {
-      const item = element("label", "perspective-draft-item");
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = true;
-      checkbox.dataset.questionId = row.question_id;
-      checkbox.dataset.questionVersion = row.question_version;
-      checkbox.addEventListener("change", function () {
-        item.classList.toggle("is-unchecked", !checkbox.checked);
-        updatePerspectiveDraftSelectedCount();
-      });
-      const body = element("div", "perspective-draft-item-body");
-      body.append(element("strong", "", findQuestionPrompt(row.question_id)));
-      body.append(Object.assign(element("p", "perspective-draft-item-draft"), {textContent: decodeSafeText(row.draft)}));
-      if (row.reasoning) {
-        const reasoning = element("div", "perspective-draft-item-reasoning");
-        reasoning.append(element("i", "idea-icon idea-icon-info-circle"), element("span", "", decodeSafeText(row.reasoning)));
-        body.append(reasoning);
+      evaluationRunController?.abort();
+      if (evaluationJobIds.length) {
+        await Promise.allSettled(evaluationJobIds.map(function (jobId) {
+          return api(aiBase + "jobs/" + jobId + "/cancel/", {method: "POST", body: "{}"});
+        }));
       }
-      const chatLink = element("button", "perspective-draft-item-chat-link");
-      chatLink.type = "button";
-      chatLink.append(element("i", "idea-icon idea-icon-chat-dots"), element("span", "", "AI 채팅으로 가기"));
-      chatLink.addEventListener("click", function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        goToCoachChat(row);
-      });
-      body.append(chatLink);
-      item.append(checkbox, body);
-      perspectiveDraftList.append(item);
-    });
-    updatePerspectiveDraftSelectedCount();
-    perspectiveDraftModal.show();
-  }
-
-  perspectiveDraftButton?.addEventListener("click", async function () {
-    if (!perspectiveDraftAvailable) {
-      showAlert("화면 구성 요소를 새로 불러와야 합니다. 페이지를 새로고침해 주세요.", "warning");
-      return;
-    }
-    clearAlert();
-    setPerspectiveDraftBusy(true);
-    setPerspectiveDraftNotice("PM·엔지니어링·투자자 관점을 종합한 PRD 초안을 작성하고 있습니다.", "working");
-    try {
-      const job = await api(aiBase + "perspective-draft/run/", {
-        method: "POST",
-        headers: {"Idempotency-Key": crypto.randomUUID()},
-        body: JSON.stringify({})
-      });
-      const finished = await pollJob(job.id, function () {});
-      if (finished?.status === "succeeded") {
-        setPerspectiveDraftNotice(null);
-        renderPerspectiveDraftModal(finished);
-      } else if (finished) {
-        setPerspectiveDraftNotice(finished.error?.message || "초안 작성을 완료하지 못했습니다.", "danger");
-      }
+      setEvaluationNotice("진단 요청을 취소했습니다.", "warning");
     } catch (error) {
-      setPerspectiveDraftNotice(error.message, "danger");
-    } finally {
-      setPerspectiveDraftBusy(false);
-    }
-  });
-
-  perspectiveDraftToggleAll?.addEventListener("click", function () {
-    const boxes = Array.from(perspectiveDraftList.querySelectorAll('input[type="checkbox"]'));
-    const shouldCheck = boxes.some(function (box) { return !box.checked; });
-    boxes.forEach(function (box) {
-      box.checked = shouldCheck;
-      box.closest(".perspective-draft-item").classList.toggle("is-unchecked", !shouldCheck);
-    });
-    updatePerspectiveDraftSelectedCount();
-  });
-
-  perspectiveDraftApplyButton?.addEventListener("click", async function () {
-    if (!perspectiveDraftJob) return;
-    const checked = Array.from(perspectiveDraftList.querySelectorAll('input[type="checkbox"]:checked'));
-    if (!checked.length) return;
-    const approvedQuestions = checked.map(function (box) {
-      return {question_id: Number(box.dataset.questionId), version: Number(box.dataset.questionVersion)};
-    });
-    perspectiveDraftApplyButton.disabled = true;
-    perspectiveDraftApplyButton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> 반영 중…';
-    try {
-      await api(aiBase + "perspective-draft/" + perspectiveDraftJob.id + "/apply/", {
-        method: "POST",
-        headers: {"Idempotency-Key": crypto.randomUUID()},
-        body: JSON.stringify({approved_questions: approvedQuestions})
-      });
-      perspectiveDraftModal.hide();
-      showAlert(approvedQuestions.length + "개 질문에 초안을 반영했습니다.", "success");
-      renderDetail(await api(detailApi));
-    } catch (error) {
-      showAlert(error.message);
-    } finally {
-      perspectiveDraftApplyButton.disabled = false;
-      perspectiveDraftApplyButton.innerHTML = '<i class="idea-icon idea-icon-check2-circle"></i> 선택한 답변 반영';
-    }
-  });
-
-  form.addEventListener("submit", async function (event) {
-    event.preventDefault();
-    clearAlert();
-    const message = input.value.trim();
-    if (!message) return;
-    const key = crypto.randomUUID();
-    setBusy(true);
-    try {
-      const job = await api(aiBase + "chat/", {
-        method: "POST",
-        headers: {"Idempotency-Key": key},
-        body: JSON.stringify({section_id: scope.value || null, message: message})
-      });
-      input.value = "";
-      setBusy(true, job.id);
-      await loadConversation();
-      await pollJob(job.id, loadConversation);
-      await loadConversation();
-    } catch (error) {
-      showAlert(error.message);
-    } finally {
-      setBusy(false);
-    }
-  });
-
-  cancel.addEventListener("click", async function () {
-    if (!activeJobId) return;
-    try {
-      await api(aiBase + "jobs/" + activeJobId + "/cancel/", {method: "POST", body: "{}"});
-      await loadConversation();
-    } catch (error) {
-      showAlert(error.message);
+      if (error?.name !== "AbortError") setEvaluationNotice(error.message, "danger");
     }
   });
 
@@ -1597,7 +2275,12 @@
     console.error("[Idea Write] write-participants.js did not load.");
   }
 
-  let commentController = {load: function () { return Promise.resolve(); }};
+  let commentController = {
+    load: function () { return Promise.resolve(); },
+    getItemsForQuestion: function () { return []; },
+    getCountForQuestion: function () { return 0; },
+    getTotalCount: function () { return 0; }
+  };
   if (window.PrdWriteComments && typeof window.PrdWriteComments.create === "function") {
     try {
       commentController = window.PrdWriteComments.create({
@@ -1614,6 +2297,9 @@
   } else {
     console.error("[Idea Write] write-comments.js did not load.");
   }
+  document.addEventListener("prd:comments-loaded", function () {
+    if (detail && writeView === "write") renderContext();
+  });
 
   let contributionController = {load: function () { return Promise.resolve(); }};
   if (window.PrdWriteContributions && typeof window.PrdWriteContributions.create === "function") {
@@ -1657,26 +2343,73 @@
     }
   });
 
+  if (expandAllSectionsButton) {
+    expandAllSectionsButton.addEventListener("click", function () {
+      if (!detail || authorMode !== "direct") return;
+      detail.sections.forEach(function (section) { expandedSectionIds.add(String(section.id)); });
+      renderDetail(detail);
+    });
+  }
+  if (collapseAllSectionsButton) {
+    collapseAllSectionsButton.addEventListener("click", function () {
+      if (!detail || authorMode !== "direct") return;
+      expandedSectionIds.clear();
+      if (activeSectionId !== undefined && activeSectionId !== null) expandedSectionIds.add(String(activeSectionId));
+      renderDetail(detail);
+      if (activeSectionId !== undefined && activeSectionId !== null) requestAnimationFrame(function () { scrollToSection(activeSectionId); });
+    });
+  }
+
   document.getElementById("structure-view").addEventListener("click", function () {
-    questionListMode = false;
-    document.body.classList.remove("question-list-mode");
-    this.classList.add("active");
-    document.getElementById("question-view").classList.remove("active");
-    renderDetail(detail);
+    navigateWriting(function () { authorMode = "guided"; });
   });
   document.getElementById("question-view").addEventListener("click", function () {
-    questionListMode = true;
-    document.body.classList.add("question-list-mode");
-    this.classList.add("active");
-    document.getElementById("structure-view").classList.remove("active");
-    renderDetail(detail);
+    navigateWriting(function () {
+      authorMode = "direct";
+      if (activeSectionId !== undefined && activeSectionId !== null) expandedSectionIds.add(String(activeSectionId));
+    });
   });
+  root.querySelectorAll("[data-write-view]").forEach(function (button) {
+    button.addEventListener("click", function () { navigateWriting(function () { writeView = button.dataset.writeView; }); });
+  });
+  const projectActions = element("div", "v34-project-actions");
+  projectActions.append(document.getElementById("contribution-toggle"), document.getElementById("reopen-prd"));
+  root.querySelector(".write-toolbar").append(projectActions);
+  root.querySelector(".v34-views").append(root.querySelector(".write-actions"));
+  root.querySelector(".write-workspace").prepend(root.querySelector(".write-stepper"));
+  root.dataset.writeView = "write";
+  root.querySelector(".write-body-viewport")?.addEventListener("scroll", syncActiveSectionFromScroll, {passive:true});
+  window.addEventListener("pagehide", function () { flushAnswers(); });
   input.addEventListener("keydown", function (event) {
     if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); form.requestSubmit(); }
   });
 
+  if (uiDemoMode && typeof uiDemo.decorate === "function") uiDemo.decorate(root);
+  if (uiDemoMode) {
+    const brainstormLink = root.querySelector(".brainstorm-launch");
+    if (brainstormLink) {
+      try {
+        const url = new URL(brainstormLink.href, window.location.origin);
+        url.searchParams.set("ui_demo", "1");
+        brainstormLink.href = url.pathname + url.search;
+      } catch (_error) {}
+    }
+  }
+
   api(detailApi)
     .then(function (data) {
+      if (uiDemoMode && typeof uiDemo.prepareDetail === "function") {
+        data = uiDemo.prepareDetail(data, guidedSchema);
+        const demoFocus = data.sections.flatMap(function (section) {
+          return (section.questions || []).map(function (question) {
+            return {section:section, question:question, config:guidedSchema.getConfig(data.prd.prd_type, section.position, question.position)};
+          });
+        }).find(function (item) { return item.config?.kind === "steps"; });
+        if (demoFocus) {
+          activeSectionId = demoFocus.section.id;
+          activeQuestionId = demoFocus.question.id;
+        }
+      }
       if (data.current_user_id !== undefined && data.current_user_id !== null) {
         root.dataset.currentUserId = String(data.current_user_id);
       }

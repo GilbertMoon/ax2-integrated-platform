@@ -18,6 +18,33 @@
       var commentPagination = document.getElementById("comment-pagination");
       var commentPage = 1;
       var commentPageSize = 10;
+      var demoMode = new URLSearchParams(window.location.search).get("ui_demo") === "1";
+      var latestItems = [];
+
+      function demoCommentData() {
+        var detail = getDetail();
+        var questions = detail ? detail.sections.reduce(function (acc, section) {
+          return acc.concat(section.questions.map(function (question) { return {section: section, question: question}; }));
+        }, []) : [];
+        var first = questions.find(function (row) { return row.section.position === 2; }) || questions[0];
+        var second = questions.find(function (row) { return row.section.position === 6; }) || questions[1] || first;
+        var now = new Date();
+        function iso(minusMinutes) { return new Date(now.getTime() - minusMinutes * 60000).toISOString(); }
+        var items = [];
+        if (first) items.push({
+          id: "demo-comment-1", version: 1, section_question_id: first.question.id,
+          content: "목표 수치가 어떤 기준에서 나온 것인지 한 줄만 더 적어두면 공유할 때 이해가 더 빠를 것 같아요.",
+          comment_type: "general", created_at: iso(38), can_modify: false,
+          author: {user_id: "demo-junho", display_name: "준호", role_at_created: "editor"}
+        });
+        if (second) items.push({
+          id: "demo-comment-2", version: 1, section_question_id: second.question.id,
+          content: "핵심 흐름뿐 아니라 중간 이탈이나 예외 상황도 같이 적어두면 구현 범위 확인에 도움이 될 것 같아요.",
+          comment_type: "review", created_at: iso(12), can_modify: false,
+          author: {user_id: "demo-seoyeon", display_name: "서연", role_at_created: "editor"}
+        });
+        return {items: items, pagination: {page: 1, page_size: 10, total_items: items.length, total_pages: 1}};
+      }
 
 
       function commentEmpty(title, copy) {
@@ -51,13 +78,13 @@
         return new Intl.DateTimeFormat("ko-KR", {month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit"}).format(parsed);
       }
 
-      function questionLabel(questionId) {
-        if (!getDetail() || !questionId) return "PRD 전체";
+      function questionContext(questionId) {
+        if (!getDetail() || !questionId) return {section: "PRD 전체", question: "전체 문서에 남긴 코멘트"};
         for (const section of getDetail().sections) {
           const question = section.questions.find(function (item) { return item.id === questionId; });
-          if (question) return section.title + " · " + question.prompt;
+          if (question) return {section: section.title, question: question.prompt};
         }
-        return "질문 코멘트";
+        return {section: "PRD", question: "질문 코멘트"};
       }
 
       function renderCommentPagination(pagination) {
@@ -137,6 +164,7 @@
       }
 
       function renderComments(data) {
+        latestItems = Array.isArray(data.items) ? data.items.slice() : [];
         const count = document.getElementById("comment-count");
         count.textContent = data.pagination.total_items;
         count.classList.toggle("d-none", data.pagination.total_items === 0);
@@ -154,21 +182,24 @@
           const author = element("div", "comment-author");
           author.append(
             element("strong", "", comment.author.display_name),
-            element("small", "", (roleLabels[comment.author.role_at_created] || comment.author.role_at_created) + " · " + commentDate(comment.created_at))
+            element("small", "", commentDate(comment.created_at))
           );
+          const kind = element("span", "comment-kind comment-kind--" + (comment.comment_type || "general"), typeLabels[comment.comment_type] || comment.comment_type);
+          const roleKind = element("span", "comment-role comment-role--" + (comment.author.role_at_created || "viewer"), roleLabels[comment.author.role_at_created] || comment.author.role_at_created);
+          const metaTags = element("div", "comment-meta-tags");
+          metaTags.append(roleKind, kind);
           head.append(
             participantAvatar({user_id: comment.author.user_id, display_name: comment.author.display_name, role: comment.author.role_at_created}, "participant-person-avatar"),
             author,
-            element("span", "comment-kind", typeLabels[comment.comment_type] || comment.comment_type)
+            metaTags
           );
           card.append(head);
-          card.append(
-            element(
-              "span",
-              "comment-question",
-              questionLabel(comment.section_question_id)
-            )
-          );
+          const context = questionContext(comment.section_question_id);
+          const contextBlock = element("div", "comment-context");
+          const sectionRow = element("div", "comment-context-section");
+          sectionRow.append(element("span", "comment-section-tag", "섹션"), element("strong", "", context.section));
+          contextBlock.append(sectionRow, element("p", "comment-question", context.question));
+          card.append(contextBlock);
           card.append(
             element(
               "p",
@@ -189,9 +220,15 @@
           commentList.append(card);
         });
         renderCommentPagination(data.pagination);
+        document.dispatchEvent(new CustomEvent("prd:comments-loaded", {detail: {total: latestItems.length}}));
       }
 
       async function loadComments(page) {
+        if (demoMode) {
+          commentPage = 1;
+          renderComments(demoCommentData());
+          return;
+        }
         if (!commentsApi) return;
         commentPage = Math.max(1, Number(page || commentPage || 1));
         try {
@@ -210,6 +247,10 @@
       commentForm.addEventListener("submit", async function (event) {
         event.preventDefault();
         clearCommentAlert();
+        if (demoMode) {
+          showCommentAlert("데모 모드에서는 예시 코멘트를 확인할 수 있고 실제 등록은 하지 않습니다.", "info");
+          return;
+        }
         const content = commentInput.value.trim();
         if (!content) {
           showCommentAlert("코멘트 내용을 입력해 주세요.", "warning");
@@ -237,7 +278,17 @@
       });
 
 
-      return {load: loadComments};
+      return {
+        load: loadComments,
+        getItemsForQuestion: function (questionId) {
+          if (questionId === null || questionId === undefined || questionId === "") return latestItems.slice();
+          return latestItems.filter(function (item) { return String(item.section_question_id) === String(questionId); });
+        },
+        getCountForQuestion: function (questionId) {
+          return latestItems.filter(function (item) { return String(item.section_question_id) === String(questionId); }).length;
+        },
+        getTotalCount: function () { return latestItems.length; }
+      };
     }
   };
 }());

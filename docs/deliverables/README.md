@@ -106,3 +106,31 @@
 - GitHub의 `docs/deliverables/`를 **산출물 기준 원본(Source of Truth)** 으로 사용합니다.
 - Notion에는 산출물 내용을 별도로 다시 관리하기보다 GitHub 산출물 링크를 연결하는 것을 기본으로 합니다.
 - Issue는 업무 진행을 추적하고, 실제 완료 결과는 해당 날짜의 Deliverable 문서에서 확인합니다.
+
+---
+
+## 2026-11-19 보강 — Issue와 Daily Deliverable의 역할 분리
+
+과거에는 Daily 계획·Daily 결과도 GitHub Issue로 생성되어 Open Issue가 누적되었다. 이후에는 다음 기준으로 역할을 분리한다.
+
+### Issue를 만드는 경우
+
+- 여러 Commit/PR에 걸칠 수 있는 실제 기능 또는 버그
+- 다른 담당자 Review/Cross Check가 필요한 작업
+- Blocker, 의사결정, 외부 의존성이 있는 작업
+- 완료 조건을 추적해야 하는 통합/배포/QA 작업
+
+### Issue를 만들지 않는 경우
+
+- 오늘 할 일 목록
+- 단순 작업일지
+- 이미 Active Issue 안에서 수행하는 세부 단계
+- 완료 결과 보고만을 위한 기록
+
+위 항목은 해당 날짜의 Deliverable 문서에 기록하고, 관련 Active Issue가 있으면 번호만 연결한다.
+
+### 권장 기록 흐름
+
+`Active Issue → 작업 수행 → PR/Commit → Daily Deliverable → Cross Check → Issue Close`
+
+같은 목적의 Daily Issue를 날짜별로 반복 생성하지 않는다.

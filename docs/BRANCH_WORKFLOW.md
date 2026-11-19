@@ -847,3 +847,37 @@ Secret Commit 금지
 > **`develop`은 각 조가 자유롭게 수정하는 Branch가 아니라 검증된 변경을 모으는 통합 기준 Branch이다.**
 
 > **최종 완료는 `develop` Merge 후 Regression Test와 재검증까지 끝난 상태(GREEN)로 판단한다.**
+
+---
+
+## 2026-11-19 보강 — Issue / PR / Deliverable 연결
+
+기존 브랜치 정책은 유지하되, 통합 이후 운영 단계에서는 변경의 추적성을 위해 다음 규칙을 추가한다.
+
+### 작업 시작
+
+1. 먼저 기존 Issue에서 같은 목적의 작업이 진행 중인지 확인한다.
+2. 기존 Active Issue가 있으면 새 Issue를 만들지 않고 그 Issue를 이어서 사용한다.
+3. 새 Issue가 필요한 경우 결과물이 명확한 한 가지 목적만 담는다.
+4. Daily 계획이나 개인 작업일지는 Issue 대신 Deliverable에 기록한다.
+
+### Branch / PR
+
+- Branch 예시: `feature/issue-121-bug-report-storage`, `fix/issue-127-github-oauth`
+- PR 본문에는 반드시 관련 Issue와 검증 결과를 기록한다.
+- 전체 범위를 끝내는 PR: `Closes #121`
+- 일부 단계만 반영하는 PR: `Refs #121`
+- 하나의 PR에 무관한 여러 Issue를 묶지 않는다.
+
+### Merge 후
+
+Issue 종료 전 다음을 확인한다.
+
+- [ ] PR이 기준 브랜치에 Merge됨
+- [ ] 필요한 Migration/환경변수/운영 변경이 문서화됨
+- [ ] 테스트 또는 실제 실행 결과가 PASS
+- [ ] Deliverable에 최종 결과와 검증 방법이 기록됨
+- [ ] Cross Check 결과가 기록됨
+- [ ] 남은 작업이 있으면 후속 Issue가 명확히 연결됨
+
+상세 운영 기준은 `docs/ISSUE_MANAGEMENT.md`를 따른다.

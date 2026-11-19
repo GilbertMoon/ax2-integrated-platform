@@ -81,3 +81,42 @@
 - Windows 11 Pro PC 서버에서 통합 시스템 실행
 - 재부팅 후 서비스 재실행, DB Backup / Restore 및 기본 운영 절차 확인
 - 프로젝트 구조와 실행 방법을 문서화하여 팀원 누구나 이해할 수 있는 상태 유지
+
+---
+
+## 6. 2026-11-19 문서·Issue 운영 기준
+
+현재 저장소의 기본 작업 브랜치는 `develop`이며, 문서와 GitHub Issue의 역할을 다음처럼 분리한다.
+
+### Source of Truth
+
+| 구분 | 역할 |
+|---|---|
+| `README.md` | 프로젝트 목적·범위·구조·현재 운영 원칙 |
+| `docs/01_MASTER_TODO.md` | Phase별 전체 목표와 완료조건 |
+| `docs/todo/P1~P6_*.md` | 담당자별 책임 범위와 현재 추적 대상 |
+| GitHub Issue | 실제 실행 단위, Blocker, Review가 필요한 작업 |
+| `docs/deliverables/` | 완료 결과와 검증 근거 |
+| Pull Request | 코드/문서 변경 및 Review·Merge 기록 |
+
+### 현재 Issue 현황
+
+2026-11-19 기준 GitHub의 Open Issue는 **53건**이다.
+
+- P1: 7건
+- P2: 4건
+- P3: 6건
+- P4: 8건
+- P5: 13건
+- P6: 15건
+
+과거 Daily 계획·완료 보고·후속 이슈가 Open 상태로 누적되어 있으므로, 이 숫자를 그대로 현재 미완료 작업 수로 해석하지 않는다.
+
+### 운영 원칙
+
+1. 기존 Open Issue는 즉시 일괄 종료하지 않고 근거를 확인한 뒤 `ACTIVE / COMPLETED / SUPERSEDED / DUPLICATE / BACKLOG`로 분류한다.
+2. 담당자별 동시에 진행하는 ACTIVE Issue는 원칙적으로 **1~2개**로 제한한다.
+3. 하루 작업 계획·작업 결과는 새 Issue를 만들기보다 `docs/deliverables/`와 기존 Active Issue의 코멘트로 기록한다.
+4. PR은 관련 Issue를 반드시 연결한다. 작업 전체를 완료하면 `Closes #번호`, 일부만 반영하면 `Refs #번호`를 사용한다.
+5. Issue 종료 전에는 Deliverable, PR/Commit, 테스트 결과, Cross Check 여부를 확인한다.
+6. 상세 분류 및 정리 순서는 `docs/ISSUE_MANAGEMENT.md`를 따른다.

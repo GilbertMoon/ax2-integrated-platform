@@ -1,6 +1,7 @@
 # MASTER TODO
 
-- 목표 완료일: **2026-09-07 (월)**
+- 초기 목표 완료일: **2026-09-07 (월)**
+- 운영 재정비 기준일: **2026-11-19**
 - 진행 원칙: **PHASE > Priority > Task > Owner > Status > 완료조건**
 - 상태: `TODO / DOING / REVIEW / DONE`
 - 우선순위: `MUST / SHOULD / COULD`
@@ -49,3 +50,29 @@
 - [ ] DB Migration 정상
 - [ ] Windows 서버에서 서비스 접속 가능
 - [ ] Backup/Restore 검증 완료
+
+---
+
+## 2026-11-19 재정비 기준
+
+기존 Phase 0~5 체크리스트는 **초기 통합 계획의 기준선**으로 유지한다. 2026-11-19 이후 실제 진행 여부는 체크박스를 추측으로 변경하지 않고 GitHub Issue·PR·Deliverable 증거로 판정한다.
+
+### 재정비 순서
+
+- [ ] Open Issue 53건을 담당자별로 재분류
+- [ ] 완료 증거가 있는 과거 Issue 종료
+- [ ] 후속 Issue로 대체된 Issue는 successor 링크 후 종료
+- [ ] 중복 Issue 정리
+- [ ] Daily 계획/결과형 Issue를 Deliverable 중심 기록으로 전환
+- [ ] 담당자별 ACTIVE Issue 1~2개로 축소
+- [ ] 현재 ACTIVE Issue를 기준으로 MASTER TODO 상태 현행화
+- [ ] Open PR #142와 관련 Issue 연결 상태 확인
+- [ ] 최종적으로 README / 개인 TODO / Deliverable / Issue가 서로 같은 상태를 가리키는지 Cross Check
+
+### 완료 판정 규칙
+
+`DONE`은 단순 체크박스나 구두 보고가 아니라 다음 증거가 있을 때만 반영한다.
+
+`Issue → 구현/문서 변경 → PR/Commit → 실행/테스트 → Deliverable → Cross Check`
+
+상세 Issue 정리 기준은 `docs/ISSUE_MANAGEMENT.md`를 따른다.
